@@ -14,9 +14,28 @@
 11. IPC标准Agent (ipc_standard) — IPC标准辅助查询与缺陷判定
 """
 
+import importlib
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+# Agent 注册表：agent_name → (模块路径, 单例变量名)
+# 惰性 import（在 execute_by_agent 内按需加载），未用到的 Agent 不会被导入。
+# 所有 Agent 均实现统一契约 BaseAgent.analyze(goal) -> dict。
+AGENT_REGISTRY: dict[str, tuple[str, str]] = {
+    "supply_chain": ("src.agents.supply_chain.agent", "supply_chain_agent"),
+    "pm_maintenance": ("src.agents.pm_maintenance.agent", "pm_agent"),
+    "yield_analysis": ("src.agents.yield_analysis.agent", "yield_agent"),
+    "quality_trace": ("src.agents.quality_trace.agent", "quality_trace_agent"),
+    "dfm_check": ("src.agents.dfm_check.agent", "dfm_agent"),
+    "bom_selector": ("src.agents.bom_selector.agent", "bom_selector_agent"),
+    "oee_optimizer": ("src.agents.oee_optimizer.agent", "oee_agent"),
+    "eco_change": ("src.agents.eco_change.agent", "eco_agent"),
+    "smt_changeover": ("src.agents.smt_changeover.agent", "smt_changeover_agent"),
+    "aoi_judge": ("src.agents.aoi_judge.agent", "aoi_agent"),
+    "ipc_standard": ("src.agents.ipc_standard.agent", "ipc_standard_agent"),
+}
 
 
 # Agent路由规则：关键词 → 目标Agent
@@ -61,74 +80,23 @@ def route_goal(goal: str) -> str:
     return "supply_chain"
 
 
-async def execute_by_agent(agent_name: str, goal: str) -> dict:
-    """调用指定Agent执行"""
-    if agent_name == "supply_chain":
-        from src.agents.supply_chain.agent import supply_chain_agent
-        plan = await supply_chain_agent.analyze_goal(goal)
-        result = await supply_chain_agent.execute(goal, plan)
-        result["agent"] = "supply_chain"
-        return result
-
-    elif agent_name == "pm_maintenance":
-        from src.agents.pm_maintenance.agent import pm_agent
-        result = await pm_agent.analyze(goal)
-        result["agent"] = "pm_maintenance"
-        return result
-
-    elif agent_name == "yield_analysis":
-        from src.agents.yield_analysis.agent import yield_agent
-        result = await yield_agent.analyze(goal)
-        result["agent"] = "yield_analysis"
-        return result
-
-    elif agent_name == "quality_trace":
-        from src.agents.quality_trace.agent import quality_trace_agent
-        result = await quality_trace_agent.trace(goal)
-        result["agent"] = "quality_trace"
-        return result
-
-    elif agent_name == "dfm_check":
-        from src.agents.dfm_check.agent import dfm_agent
-        result = await dfm_agent.analyze(goal)
-        result["agent"] = "dfm_check"
-        return result
-
-    elif agent_name == "bom_selector":
-        from src.agents.bom_selector.agent import bom_selector_agent
-        result = await bom_selector_agent.analyze(goal)
-        result["agent"] = "bom_selector"
-        return result
-
-    elif agent_name == "oee_optimizer":
-        from src.agents.oee_optimizer.agent import oee_agent
-        result = await oee_agent.analyze(goal)
-        result["agent"] = "oee_optimizer"
-        return result
-
-    elif agent_name == "eco_change":
-        from src.agents.eco_change.agent import eco_agent
-        result = await eco_agent.analyze(goal)
-        result["agent"] = "eco_change"
-        return result
-
-    elif agent_name == "smt_changeover":
-        from src.agents.smt_changeover.agent import smt_changeover_agent
-        result = await smt_changeover_agent.analyze(goal)
-        result["agent"] = "smt_changeover"
-        return result
-
-    elif agent_name == "aoi_judge":
-        from src.agents.aoi_judge.agent import aoi_agent
-        result = await aoi_agent.analyze(goal)
-        result["agent"] = "aoi_judge"
-        return result
-
-    elif agent_name == "ipc_standard":
-        from src.agents.ipc_standard.agent import ipc_standard_agent
-        result = await ipc_standard_agent.analyze(goal)
-        result["agent"] = "ipc_standard"
-        return result
-
-    else:
+def get_agent(agent_name: str):
+    """按名称惰性加载并返回 Agent 单例（实现 BaseAgent 契约）。"""
+    if agent_name not in AGENT_REGISTRY:
         raise ValueError(f"Unknown agent: {agent_name}")
+    module_path, singleton_name = AGENT_REGISTRY[agent_name]
+    module = importlib.import_module(module_path)
+    return getattr(module, singleton_name)
+
+
+async def execute_by_agent(agent_name: str, goal: str) -> dict:
+    """调用指定 Agent 执行——统一走 BaseAgent.analyze(goal) 契约。
+
+    所有 Agent（含历史上使用 analyze_goal+execute 的 supply_chain、
+    使用 trace 的 quality_trace）都已提供 analyze() 适配器，因此这里
+    不再需要为每个 Agent 写分支，注册表 + 统一调用即可。
+    """
+    agent = get_agent(agent_name)
+    result = await agent.analyze(goal)
+    result["agent"] = agent_name
+    return result

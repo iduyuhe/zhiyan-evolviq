@@ -13,13 +13,17 @@
 
 import logging
 
+from src.agents.base import BaseAgent
 from src.agents.smt_changeover.tools import SMTChangeoverTools
 
 logger = logging.getLogger(__name__)
 
 
-class SMTChangeoverAgent:
+class SMTChangeoverAgent(BaseAgent):
     """SMT换线优化Agent"""
+
+    name = "smt_changeover"
+    description = "SMT 换线优化与料站预配置"
 
     def __init__(self):
         self.tools = SMTChangeoverTools()

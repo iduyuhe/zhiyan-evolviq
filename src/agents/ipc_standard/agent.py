@@ -13,13 +13,17 @@
 
 import logging
 
+from src.agents.base import BaseAgent
 from src.agents.ipc_standard.tools import IPCStandardTools
 
 logger = logging.getLogger(__name__)
 
 
-class IPCStandardAgent:
+class IPCStandardAgent(BaseAgent):
     """IPC标准Agent"""
+
+    name = "ipc_standard"
+    description = "IPC 标准辅助查询与缺陷等级判定"
 
     def __init__(self):
         self.tools = IPCStandardTools()

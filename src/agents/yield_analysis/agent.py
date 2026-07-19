@@ -12,13 +12,17 @@
 
 import logging
 
+from src.agents.base import BaseAgent
 from src.agents.yield_analysis.tools import YieldTools
 
 logger = logging.getLogger(__name__)
 
 
-class YieldAgent:
+class YieldAgent(BaseAgent):
     """良率分析Agent"""
+
+    name = "yield_analysis"
+    description = "晶圆良率趋势分析与缺陷根因定位"
 
     def __init__(self):
         self.tools = YieldTools()

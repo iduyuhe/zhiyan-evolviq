@@ -12,13 +12,17 @@
 
 import logging
 
+from src.agents.base import BaseAgent
 from src.agents.pm_maintenance.tools import PMTools
 
 logger = logging.getLogger(__name__)
 
 
-class PMAgent:
+class PMAgent(BaseAgent):
     """设备预测维护Agent"""
+
+    name = "pm_maintenance"
+    description = "设备健康诊断与预测维护"
 
     def __init__(self):
         self.tools = PMTools()

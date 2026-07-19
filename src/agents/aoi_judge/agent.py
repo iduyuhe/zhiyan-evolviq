@@ -13,13 +13,17 @@
 
 import logging
 
+from src.agents.base import BaseAgent
 from src.agents.aoi_judge.tools import AOITools
 
 logger = logging.getLogger(__name__)
 
 
-class AOIAgent:
+class AOIAgent(BaseAgent):
     """AOI判定Agent"""
+
+    name = "aoi_judge"
+    description = "AOI 误报智能过滤与检测阈值优化"
 
     def __init__(self):
         self.tools = AOITools()

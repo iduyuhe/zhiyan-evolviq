@@ -12,17 +12,25 @@
 
 import logging
 
+from src.agents.base import BaseAgent
 from src.agents.quality_trace.tools import QualityTraceTools
 
 logger = logging.getLogger(__name__)
 
 
-class QualityTraceAgent:
+class QualityTraceAgent(BaseAgent):
     """质量追溯Agent"""
+
+    name = "quality_trace"
+    description = "客诉溯源、缺陷模式识别、根因分析与 CAPA 建议"
 
     def __init__(self):
         self.tools = QualityTraceTools()
         self.system_prompt = self._build_prompt()
+
+    async def analyze(self, goal: str) -> dict:
+        """统一入口：等价于 `trace(goal)`（向后兼容保留 trace）。"""
+        return await self.trace(goal)
 
     def _build_prompt(self) -> str:
         return """# 角色定义

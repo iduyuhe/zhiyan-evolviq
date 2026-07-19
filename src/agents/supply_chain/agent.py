@@ -16,18 +16,30 @@ import json
 import logging
 import re
 
+from src.agents.base import BaseAgent
 from src.agents.supply_chain.prompts import PLANNER_PROMPT, SYSTEM_PROMPT
 from src.agents.supply_chain.tools import SupplyChainTools
 
 logger = logging.getLogger(__name__)
 
 
-class SupplyChainAgent:
+class SupplyChainAgent(BaseAgent):
     """供应链自治Agent"""
+
+    name = "supply_chain"
+    description = "物料齐套检查、缺料预警、替代推荐（ROI 闭环）"
 
     def __init__(self):
         self.tools = SupplyChainTools()
         self.system_prompt = SYSTEM_PROMPT
+
+    async def analyze(self, goal: str) -> dict:
+        """统一入口：规划 → 执行，返回执行结果（含 ROI 闭环 metrics）。
+
+        向后兼容：内部仍复用 `analyze_goal`（生成规划）+ `execute`（执行规划）。
+        """
+        plan = await self.analyze_goal(goal)
+        return await self.execute(goal, plan)
 
     async def analyze_goal(self, goal: str, auth_boundary_id: str | None = None) -> str:
         """

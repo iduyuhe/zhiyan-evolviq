@@ -14,13 +14,17 @@
 
 import logging
 
+from src.agents.base import BaseAgent
 from src.agents.eco_change.tools import ECOTools
 
 logger = logging.getLogger(__name__)
 
 
-class ECOAgent:
+class ECOAgent(BaseAgent):
     """ECO变更Agent"""
+
+    name = "eco_change"
+    description = "工程变更(ECO/ECN)影响分析"
 
     def __init__(self):
         self.tools = ECOTools()

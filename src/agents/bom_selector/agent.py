@@ -13,13 +13,17 @@
 
 import logging
 
+from src.agents.base import BaseAgent
 from src.agents.bom_selector.tools import BOMSelectorTools
 
 logger = logging.getLogger(__name__)
 
 
-class BOMSelectorAgent:
+class BOMSelectorAgent(BaseAgent):
     """BOM选型Agent"""
+
+    name = "bom_selector"
+    description = "元器件智能选型 + 兼容替代推荐"
 
     def __init__(self):
         self.tools = BOMSelectorTools()

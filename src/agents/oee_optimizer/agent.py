@@ -13,13 +13,17 @@
 
 import logging
 
+from src.agents.base import BaseAgent
 from src.agents.oee_optimizer.tools import OEETools
 
 logger = logging.getLogger(__name__)
 
 
-class OEEAgent:
+class OEEAgent(BaseAgent):
     """OEE优化Agent"""
+
+    name = "oee_optimizer"
+    description = "产线 OEE 监控与六大损失优化"
 
     def __init__(self):
         self.tools = OEETools()

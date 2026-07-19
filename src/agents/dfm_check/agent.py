@@ -14,13 +14,17 @@
 
 import logging
 
+from src.agents.base import BaseAgent
 from src.agents.dfm_check.tools import DFMTools
 
 logger = logging.getLogger(__name__)
 
 
-class DFMAgent:
+class DFMAgent(BaseAgent):
     """DFM检查Agent"""
+
+    name = "dfm_check"
+    description = "PCB/PCBA 可制造性设计自动审查"
 
     def __init__(self):
         self.tools = DFMTools()
