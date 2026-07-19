@@ -1,0 +1,87 @@
+{
+  "generated_at": "2026-07-18 07:13:25",
+  "env_note": "本机无 PG，db 回退 SQLite 文件（乐观基线；生产 PG 更快更稳）",
+  "cold_start_init_ms": 8464.0,
+  "single_thread": {
+    "/health": {
+      "n": 50,
+      "p50": 0.16,
+      "p95": 0.21,
+      "p99": 2.18,
+      "mean": 0.2
+    },
+    "/kg/stats": {
+      "n": 50,
+      "p50": 0.21,
+      "p95": 0.29,
+      "p99": 0.36,
+      "mean": 0.21
+    },
+    "/gateways": {
+      "n": 50,
+      "p50": 0.2,
+      "p95": 0.27,
+      "p99": 0.28,
+      "mean": 0.21
+    },
+    "/strategy": {
+      "n": 50,
+      "p50": 0.75,
+      "p95": 0.99,
+      "p99": 1.34,
+      "mean": 0.78
+    }
+  },
+  "read_concurrency": {
+    "tasks": 50,
+    "iters": 5,
+    "total": 250,
+    "wall_s": 0.05,
+    "p95": 0.24,
+    "p99": 0.43,
+    "rps": 4655.5
+  },
+  "write_concurrency": {
+    "tasks": 20,
+    "iters": 10,
+    "ok": 200,
+    "fail": 0,
+    "locked_500": 0,
+    "wps": 3354.9,
+    "p95_ms": 0.44,
+    "max_ms": 1.25,
+    "wall_s": 0.06
+  },
+  "slo": {
+    "冷启动 init_ms": {
+      "实测": 8464.0,
+      "SLO建议": "<3000ms",
+      "MET": false
+    },
+    "/health p95_ms": {
+      "实测": 0.21,
+      "SLO建议": "<50ms",
+      "MET": true
+    },
+    "/kg/stats p95_ms": {
+      "实测": 0.29,
+      "SLO建议": "<120ms",
+      "MET": true
+    },
+    "读并发 rps": {
+      "实测": 4655.5,
+      "SLO建议": ">200",
+      "MET": true
+    },
+    "写并发 wps": {
+      "实测": 3354.9,
+      "SLO建议": ">50",
+      "MET": true
+    },
+    "写并发 locked_500": {
+      "实测": 0,
+      "SLO建议": "0",
+      "MET": true
+    }
+  }
+}

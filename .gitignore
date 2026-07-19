@@ -1,0 +1,46 @@
+# ===================== Secrets (NEVER commit) =====================
+.env
+.env.*
+!.env.example
+
+# ===================== Internal deploy / ops tooling =====================
+# 含内部服务器地址与部署凭据，不对外公开
+scripts/_deploy/
+
+# ===================== Credential-bearing compose files =====================
+docker-compose.prod.yml
+docker-compose.deploy.yml
+infra/docker-compose.yml
+
+# ===================== Python =====================
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.venv/
+venv/
+*.egg
+
+# ===================== Node / frontend =====================
+node_modules/
+studio/dist/
+dist/
+build/
+.vite/
+
+# ===================== Data runtime artifacts (seed data kept) =====================
+*.db
+*.sqlite
+*.sqlite3
+data/*.db
+
+# ===================== Logs =====================
+*.log
+logs/
+
+# ===================== OS / Editor =====================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.workbuddy/

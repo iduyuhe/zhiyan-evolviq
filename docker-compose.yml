@@ -1,0 +1,90 @@
+version: "3.9"
+
+# 智衍 EvolvIQ 开源版编排：PostgreSQL + Neo4j + Runtime + Studio
+# 网关（Modbus/MQTT/OPC-UA/IPC-CFX）在数据源不可达时自动以 simulated 模式运行（韧性降级）。
+# 凭据通过 .env 注入；未提供时使用下方安全演示默认值（请勿用于生产）。
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${ZHIYAN_DB_NAME:-zhiyan}
+      POSTGRES_USER: ${ZHIYAN_DB_USER:-zhiyan}
+      POSTGRES_PASSWORD: ${ZHIYAN_DB_PASSWORD:-zhiyan_dev}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${ZHIYAN_DB_USER:-zhiyan} -h 127.0.0.1 -p 5432"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+    logging: *default-logging
+
+  neo4j:
+    image: neo4j:5-community
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-zhiyan_dev}
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4jdata:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+    logging: *default-logging
+
+  runtime:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.runtime
+    environment:
+      ZHIYAN_DB_URL: postgresql+asyncpg://${ZHIYAN_DB_USER:-zhiyan}:${ZHIYAN_DB_PASSWORD:-zhiyan_dev}@postgres:5432/${ZHIYAN_DB_NAME:-zhiyan}
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD:-zhiyan_dev}
+      ZHIYAN_DEMO_DATA: "1"
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      HUNYUAN_API_KEY: ${HUNYUAN_API_KEY:-}
+      HUNYUAN_BASE_URL: ${HUNYUAN_BASE_URL:-}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import urllib.request,sys; sys.exit(0 if urllib.request.urlopen(\"http://127.0.0.1:8000/health\").status==200 else 1)'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+    logging: *default-logging
+
+  studio:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.studio
+    ports:
+      - "8080:80"
+    depends_on:
+      - runtime
+    restart: unless-stopped
+    logging: *default-logging
+
+volumes:
+  pgdata:
+  neo4jdata:
