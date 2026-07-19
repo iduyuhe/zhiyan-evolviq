@@ -1,0 +1,54 @@
+{
+  "cases": {
+    "ECO-2026-045": {
+      "title": "U12 MCU由STM32F407VGT6切换为GD32F407VKT6",
+      "type": "material_substitution",
+      "initiator": "研发部-张工",
+      "priority": "high",
+      "change_detail": {"old_part": "STM32F407VGT6", "new_part": "GD32F407VKT6", "reason": "降本+供应链安全，国产替代", "compatibility": "pin-to-pin", "price_change_pct": -41.6},
+      "affected_boms": ["PCB-A-v3.2", "PCB-B-v1.8"],
+      "affected_routings": ["SMT-L01", "SMT-L02"],
+      "affected_inventory": {
+        "raw_material_old": {"part": "STM32F407VGT6", "qty": 85000, "value_usd": 1092250},
+        "raw_material_new": {"part": "GD32F407VKT6", "qty": 120000, "value_usd": 900000},
+        "wip": {"qty": 12000, "stage": "SMT贴装中", "value_usd": 154200},
+        "finished_goods": {"qty": 3500, "stage": "待出货", "value_usd": 448750},
+        "in_transit_po": {"po": "PO-2026-0789", "part": "STM32F407VGT6", "qty": 50000, "eta": "2026-07-20"}
+      },
+      "affected_work_orders": ["WO-2026-1023", "WO-2026-1024", "WO-2026-1025"],
+      "required_actions": [
+        {"dept": "研发", "action": "更新原理图和PCB Gerber文件（封装不变，软件适配）", "deadline": "3天"},
+        {"dept": "采购", "action": "取消PO-2026-0789（STM32F407VGT6 50000pcs在途）", "deadline": "1天"},
+        {"dept": "生产", "action": "WIP中12000pcs按旧版本完成，不返工", "deadline": "2天"},
+        {"dept": "品质", "action": "首批GD32版本全检，验证功能+温漂+EMC", "deadline": "5天"},
+        {"dept": "仓储", "action": "旧料85000pcs标记为受限库存，等待消化计划", "deadline": "1天"},
+        {"dept": "销售", "action": "通知客户产品版本切换，确认客户接受", "deadline": "3天"}
+      ],
+      "risk_assessment": {"schedule_risk": "medium", "cost_impact": "positive", "quality_risk": "low", "customer_impact": "low", "inventory_exposure_usd": 1092250, "annual_savings_usd": 768000}
+    },
+    "ECO-2026-046": {
+      "title": "PCB-A-v3.2阻焊层厚度由15um调整为20um",
+      "type": "process_change",
+      "initiator": "工艺部-李工",
+      "priority": "medium",
+      "change_detail": {"old_param": "阻焊厚度15um", "new_param": "阻焊厚度20um", "reason": "提升绝缘性能，降低焊接短路率", "compatibility": "无需改板"},
+      "affected_boms": ["PCB-A-v3.2"],
+      "affected_routings": ["SMT-L01"],
+      "affected_inventory": {
+        "raw_material_old": {"part": "阻焊油墨(15um规格)", "qty": 200, "value_usd": 8000},
+        "raw_material_new": {"part": "阻焊油墨(20um规格)", "qty": 180, "value_usd": 7200},
+        "wip": {"qty": 5000, "stage": "阻焊工序前", "value_usd": 62500},
+        "finished_goods": {"qty": 0, "stage": "无影响", "value_usd": 0},
+        "in_transit_po": {}
+      },
+      "affected_work_orders": ["WO-2026-1023"],
+      "required_actions": [
+        {"dept": "工艺", "action": "更新阻焊工艺参数表(SOP-PCB-012)", "deadline": "1天"},
+        {"dept": "生产", "action": "WIP中5000pcs按新参数生产", "deadline": "1天"},
+        {"dept": "品质", "action": "首件确认阻焊厚度+附着力测试", "deadline": "1天"},
+        {"dept": "采购", "action": "采购20um规格阻焊油墨", "deadline": "3天"}
+      ],
+      "risk_assessment": {"schedule_risk": "low", "cost_impact": "neutral", "quality_risk": "low", "customer_impact": "none", "inventory_exposure_usd": 8000, "annual_savings_usd": 0}
+    }
+  }
+}

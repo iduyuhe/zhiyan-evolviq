@@ -1,0 +1,81 @@
+{
+  "bom_id": "BOM-SMIC-28nm-Logic",
+  "product_name": "SMIC-28nm-Logic",
+  "version": "2.0",
+  "node": "N85nm/28nm",
+  "total_qty": 11594,
+  "items": [
+    {
+      "material_code": "SI-001",
+      "name": "8英寸抛光硅片",
+      "qty": 1774,
+      "unit": "片"
+    },
+    {
+      "material_code": "SI-002",
+      "name": "12英寸抛光硅片",
+      "qty": 371,
+      "unit": "片"
+    },
+    {
+      "material_code": "SI-003",
+      "name": "SOI硅片 8英寸",
+      "qty": 1447,
+      "unit": "片"
+    },
+    {
+      "material_code": "PR-001",
+      "name": "ArF光刻胶",
+      "qty": 1859,
+      "unit": "个"
+    },
+    {
+      "material_code": "PR-002",
+      "name": "KrF光刻胶",
+      "qty": 333,
+      "unit": "个"
+    },
+    {
+      "material_code": "PR-003",
+      "name": "i-line光刻胶",
+      "qty": 1968,
+      "unit": "个"
+    },
+    {
+      "material_code": "GAS-001",
+      "name": "高纯氮气 99.9999%",
+      "qty": 369,
+      "unit": "瓶"
+    },
+    {
+      "material_code": "GAS-002",
+      "name": "高纯氩气 99.9999%",
+      "qty": 159,
+      "unit": "瓶"
+    },
+    {
+      "material_code": "GAS-003",
+      "name": "三氟化氮 NF3",
+      "qty": 825,
+      "unit": "瓶"
+    },
+    {
+      "material_code": "GAS-004",
+      "name": "六氟化钨 WF6",
+      "qty": 189,
+      "unit": "瓶"
+    },
+    {
+      "material_code": "TGT-001",
+      "name": "钛靶 Ti 99.995%",
+      "qty": 1111,
+      "unit": "个"
+    },
+    {
+      "material_code": "TGT-002",
+      "name": "铜靶 Cu 99.99%",
+      "qty": 1189,
+      "unit": "个"
+    }
+  ]
+}

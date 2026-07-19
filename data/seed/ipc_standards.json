@@ -1,0 +1,178 @@
+{
+  "standards": {
+    "IPC-A-610": {
+      "name": "IPC-A-610 可接受性标准",
+      "version": "Rev. H (2020)",
+      "scope": "电子组件外观可接受性标准",
+      "classes": {
+        "Class 1": "通用电子产品——消费类，外观要求最低",
+        "Class 2": "专用服务类电子产品——通信/工业，功能可靠即可",
+        "Class 3": "高性能电子产品——航空/医疗/汽车，高可靠性要求"
+      },
+      "categories": [
+        {
+          "category": "5.1 焊点——Chip组件",
+          "criteria": [
+            {
+              "defect_type": "焊锡量偏少",
+              "class_1": "target（目标条件）——焊锡覆盖≥75%焊盘",
+              "class_2": "acceptable——焊锡覆盖≥75%焊盘",
+              "class_3": "acceptable——焊锡覆盖≥75%焊盘，且弯月面可见",
+              "defect_indicator": "焊锡覆盖<50%为缺陷（所有Class）"
+            },
+            {
+              "defect_type": "元件偏位",
+              "class_1": "acceptable——偏位≤50%焊盘宽度",
+              "class_2": "acceptable——偏位≤25%焊盘宽度",
+              "class_3": "acceptable——偏位≤25%焊盘宽度",
+              "defect_indicator": "偏位>50%焊盘宽度为缺陷（所有Class）"
+            },
+            {
+              "defect_type": "焊锡桥连",
+              "class_1": "defect——任何桥连不可接受",
+              "class_2": "defect——任何桥连不可接受",
+              "class_3": "defect——任何桥连不可接受",
+              "defect_indicator": "任何相邻焊盘间的焊锡连接均判定为缺陷"
+            }
+          ]
+        },
+        {
+          "category": "5.2 焊点——SOP/QFP组件",
+          "criteria": [
+            {
+              "defect_type": "焊锡弯月面",
+              "class_1": "acceptable——弯月面高度≥引脚厚度的25%",
+              "class_2": "acceptable——弯月面高度≥引脚厚度的33%",
+              "class_3": "acceptable——弯月面高度≥引脚厚度的50%",
+              "defect_indicator": "弯月面高度<25%为缺陷"
+            },
+            {
+              "defect_type": "引脚共面性",
+              "class_1": "acceptable——共面性偏差≤0.10mm",
+              "class_2": "acceptable——共面性偏差≤0.08mm",
+              "class_3": "acceptable——共面性偏差≤0.05mm",
+              "defect_indicator": "偏差>0.15mm为缺陷"
+            }
+          ]
+        },
+        {
+          "category": "8.0 焊点——BGA",
+          "criteria": [
+            {
+              "defect_type": "BGA焊球空洞",
+              "class_1": "acceptable——空洞面积≤焊球截面积45%",
+              "class_2": "acceptable——空洞面积≤焊球截面积30%",
+              "class_3": "acceptable——空洞面积≤焊球截面积25%",
+              "defect_indicator": "空洞>45%为缺陷",
+              "inspection_method": "X-Ray检测"
+            },
+            {
+              "defect_type": "BGA焊球缺失",
+              "class_1": "defect——任何焊球缺失不可接受",
+              "class_2": "defect——任何焊球缺失不可接受",
+              "class_3": "defect——任何焊球缺失不可接受",
+              "defect_indicator": "X-Ray或目检发现焊球缺失即为缺陷"
+            }
+          ]
+        },
+        {
+          "category": "9.0 组件损伤",
+          "criteria": [
+            {
+              "defect_type": "元件本体裂纹",
+              "class_1": "acceptable——裂纹不跨越电气路径",
+              "class_2": "process indicator——可见裂纹需记录",
+              "class_3": "defect——任何可见裂纹不可接受",
+              "defect_indicator": "裂纹跨越电气路径为缺陷（所有Class）"
+            },
+            {
+              "defect_type": "Marking损伤",
+              "class_1": "acceptable——Marking可辨认即可",
+              "class_2": "acceptable——Marking可辨认即可",
+              "class_3": "process indicator——需验证追溯性",
+              "defect_indicator": "Marking完全无法辨认为缺陷"
+            }
+          ]
+        }
+      ]
+    },
+    "IPC-2222": {
+      "name": "IPC-2222 刚性有机印制板设计标准",
+      "version": "Rev. B (2009)",
+      "scope": "刚性PCB设计规则",
+      "categories": [
+        {
+          "category": "7.0 导体设计",
+          "criteria": [
+            {
+              "defect_type": "最小线宽",
+              "rule": "外层最小线宽0.075mm（3mil），内层0.050mm（2mil）",
+              "class_note": "所有Class通用，载流要求另需计算"
+            },
+            {
+              "defect_type": "最小间距",
+              "rule": "外层最小间距0.075mm，内层0.050mm",
+              "class_note": "高压电路需按爬电距离计算"
+            }
+          ]
+        },
+        {
+          "category": "9.0 过孔设计",
+          "criteria": [
+            {
+              "defect_type": "最小过孔孔径",
+              "rule": "最小钻孔孔径0.15mm（6mil）",
+              "class_note": "HDI板可至0.10mm"
+            },
+            {
+              "defect_type": "最小焊盘环宽",
+              "rule": "最小环宽0.05mm（2mil），推荐0.10mm",
+              "class_note": "Class 3产品建议≥0.10mm"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "query_examples": [
+    {
+      "query": "BGA焊球空洞多少算缺陷？",
+      "matched_standard": "IPC-A-610",
+      "matched_category": "8.0 焊点——BGA",
+      "judgment": {
+        "defect_type": "BGA焊球空洞",
+        "class_1_limit": "≤45%",
+        "class_2_limit": "≤30%",
+        "class_3_limit": "≤25%",
+        "explanation": "BGA焊球空洞面积需通过X-Ray检测。Class 1允许最大45%，Class 2允许30%，Class 3仅允许25%。超过对应Class限制即为缺陷。",
+        "inspection_method": "X-Ray AXI检测设备，5度旋转扫描"
+      }
+    },
+    {
+      "query": "Chip组件偏位多少可接受？",
+      "matched_standard": "IPC-A-610",
+      "matched_category": "5.1 焊点——Chip组件",
+      "judgment": {
+        "defect_type": "元件偏位",
+        "class_1_limit": "≤50%焊盘宽度",
+        "class_2_limit": "≤25%焊盘宽度",
+        "class_3_limit": "≤25%焊盘宽度",
+        "explanation": "Chip组件（0402/0603/0805等）的偏位标准：Class 1允许偏位不超过焊盘宽度的50%，Class 2和3要求≤25%。偏位>50%为缺陷。",
+        "inspection_method": "AOI自动检测或10倍放大镜目检"
+      }
+    },
+    {
+      "query": "焊锡桥连在什么Class下可接受？",
+      "matched_standard": "IPC-A-610",
+      "matched_category": "5.1 焊点——Chip组件",
+      "judgment": {
+        "defect_type": "焊锡桥连",
+        "class_1_limit": "defect（不可接受）",
+        "class_2_limit": "defect（不可接受）",
+        "class_3_limit": "defect（不可接受）",
+        "explanation": "焊锡桥连在所有Class（1/2/3）下均为缺陷，不可接受。任何相邻焊盘间的焊锡连接都判定为缺陷，必须返修。",
+        "inspection_method": "AOI/目检/X-Ray"
+      }
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+# 智衍 Runtime 后端 Docker 镜像
+# 构建：docker build -t zhiyan/runtime:latest -f infra/Dockerfile.runtime .
+# 运行：docker run -p 8000:8000 zhiyan/runtime:latest
+
+FROM python:3.13-slim
+
+WORKDIR /app
+
+# 安装系统依赖
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# 复制项目文件
+COPY pyproject.toml .
+COPY src/ src/
+COPY data/ data/
+
+# 安装依赖（可选镜像源，默认官方源；部署时可经 build arg 覆盖为国内镜像）
+ARG PIP_INDEX_URL=https://pypi.org/simple
+ENV PIP_INDEX_URL=$PIP_INDEX_URL
+RUN pip install --no-cache-dir -e .
+
+# 生成种子数据
+RUN python -c "from scripts.seed_data import main; main()" 2>/dev/null || true
+
+# 暴露端口
+EXPOSE 8000
+
+# 启动
+CMD ["uvicorn", "src.runtime.main:app", "--host", "0.0.0.0", "--port", "8000"]

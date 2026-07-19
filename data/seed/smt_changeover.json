@@ -1,0 +1,97 @@
+{
+  "line_config": {
+    "SMT-L01": {
+      "name": "SMT产线 #1",
+      "machines": ["上料机", "锡膏印刷机DEK", "SPI检测", "贴片机FUJI-NXT(贴装头×8)", "回流焊BTU", "AOI检测", "下料机"],
+      "feeder_slots": 80,
+      "current_product": "PCB-A-v3.2",
+      "current_setup": {"feeders_used": 56, "trays": 4, "changeover_history_min": [52, 48, 55, 47, 58]}
+    },
+    "SMT-L02": {
+      "name": "SMT产线 #2",
+      "machines": ["上料机", "锡膏印刷机MPM", "SPI检测", "贴片机Panasonic-NPM(贴装头×6)", "回流焊Heller", "AOI检测", "下料机"],
+      "feeder_slots": 64,
+      "current_product": "PCB-B-v1.8",
+      "current_setup": {"feeders_used": 42, "trays": 3, "changeover_history_min": [65, 72, 68, 60, 75]}
+    }
+  },
+  "changeover_plans": {
+    "PCB-A-v3.2→PCB-C-v2.0": {
+      "from_product": "PCB-A-v3.2",
+      "to_product": "PCB-C-v2.0",
+      "line_id": "SMT-L01",
+      "feeder_changes": {"remove": 18, "add": 22, "keep": 38, "relocate": 4},
+      "tray_changes": {"remove": 2, "add": 3, "keep": 2},
+      "stencil_change": true,
+      "stencil_id": "ST-PCB-C-v2.0",
+      "program_load": "PROG-PCB-C-v2.0",
+      "estimated_time_min": 42,
+      "critical_path": [
+        {"step": 1, "action": "停止当前生产，清空轨道", "time_min": 3, "type": "internal"},
+        {"step": 2, "action": "拆卸18个旧Feeder+2个Tray", "time_min": 8, "type": "internal"},
+        {"step": 3, "action": "更换钢网(ST-PCB-C-v2.0)", "time_min": 5, "type": "internal"},
+        {"step": 4, "action": "安装22个新Feeder+3个Tray", "time_min": 12, "type": "internal"},
+        {"step": 5, "action": "加载新贴装程序(PROG-PCB-C-v2.0)", "time_min": 2, "type": "internal"},
+        {"step": 6, "action": "SPI/AOI检测参数切换", "time_min": 3, "type": "internal"},
+        {"step": 7, "action": "首件生产+目检确认", "time_min": 6, "type": "external"},
+        {"step": 8, "action": "首件QC全检+放行", "time_min": 3, "type": "external"}
+      ],
+      "smed_analysis": {
+        "internal_time_min": 33,
+        "external_time_min": 9,
+        "smed_potential_min": 15,
+        "smed_suggestions": [
+          "将步骤4(安装新Feeder)转为外部作业——在换线前预先准备新Feeder车",
+          "将步骤7(首件准备)转为外部作业——提前准备首件物料和检测工具",
+          "步骤3(换钢网)可与步骤2(拆Feeder)并行执行"
+        ]
+      },
+      "checklist": [
+        "确认新BOM物料齐套（24种元器件）",
+        "确认钢网ST-PCB-C-v2.0已清洁并就位",
+        "确认贴装程序PROG-PCB-C-v2.0已导入",
+        "确认SPI/AOI检测参数已更新",
+        "确认回流焊温度曲线已切换",
+        "确认首件检测工具就位（放大镜/万用表/首件测试仪）",
+        "确认QC人员已就位"
+      ]
+    },
+    "PCB-B-v1.8→PCB-A-v3.2": {
+      "from_product": "PCB-B-v1.8",
+      "to_product": "PCB-A-v3.2",
+      "line_id": "SMT-L02",
+      "feeder_changes": {"remove": 25, "add": 30, "keep": 17, "relocate": 6},
+      "tray_changes": {"remove": 1, "add": 4, "keep": 2},
+      "stencil_change": true,
+      "stencil_id": "ST-PCB-A-v3.2",
+      "program_load": "PROG-PCB-A-v3.2",
+      "estimated_time_min": 58,
+      "critical_path": [
+        {"step": 1, "action": "停止生产，清空轨道", "time_min": 4, "type": "internal"},
+        {"step": 2, "action": "拆卸25个旧Feeder+1个Tray", "time_min": 10, "type": "internal"},
+        {"step": 3, "action": "更换钢网", "time_min": 6, "type": "internal"},
+        {"step": 4, "action": "安装30个新Feeder+4个Tray", "time_min": 18, "type": "internal"},
+        {"step": 5, "action": "加载程序+参数切换", "time_min": 5, "type": "internal"},
+        {"step": 6, "action": "首件生产+目检", "time_min": 8, "type": "external"},
+        {"step": 7, "action": "首件QC放行", "time_min": 7, "type": "external"}
+      ],
+      "smed_analysis": {
+        "internal_time_min": 43,
+        "external_time_min": 15,
+        "smed_potential_min": 20,
+        "smed_suggestions": [
+          "Feeder预组装：换线前30分钟在Feeder准备区完成新料站上料",
+          "钢网预热：换线前将新钢网送到线旁待命",
+          "程序预导入：换线前导入程序并完成模拟验证"
+        ]
+      },
+      "checklist": [
+        "确认BOM物料齐套（34种元器件）",
+        "确认钢网ST-PCB-A-v3.2已清洁",
+        "确认贴装程序已导入",
+        "确认回流焊曲线已切换",
+        "确认首件检测工具就位"
+      ]
+    }
+  }
+}

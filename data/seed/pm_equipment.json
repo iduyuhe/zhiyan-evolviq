@@ -1,0 +1,102 @@
+{
+  "_meta": {
+    "description": "SMIC晶圆厂核心设备档案种子数据",
+    "fab": "SMIC-Fab8-28nm",
+    "updated": "2026-07-16",
+    "source": "设备管理系统(EAM)导出 + PLC传感器采集"
+  },
+  "equipments": [
+    {
+      "equipment_id": "scanner_1",
+      "name": "ASML NXT:1980 光刻机 #1",
+      "type": "光刻机",
+      "vendor": "ASML",
+      "location": "PHOTO-BAY-A",
+      "status": "running",
+      "uptime_hours": 8750,
+      "mtbf_hours": 720,
+      "health_score": 87.5,
+      "last_pm": "2026-06-15",
+      "next_pm_due": "2026-07-25",
+      "sensors": {
+        "chamber_temp_c": 22.4,
+        "vibration_mm_s": 0.32,
+        "laser_power_pct": 96.5,
+        "overlay_nm": 2.1
+      },
+      "key_parts": [
+        {"name": "激光光源", "part_no": "LGT-4021", "life_remaining_pct": 72, "risk": "low", "replace_lead_days": 45},
+        {"name": "投影物镜", "part_no": "LNS-8830", "life_remaining_pct": 88, "risk": "low", "replace_lead_days": 90},
+        {"name": "掩膜台", "part_no": "MSK-1120", "life_remaining_pct": 65, "risk": "medium", "replace_lead_days": 30},
+        {"name": "晶圆台", "part_no": "WFR-2245", "life_remaining_pct": 91, "risk": "low", "replace_lead_days": 30}
+      ],
+      "recent_alerts": [],
+      "maintenance_history": [
+        {"date": "2026-06-15", "type": "PM", "action": "季度预防保养", "cost": 45000},
+        {"date": "2026-04-02", "type": "CM", "action": "更换掩膜台密封圈", "cost": 12000}
+      ]
+    },
+    {
+      "equipment_id": "etcher_1",
+      "name": "中微 Primo D-RIE 刻蚀机 #1",
+      "type": "刻蚀机",
+      "vendor": "AMEC 中微半导体",
+      "location": "ETCH-BAY-C",
+      "status": "running",
+      "uptime_hours": 6200,
+      "mtbf_hours": 480,
+      "health_score": 76.2,
+      "last_pm": "2026-05-20",
+      "next_pm_due": "2026-07-10",
+      "sensors": {
+        "chamber_pressure_mtorr": 45.8,
+        "rf_power_w": 1480,
+        "etch_rate_nm_min": 312,
+        "etch_rate_deviation_pct": 3.2
+      },
+      "key_parts": [
+        {"name": "射频电源", "part_no": "RF-3300", "life_remaining_pct": 55, "risk": "medium", "replace_lead_days": 60},
+        {"name": "真空腔体", "part_no": "VAC-7710", "life_remaining_pct": 82, "risk": "low", "replace_lead_days": 90},
+        {"name": "气体分配盘", "part_no": "GAS-2201", "life_remaining_pct": 45, "risk": "high", "replace_lead_days": 21},
+        {"name": "静电卡盘", "part_no": "ESC-5540", "life_remaining_pct": 38, "risk": "high", "replace_lead_days": 35}
+      ],
+      "recent_alerts": [
+        "2026-07-14: 腔体压力波动异常 (±8%)",
+        "2026-07-13: 刻蚀速率偏差 +3.2%"
+      ],
+      "maintenance_history": [
+        {"date": "2026-05-20", "type": "PM", "action": "季度预防保养", "cost": 38000},
+        {"date": "2026-03-11", "type": "CM", "action": "更换射频匹配器", "cost": 65000}
+      ]
+    },
+    {
+      "equipment_id": "deposition_1",
+      "name": "应用材料 Endura 薄膜沉积 #1",
+      "type": "薄膜沉积",
+      "vendor": "Applied Materials",
+      "location": "PVD-BAY-B",
+      "status": "running",
+      "uptime_hours": 4100,
+      "mtbf_hours": 600,
+      "health_score": 92.1,
+      "last_pm": "2026-07-01",
+      "next_pm_due": "2026-08-15",
+      "sensors": {
+        "chamber_vacuum_torr": 0.0000008,
+        "heater_temp_c": 385,
+        "target_erosion_pct": 65,
+        "deposition_rate_a_s": 8.2
+      },
+      "key_parts": [
+        {"name": "靶材", "part_no": "TGT-Cu-01", "life_remaining_pct": 35, "risk": "high", "replace_lead_days": 30},
+        {"name": "加热器", "part_no": "HTR-9910", "life_remaining_pct": 78, "risk": "low", "replace_lead_days": 45},
+        {"name": "真空泵", "part_no": "PMP-4420", "life_remaining_pct": 62, "risk": "medium", "replace_lead_days": 60},
+        {"name": "质量流量控制器", "part_no": "MFC-3080", "life_remaining_pct": 70, "risk": "low", "replace_lead_days": 30}
+      ],
+      "recent_alerts": [],
+      "maintenance_history": [
+        {"date": "2026-07-01", "type": "PM", "action": "月度预防保养+靶材检查", "cost": 28000}
+      ]
+    }
+  ]
+}

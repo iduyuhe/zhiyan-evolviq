@@ -1,0 +1,98 @@
+[
+  {
+    "po": "PO-SMIC-2026-527",
+    "material_code": "SI-001",
+    "qty": 3548,
+    "expected": "2026-08-08",
+    "status": "open",
+    "supplier": "上海硅产业集团"
+  },
+  {
+    "po": "PO-SMIC-2026-645",
+    "material_code": "SI-002",
+    "qty": 371,
+    "expected": "2026-07-18",
+    "status": "delayed",
+    "supplier": "中环股份"
+  },
+  {
+    "po": "PO-SMIC-2026-856",
+    "material_code": "SI-003",
+    "qty": 4341,
+    "expected": "2026-07-25",
+    "status": "open",
+    "supplier": "上海新傲"
+  },
+  {
+    "po": "PO-SMIC-2026-610",
+    "material_code": "PR-001",
+    "qty": 3718,
+    "expected": "2026-07-21",
+    "status": "open",
+    "supplier": "北京科华"
+  },
+  {
+    "po": "PO-SMIC-2026-379",
+    "material_code": "PR-002",
+    "qty": 666,
+    "expected": "2026-07-21",
+    "status": "delayed",
+    "supplier": "徐州博康"
+  },
+  {
+    "po": "PO-SMIC-2026-798",
+    "material_code": "PR-003",
+    "qty": 5904,
+    "expected": "2026-09-07",
+    "status": "open",
+    "supplier": "彤程新材"
+  },
+  {
+    "po": "PO-SMIC-2026-501",
+    "material_code": "GAS-001",
+    "qty": 1107,
+    "expected": "2026-09-18",
+    "status": "open",
+    "supplier": "华特气体"
+  },
+  {
+    "po": "PO-SMIC-2026-339",
+    "material_code": "GAS-002",
+    "qty": 477,
+    "expected": "2026-09-22",
+    "status": "open",
+    "supplier": "杭氧股份"
+  },
+  {
+    "po": "PO-SMIC-2026-855",
+    "material_code": "GAS-003",
+    "qty": 2475,
+    "expected": "2026-08-27",
+    "status": "open",
+    "supplier": "中船重工718所"
+  },
+  {
+    "po": "PO-SMIC-2026-319",
+    "material_code": "GAS-004",
+    "qty": 378,
+    "expected": "2026-08-23",
+    "status": "in_transit",
+    "supplier": "华特气体"
+  },
+  {
+    "po": "PO-SMIC-2026-357",
+    "material_code": "TGT-001",
+    "qty": 3333,
+    "expected": "2026-07-16",
+    "status": "delayed",
+    "supplier": "江丰电子"
+  },
+  {
+    "po": "PO-SMIC-2026-567",
+    "material_code": "TGT-002",
+    "qty": 3567,
+    "expected": "2026-08-22",
+    "status": "open",
+    "supplier": "有研新材"
+  }
+]

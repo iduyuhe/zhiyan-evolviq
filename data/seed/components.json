@@ -1,0 +1,14 @@
+{
+  "components": {
+    "STM32F407VGT6": {"category": "MCU", "manufacturer": "STMicroelectronics", "package": "LQFP-100", "core": "ARM Cortex-M4", "flash_kb": 1024, "ram_kb": 192, "max_freq_mhz": 168, "unit_price_usd": 12.85, "moq": 100, "lead_time_days": 14, "lifecycle": "active", "stock_qty": 85000, "avg_monthly_usage": 12000},
+    "STM32F407ZGT6": {"category": "MCU", "manufacturer": "STMicroelectronics", "package": "LQFP-144", "core": "ARM Cortex-M4", "flash_kb": 1024, "ram_kb": 192, "max_freq_mhz": 168, "unit_price_usd": 14.20, "moq": 100, "lead_time_days": 14, "lifecycle": "active", "stock_qty": 62000, "avg_monthly_usage": 8000},
+    "GD32F407VKT6": {"category": "MCU", "manufacturer": "GigaDevice", "package": "LQFP-100", "core": "ARM Cortex-M4", "flash_kb": 1024, "ram_kb": 192, "max_freq_mhz": 168, "unit_price_usd": 7.50, "moq": 100, "lead_time_days": 7, "lifecycle": "active", "stock_qty": 120000, "avg_monthly_usage": 25000},
+    "AT32F407VGT7": {"category": "MCU", "manufacturer": "Artery Tech", "package": "LQFP-100", "core": "ARM Cortex-M4", "flash_kb": 1024, "ram_kb": 256, "max_freq_mhz": 240, "unit_price_usd": 6.80, "moq": 100, "lead_time_days": 10, "lifecycle": "active", "stock_qty": 45000, "avg_monthly_usage": 5000},
+    "TPS63020DSJR": {"category": "DC-DC", "manufacturer": "TI", "package": "VQFN-14", "vin_min_v": 1.8, "vin_max_v": 5.5, "vout_v": 3.3, "iout_max_a": 4.0, "unit_price_usd": 3.45, "moq": 250, "lead_time_days": 21, "lifecycle": "active", "stock_qty": 30000, "avg_monthly_usage": 6000},
+    "TPS6302520RMUR": {"category": "DC-DC", "manufacturer": "TI", "package": "VQFN-14", "vin_min_v": 1.8, "vin_max_v": 5.5, "vout_v": 3.3, "iout_max_a": 4.0, "unit_price_usd": 2.80, "moq": 250, "lead_time_days": 14, "lifecycle": "active", "stock_qty": 22000, "avg_monthly_usage": 3500}
+  },
+  "alternatives_map": {
+    "STM32F407VGT6": ["GD32F407VKT6", "AT32F407VGT7", "STM32F407ZGT6"],
+    "TPS63020DSJR": ["TPS6302520RMUR"]
+  }
+}

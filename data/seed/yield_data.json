@@ -1,0 +1,82 @@
+{
+  "_meta": {
+    "description": "SMIC晶圆良率种子数据",
+    "fab": "SMIC-Fab8-28nm",
+    "updated": "2026-07-16",
+    "source": "良率管理系统(YMS) + 缺陷检测(KLA)导出"
+  },
+  "products": [
+    {
+      "product_id": "product_28nm_logic",
+      "name": "28nm Logic",
+      "node": "28nm",
+      "current_yield": 91.2,
+      "target_yield": 95.0,
+      "trend": [
+        {"batch": "W26-01", "yield": 88.5},
+        {"batch": "W26-02", "yield": 89.2},
+        {"batch": "W26-03", "yield": 90.1},
+        {"batch": "W26-04", "yield": 89.8},
+        {"batch": "W26-05", "yield": 91.2}
+      ],
+      "defect_top3": [
+        {"type": "颗粒污染", "ratio": 42.0, "trend": "下降中"},
+        {"type": "光刻桥连", "ratio": 28.0, "trend": "稳定"},
+        {"type": "刻蚀残留", "ratio": 18.0, "trend": "上升中"}
+      ],
+      "by_equipment": [
+        {"equipment": "光刻机#1", "yield": 92.5, "status": "normal"},
+        {"equipment": "光刻机#2", "yield": 88.3, "status": "attention"},
+        {"equipment": "刻蚀机#1", "yield": 91.8, "status": "normal"},
+        {"equipment": "刻蚀机#2", "yield": 87.1, "status": "attention"}
+      ]
+    },
+    {
+      "product_id": "product_40nm_rf",
+      "name": "40nm RF",
+      "node": "40nm",
+      "current_yield": 94.6,
+      "target_yield": 96.0,
+      "trend": [
+        {"batch": "W26-01", "yield": 93.1},
+        {"batch": "W26-02", "yield": 93.8},
+        {"batch": "W26-03", "yield": 94.2},
+        {"batch": "W26-04", "yield": 94.0},
+        {"batch": "W26-05", "yield": 94.6}
+      ],
+      "defect_top3": [
+        {"type": "金属短路", "ratio": 38.0, "trend": "稳定"},
+        {"type": "颗粒污染", "ratio": 30.0, "trend": "下降中"},
+        {"type": "对准偏移", "ratio": 22.0, "trend": "上升中"}
+      ],
+      "by_equipment": [
+        {"equipment": "光刻机#3", "yield": 95.2, "status": "normal"},
+        {"equipment": "刻蚀机#3", "yield": 94.1, "status": "normal"},
+        {"equipment": "沉积机#1", "yield": 92.8, "status": "attention"}
+      ]
+    },
+    {
+      "product_id": "product_55nm_power",
+      "name": "55nm Power",
+      "node": "55nm",
+      "current_yield": 96.8,
+      "target_yield": 97.0,
+      "trend": [
+        {"batch": "W26-01", "yield": 96.0},
+        {"batch": "W26-02", "yield": 96.3},
+        {"batch": "W26-03", "yield": 96.5},
+        {"batch": "W26-04", "yield": 96.7},
+        {"batch": "W26-05", "yield": 96.8}
+      ],
+      "defect_top3": [
+        {"type": "颗粒污染", "ratio": 45.0, "trend": "稳定"},
+        {"type": "氧化层缺陷", "ratio": 33.0, "trend": "下降中"},
+        {"type": "划伤", "ratio": 12.0, "trend": "稳定"}
+      ],
+      "by_equipment": [
+        {"equipment": "光刻机#4", "yield": 97.1, "status": "normal"},
+        {"equipment": "刻蚀机#4", "yield": 96.5, "status": "normal"}
+      ]
+    }
+  ]
+}

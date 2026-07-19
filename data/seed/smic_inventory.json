@@ -1,0 +1,74 @@
+{
+  "SI-001": {
+    "on_hand": 413,
+    "reserved": 342,
+    "warehouse": "FAB1",
+    "lot": "LOT-7758"
+  },
+  "SI-002": {
+    "on_hand": 70,
+    "reserved": 14,
+    "warehouse": "FAB1",
+    "lot": "LOT-9317"
+  },
+  "SI-003": {
+    "on_hand": 1520,
+    "reserved": 273,
+    "warehouse": "FAB2",
+    "lot": "LOT-4442"
+  },
+  "PR-001": {
+    "on_hand": 2713,
+    "reserved": 241,
+    "warehouse": "FAB2",
+    "lot": "LOT-7669"
+  },
+  "PR-002": {
+    "on_hand": 20,
+    "reserved": 4,
+    "warehouse": "WH-Central",
+    "lot": "LOT-9947"
+  },
+  "PR-003": {
+    "on_hand": 3268,
+    "reserved": 42,
+    "warehouse": "WH-Central",
+    "lot": "LOT-1674"
+  },
+  "GAS-001": {
+    "on_hand": 463,
+    "reserved": 5,
+    "warehouse": "FAB1",
+    "lot": "LOT-6729"
+  },
+  "GAS-002": {
+    "on_hand": 117,
+    "reserved": 28,
+    "warehouse": "FAB1",
+    "lot": "LOT-1243"
+  },
+  "GAS-003": {
+    "on_hand": 294,
+    "reserved": 39,
+    "warehouse": "FAB2",
+    "lot": "LOT-3443"
+  },
+  "GAS-004": {
+    "on_hand": 47,
+    "reserved": 31,
+    "warehouse": "WH-Central",
+    "lot": "LOT-9871"
+  },
+  "TGT-001": {
+    "on_hand": 1949,
+    "reserved": 115,
+    "warehouse": "FAB2",
+    "lot": "LOT-8453"
+  },
+  "TGT-002": {
+    "on_hand": 279,
+    "reserved": 138,
+    "warehouse": "FAB2",
+    "lot": "LOT-2589"
+  }
+}

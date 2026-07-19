@@ -1,0 +1,170 @@
+{
+  "bom_id": "BOM-NPI-PCBA-007",
+  "product_name": "NPI-PCBA-007",
+  "version": "1.0",
+  "total_qty": 17563,
+  "items": [
+    {
+      "material_code": "PCB-0001",
+      "name": "PCB 贴片-543",
+      "qty": 631,
+      "ref": "R1"
+    },
+    {
+      "material_code": "二极管-0002",
+      "name": "二极管 高频-336",
+      "qty": 727,
+      "ref": "R2"
+    },
+    {
+      "material_code": "三极管-0003",
+      "name": "三极管 贴片-684",
+      "qty": 1797,
+      "ref": "R3"
+    },
+    {
+      "material_code": "传感器-0004",
+      "name": "传感器 贴片-445",
+      "qty": 1229,
+      "ref": "R4"
+    },
+    {
+      "material_code": "三极管-0005",
+      "name": "三极管 贴片-106",
+      "qty": 544,
+      "ref": "R5"
+    },
+    {
+      "material_code": "传感器-0006",
+      "name": "传感器 功率-128",
+      "qty": 2263,
+      "ref": "R6"
+    },
+    {
+      "material_code": "电容-0007",
+      "name": "电容 功率-953",
+      "qty": 2374,
+      "ref": "R7"
+    },
+    {
+      "material_code": "三极管-0008",
+      "name": "三极管 高频-992",
+      "qty": 3809,
+      "ref": "R8"
+    },
+    {
+      "material_code": "三极管-0009",
+      "name": "三极管 高频-113",
+      "qty": 2656,
+      "ref": "R9"
+    },
+    {
+      "material_code": "二极管-0010",
+      "name": "二极管 贴片-644",
+      "qty": 1533,
+      "ref": "R10"
+    }
+  ],
+  "materials": [
+    {
+      "id": "MAT-0001",
+      "code": "PCB-0001",
+      "name": "PCB 贴片-543",
+      "category": "PCB",
+      "unit": "pcs",
+      "price": 36.572,
+      "supplier": "风华高科",
+      "lead_time_days": 48
+    },
+    {
+      "id": "MAT-0002",
+      "code": "二极管-0002",
+      "name": "二极管 高频-336",
+      "category": "二极管",
+      "unit": "pcs",
+      "price": 25.1223,
+      "supplier": "村田",
+      "lead_time_days": 49
+    },
+    {
+      "id": "MAT-0003",
+      "code": "三极管-0003",
+      "name": "三极管 贴片-684",
+      "category": "三极管",
+      "unit": "pcs",
+      "price": 4.5333,
+      "supplier": "ON Semiconductor",
+      "lead_time_days": 45
+    },
+    {
+      "id": "MAT-0004",
+      "code": "传感器-0004",
+      "name": "传感器 贴片-445",
+      "category": "传感器",
+      "unit": "pcs",
+      "price": 20.5541,
+      "supplier": "ON Semiconductor",
+      "lead_time_days": 38
+    },
+    {
+      "id": "MAT-0005",
+      "code": "三极管-0005",
+      "name": "三极管 贴片-106",
+      "category": "三极管",
+      "unit": "pcs",
+      "price": 31.4667,
+      "supplier": "村田",
+      "lead_time_days": 30
+    },
+    {
+      "id": "MAT-0006",
+      "code": "传感器-0006",
+      "name": "传感器 功率-128",
+      "category": "传感器",
+      "unit": "pcs",
+      "price": 29.2303,
+      "supplier": "风华高科",
+      "lead_time_days": 12
+    },
+    {
+      "id": "MAT-0007",
+      "code": "电容-0007",
+      "name": "电容 功率-953",
+      "category": "电容",
+      "unit": "pcs",
+      "price": 1.4104,
+      "supplier": "三星电机",
+      "lead_time_days": 23
+    },
+    {
+      "id": "MAT-0008",
+      "code": "三极管-0008",
+      "name": "三极管 高频-992",
+      "category": "三极管",
+      "unit": "pcs",
+      "price": 47.6966,
+      "supplier": "TDK",
+      "lead_time_days": 4
+    },
+    {
+      "id": "MAT-0009",
+      "code": "三极管-0009",
+      "name": "三极管 高频-113",
+      "category": "三极管",
+      "unit": "pcs",
+      "price": 1.9311,
+      "supplier": "三星电机",
+      "lead_time_days": 10
+    },
+    {
+      "id": "MAT-0010",
+      "code": "二极管-0010",
+      "name": "二极管 贴片-644",
+      "category": "二极管",
+      "unit": "pcs",
+      "price": 35.6902,
+      "supplier": "三星电机",
+      "lead_time_days": 24
+    }
+  ]
+}

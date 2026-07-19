@@ -1,0 +1,45 @@
+{
+  "results": {
+    "SMT-L01": {
+      "line_name": "SMT产线 #1",
+      "product": "PCB-A-v3.2",
+      "inspection_date": "2026-07-16",
+      "total_inspections": 7800,
+      "total_calls": 624,
+      "true_defects": 156,
+      "false_alarms": 468,
+      "false_alarm_rate": 75.0,
+      "defect_categories": [
+        {"type": "焊锡桥连", "total_calls": 145, "true_defects": 28, "false_alarms": 117, "false_alarm_rate": 80.7, "common_location": "U12引脚区域", "root_cause": "焊盘间距偏小(0.12mm)，AOI算法对密集引脚敏感", "threshold_suggestion": "焊锡桥连检测阈值从0.08mm放宽至0.12mm，可减少误报85个"},
+        {"type": "元件偏位", "total_calls": 132, "true_defects": 35, "false_alarms": 97, "false_alarm_rate": 73.5, "common_location": "0402阻容件", "root_cause": "0402元件贴装容差±0.15mm，AOI标准设为±0.10mm过严", "threshold_suggestion": "偏位检测容差从±0.10mm放宽至±0.15mm，可减少误报65个"},
+        {"type": "锡膏不足", "total_calls": 98, "true_defects": 22, "false_alarms": 76, "false_alarm_rate": 77.6, "common_location": "BGA区域", "root_cause": "BGA焊球印刷反光干扰，AOI误判为锡膏不足", "threshold_suggestion": "BGA区域增加反光补偿算法，锡膏面积阈值从70%降至60%"},
+        {"type": "立碑", "total_calls": 87, "true_defects": 31, "false_alarms": 56, "false_alarm_rate": 64.4, "common_location": "0603以上Chip件", "root_cause": "回流焊温度曲线不均匀，部分元件轻微翘起被判为立碑", "threshold_suggestion": "立碑角度阈值从5°放宽至8°，同时优化回流焊温区"},
+        {"type": "极性反向", "total_calls": 76, "true_defects": 18, "false_alarms": 58, "false_alarm_rate": 76.3, "common_location": "二极管/钽电容", "root_cause": "丝印反光导致极性标记识别不稳定", "threshold_suggestion": "增加多角度光源拍摄，极性置信度阈值从80%降至70%"},
+        {"type": "缺件", "total_calls": 86, "true_defects": 22, "false_alarms": 64, "false_alarm_rate": 74.4, "common_location": "小封装器件(0201/0402)", "root_cause": "小元件在高速贴装时偏移导致AOI检测不到", "threshold_suggestion": "缺件检测搜索范围从±0.2mm扩大至±0.3mm"}
+      ],
+      "operator_review_time_min": 156,
+      "operator_count": 2
+    },
+    "SMT-L02": {
+      "line_name": "SMT产线 #2",
+      "product": "PCB-B-v1.8",
+      "inspection_date": "2026-07-16",
+      "total_inspections": 5200,
+      "total_calls": 546,
+      "true_defects": 130,
+      "false_alarms": 416,
+      "false_alarm_rate": 76.2,
+      "defect_categories": [
+        {"type": "焊锡桥连", "total_calls": 120, "true_defects": 25, "false_alarms": 95, "false_alarm_rate": 79.2, "common_location": "QFP引脚区域", "root_cause": "QFP引脚间距0.5mm，AOI检测灵敏度过高", "threshold_suggestion": "焊锡桥连检测阈值从0.05mm放宽至0.10mm"},
+        {"type": "元件偏位", "total_calls": 110, "true_defects": 28, "false_alarms": 82, "false_alarm_rate": 74.5, "common_location": "连接器区域", "root_cause": "连接器贴装容差与AOI标准不匹配", "threshold_suggestion": "连接器偏位容差从±0.15mm放宽至±0.25mm"},
+        {"type": "锡膏不足", "total_calls": 95, "true_defects": 20, "false_alarms": 75, "false_alarm_rate": 78.9, "common_location": "大面积焊盘", "root_cause": "大面积焊盘锡膏分布不均匀", "threshold_suggestion": "锡膏面积阈值从75%降至65%"},
+        {"type": "立碑", "total_calls": 80, "true_defects": 25, "false_alarms": 55, "false_alarm_rate": 68.8, "common_location": "0805 Chip件", "root_cause": "回流焊温度曲线需优化", "threshold_suggestion": "立碑角度阈值从5°放宽至8°"},
+        {"type": "极性反向", "total_calls": 71, "true_defects": 17, "false_alarms": 54, "false_alarm_rate": 76.1, "common_location": "LED区域", "root_cause": "LED发光特性干扰极性识别", "threshold_suggestion": "增加红外光源辅助极性识别"},
+        {"type": "缺件", "total_calls": 70, "true_defects": 15, "false_alarms": 55, "false_alarm_rate": 78.6, "common_location": "小封装器件", "root_cause": "高速贴装偏移", "threshold_suggestion": "搜索范围从±0.2mm扩大至±0.3mm"}
+      ],
+      "operator_review_time_min": 137,
+      "operator_count": 2
+    }
+  },
+  "optimization_factor": 0.35
+}

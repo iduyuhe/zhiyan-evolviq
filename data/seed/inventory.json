@@ -1,0 +1,52 @@
+{
+  "PCB-0001": {
+    "on_hand": 1187,
+    "reserved": 22,
+    "warehouse": "A2"
+  },
+  "二极管-0002": {
+    "on_hand": 188,
+    "reserved": 55,
+    "warehouse": "B1"
+  },
+  "三极管-0003": {
+    "on_hand": 80,
+    "reserved": 255,
+    "warehouse": "C1"
+  },
+  "传感器-0004": {
+    "on_hand": 1151,
+    "reserved": 155,
+    "warehouse": "B1"
+  },
+  "三极管-0005": {
+    "on_hand": 534,
+    "reserved": 123,
+    "warehouse": "A2"
+  },
+  "传感器-0006": {
+    "on_hand": 1087,
+    "reserved": 481,
+    "warehouse": "A1"
+  },
+  "电容-0007": {
+    "on_hand": 4025,
+    "reserved": 274,
+    "warehouse": "C1"
+  },
+  "三极管-0008": {
+    "on_hand": 5540,
+    "reserved": 308,
+    "warehouse": "B2"
+  },
+  "三极管-0009": {
+    "on_hand": 1000,
+    "reserved": 252,
+    "warehouse": "B1"
+  },
+  "二极管-0010": {
+    "on_hand": 2497,
+    "reserved": 288,
+    "warehouse": "B2"
+  }
+}

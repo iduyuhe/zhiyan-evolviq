@@ -1,0 +1,72 @@
+[
+  {
+    "po": "PO-2026-0200",
+    "material_code": "PCB-0001",
+    "qty": 631,
+    "expected": "2026-07-20",
+    "status": "open"
+  },
+  {
+    "po": "PO-2026-0742",
+    "material_code": "二极管-0002",
+    "qty": 727,
+    "expected": "2026-07-18",
+    "status": "confirmed"
+  },
+  {
+    "po": "PO-2026-0026",
+    "material_code": "三极管-0003",
+    "qty": 5391,
+    "expected": "2026-07-23",
+    "status": "in_transit"
+  },
+  {
+    "po": "PO-2026-0387",
+    "material_code": "传感器-0004",
+    "qty": 3687,
+    "expected": "2026-08-17",
+    "status": "confirmed"
+  },
+  {
+    "po": "PO-2026-0323",
+    "material_code": "三极管-0005",
+    "qty": 1088,
+    "expected": "2026-07-12",
+    "status": "in_transit"
+  },
+  {
+    "po": "PO-2026-0264",
+    "material_code": "传感器-0006",
+    "qty": 6789,
+    "expected": "2026-07-17",
+    "status": "delayed"
+  },
+  {
+    "po": "PO-2026-0730",
+    "material_code": "电容-0007",
+    "qty": 4748,
+    "expected": "2026-07-28",
+    "status": "confirmed"
+  },
+  {
+    "po": "PO-2026-0498",
+    "material_code": "三极管-0008",
+    "qty": 11427,
+    "expected": "2026-07-22",
+    "status": "delayed"
+  },
+  {
+    "po": "PO-2026-0385",
+    "material_code": "三极管-0009",
+    "qty": 5312,
+    "expected": "2026-07-15",
+    "status": "delayed"
+  },
+  {
+    "po": "PO-2026-0939",
+    "material_code": "二极管-0010",
+    "qty": 4599,
+    "expected": "2026-07-25",
+    "status": "delayed"
+  }
+]

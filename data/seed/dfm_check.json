@@ -1,0 +1,19 @@
+{
+  "design_file": "PCB_REV2.3.gbr",
+  "rules": {
+    "pad_spacing": {"name": "焊盘间距", "min_mm": 0.15, "recommended_mm": 0.25, "severity": "critical", "description": "相邻焊盘间距不足会导致焊接桥连"},
+    "trace_width": {"name": "线宽", "min_mm": 0.075, "recommended_mm": 0.1, "severity": "high", "description": "线宽不足影响载流能力和阻抗控制"},
+    "via_density": {"name": "过孔密度", "max_per_sqcm": 80, "recommended_per_sqcm": 50, "severity": "medium", "description": "过孔密度过高影响板件机械强度"},
+    "solder_mask": {"name": "阻焊覆盖", "min_margin_mm": 0.05, "recommended_margin_mm": 0.1, "severity": "high", "description": "阻焊覆盖不足导致焊接短路风险"},
+    "component_spacing": {"name": "组件间距", "min_mm": 0.5, "recommended_mm": 1.0, "severity": "medium", "description": "组件间距不足影响贴装和返修"},
+    "annular_ring": {"name": "焊盘环宽", "min_mm": 0.05, "recommended_mm": 0.1, "severity": "high", "description": "环宽不足导致过孔可靠性下降"}
+  },
+  "design_checks": [
+    {"rule_id": "pad_spacing", "location": "U12引脚区域 (X:45.2, Y:12.8)", "actual_value": 0.12, "unit": "mm", "design_value": 0.15, "status": "fail", "affected_components": ["U12-STM32F407", "R23", "C45"], "risk_desc": "U12引脚23-24间距0.12mm，低于最小值0.15mm，焊接桥连风险高"},
+    {"rule_id": "trace_width", "location": "电源层 L3 (X:78.5, Y:34.0)", "actual_value": 0.06, "unit": "mm", "design_value": 0.075, "status": "fail", "affected_components": ["电源走线-5V"], "risk_desc": "5V电源走线宽度0.06mm，无法满足2A载流要求"},
+    {"rule_id": "via_density", "location": "BGA区域 U5 (X:22.0, Y:18.5)", "actual_value": 95, "unit": "个/cm²", "design_value": 80, "status": "warning", "affected_components": ["U5-XC7Z020"], "risk_desc": "BGA扇出区域过孔密度95/cm²，超过推荐值50/cm²"},
+    {"rule_id": "solder_mask", "location": "Q1区域 (X:56.3, Y:28.1)", "actual_value": 0.03, "unit": "mm", "design_value": 0.05, "status": "fail", "affected_components": ["Q1-MOSFET", "R18"], "risk_desc": "Q1焊盘阻焊边缘仅0.03mm，焊接短路风险"},
+    {"rule_id": "component_spacing", "location": "连接器区域 J1 (X:10.0, Y:45.0)", "actual_value": 0.35, "unit": "mm", "design_value": 0.5, "status": "warning", "affected_components": ["J1-USB-C", "J2-HDMI"], "risk_desc": "J1与J2间距0.35mm，低于推荐值1.0mm，影响返修操作"},
+    {"rule_id": "annular_ring", "location": "过孔网络 GND (X:33.7, Y:22.4)", "actual_value": 0.08, "unit": "mm", "design_value": 0.1, "status": "pass", "affected_components": [], "risk_desc": ""}
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "_meta": {
+    "description": "演示效果信号种子——用于「按效果调参」在无真实流量时跑出可信的效果信号与建议。仅在 ZHIYAN_DEMO_DATA=1 时由 main.lifespan 加载。",
+    "design": "精算数值以触发全部 3 类调参规则：bom_selector/dfm_check 自主率<70%且高批准→放宽置信阈值；eco_change/pm_maintenance/quality_trace/yield_analysis 有驳回→收紧；supply_chain/aoi_judge/oee_optimizer/smt_changeover 高自主高批准→提升每日自主上限；ipc_standard 健康无建议。",
+    "expected_global": { "total_actions": 289, "auto_actions": 220, "autonomous_rate": 0.761, "interventions_decided": 121, "intervention_accuracy": 0.917, "suggestions": 10 }
+  },
+  "agents": [
+    { "agent": "supply_chain",   "total": 40, "auto": 34, "human": 6,  "approved": 16, "rejected": 0 },
+    { "agent": "aoi_judge",      "total": 30, "auto": 26, "human": 4,  "approved": 10, "rejected": 0 },
+    { "agent": "bom_selector",   "total": 20, "auto": 12, "human": 8,  "approved": 8,  "rejected": 1 },
+    { "agent": "dfm_check",      "total": 25, "auto": 15, "human": 10, "approved": 12, "rejected": 2 },
+    { "agent": "eco_change",     "total": 18, "auto": 10, "human": 8,  "approved": 6,  "rejected": 3 },
+    { "agent": "ipc_standard",   "total": 15, "auto": 11, "human": 4,  "approved": 5,  "rejected": 0 },
+    { "agent": "oee_optimizer",  "total": 35, "auto": 30, "human": 5,  "approved": 14, "rejected": 0 },
+    { "agent": "pm_maintenance", "total": 22, "auto": 16, "human": 6,  "approved": 9,  "rejected": 1 },
+    { "agent": "quality_trace",  "total": 28, "auto": 20, "human": 8,  "approved": 10, "rejected": 2 },
+    { "agent": "smt_changeover", "total": 32, "auto": 28, "human": 4,  "approved": 13, "rejected": 0 },
+    { "agent": "yield_analysis", "total": 24, "auto": 18, "human": 6,  "approved": 8,  "rejected": 1 }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "cases": [
+    {
+      "id": "CASE-2026-001",
+      "product": "28nm Logic",
+      "issue": "晶圆边缘颗粒污染超标",
+      "severity": "critical",
+      "affected_qty": 125,
+      "found_stage": "最终测试(FT)",
+      "timeline": {
+        "客诉时间": "2026-07-14",
+        "生产时间": "2026-07-08",
+        "光刻工艺": "2026-07-08 14:30",
+        "刻蚀工艺": "2026-07-08 16:45"
+      },
+      "suspected_equipments": [
+        {"name": "光刻机#2", "match_score": 0.92, "reason": "同类缺陷历史匹配度高"},
+        {"name": "刻蚀机#1", "match_score": 0.45, "reason": "颗粒形态不匹配"}
+      ],
+      "root_cause": "光刻机#2 掩膜台定位偏差导致光刻胶涂布不均匀，引发边缘颗粒聚集",
+      "fix_actions": [
+        "更换光刻机#2掩膜台密封圈（已完成）",
+        "重新校准光刻机#2定位系统（已完成）",
+        "加强光刻胶涂布后目检频次",
+        "增加边缘颗粒在线检测传感器"
+      ],
+      "historical_similar": 3
+    },
+    {
+      "id": "CASE-2026-002",
+      "product": "28nm Logic",
+      "issue": "刻蚀深度偏差超出规格",
+      "severity": "major",
+      "affected_qty": 48,
+      "found_stage": "刻蚀后检测",
+      "timeline": {
+        "发现时间": "2026-07-12",
+        "刻蚀工艺": "2026-07-11 22:10"
+      },
+      "suspected_equipments": [
+        {"name": "刻蚀机#2", "match_score": 0.88, "reason": "刻蚀速率漂移趋势"},
+        {"name": "气体分配盘", "match_score": 0.76, "reason": "气体流量波动记录"}
+      ],
+      "root_cause": "刻蚀机#2气体分配盘部分喷嘴堵塞，导致刻蚀气体分布不均",
+      "fix_actions": [
+        "清洗刻蚀机#2气体分配盘（已安排）",
+        "更换喷嘴滤网",
+        "缩短气体分配盘PM周期从30天至20天"
+      ],
+      "historical_similar": 1
+    }
+  ]
+}

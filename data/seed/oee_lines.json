@@ -1,0 +1,67 @@
+{
+  "lines": {
+    "SMT-L01": {
+      "name": "SMT产线 #1",
+      "product": "PCB-A-v3.2",
+      "shift_hours": 8,
+      "planned_hours": 7.5,
+      "downtime_hours": 0.8,
+      "ideal_speed_uph": 1200,
+      "actual_output": 7800,
+      "total_units": 7800,
+      "defect_units": 156,
+      "losses": {
+        "equipment_failure": {"hours": 0.3, "desc": "贴片机Z轴伺服报警"},
+        "setup_adjustment": {"hours": 0.5, "desc": "换线调试+料站校准"},
+        "idling_minor": {"hours": 0.2, "desc": "物料等待+小停机"},
+        "speed_loss": {"uph_diff": 80, "desc": "实际速度1120 vs 理论1200"},
+        "process_defect": {"qty": 132, "desc": "焊接不良+偏位"},
+        "startup_yield": {"qty": 24, "desc": "首件确认报废"}
+      }
+    },
+    "SMT-L02": {
+      "name": "SMT产线 #2",
+      "product": "PCB-B-v1.8",
+      "shift_hours": 8,
+      "planned_hours": 7.5,
+      "downtime_hours": 1.5,
+      "ideal_speed_uph": 1000,
+      "actual_output": 5200,
+      "total_units": 5200,
+      "defect_units": 208,
+      "losses": {
+        "equipment_failure": {"hours": 0.8, "desc": "回流焊温区异常+SPI误报"},
+        "setup_adjustment": {"hours": 0.7, "desc": "换线调试+钢网更换"},
+        "idling_minor": {"hours": 0.3, "desc": "物料齐套等待"},
+        "speed_loss": {"uph_diff": 120, "desc": "实际速度880 vs 理论1000"},
+        "process_defect": {"qty": 180, "desc": "锡膏印刷不良+立碑"},
+        "startup_yield": {"qty": 28, "desc": "首件调试报废"}
+      }
+    },
+    "SMT-L03": {
+      "name": "SMT产线 #3",
+      "product": "PCB-C-v2.0",
+      "shift_hours": 8,
+      "planned_hours": 7.5,
+      "downtime_hours": 0.4,
+      "ideal_speed_uph": 1500,
+      "actual_output": 9600,
+      "total_units": 9600,
+      "defect_units": 72,
+      "losses": {
+        "equipment_failure": {"hours": 0.15, "desc": "AOI相机清洁"},
+        "setup_adjustment": {"hours": 0.25, "desc": "快速换线(SMED优化)"},
+        "idling_minor": {"hours": 0.1, "desc": "正常小停机"},
+        "speed_loss": {"uph_diff": 40, "desc": "实际速度1460 vs 理论1500"},
+        "process_defect": {"qty": 60, "desc": "偶发焊接不良"},
+        "startup_yield": {"qty": 12, "desc": "首件确认"}
+      }
+    }
+  },
+  "targets": {
+    "availability": 90.0,
+    "performance": 95.0,
+    "quality": 99.5,
+    "oee": 85.0
+  }
+}

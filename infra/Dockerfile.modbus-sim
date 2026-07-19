@@ -1,0 +1,5 @@
+FROM python:3.13-alpine
+# 钉到 3.7.4：最后一版保留同步 datastore API（ModbusSlaveContext / ModbusServerContext / StartTcpServer）
+RUN pip install pymodbus==3.7.4
+COPY scripts/modbus_sim.py /modbus_sim.py
+CMD ["python", "/modbus_sim.py"]
