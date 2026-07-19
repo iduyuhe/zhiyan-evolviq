@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply min-h-screen bg-gradient-to-br from-gray-50 via-white to-zhiyan-50/30;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-xl border border-gray-200 p-6 shadow-sm
+           hover:shadow-md transition-shadow duration-300;
+  }
+  .card-highlight {
+    @apply card border-zhiyan-200 ring-1 ring-zhiyan-500/10;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-zhiyan-500 px-5 py-2.5 text-sm font-medium text-white
+           hover:bg-zhiyan-600 active:bg-zhiyan-700 transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed
+           shadow-sm hover:shadow-md active:shadow-sm;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700
+           hover:bg-gray-50 active:bg-gray-100 transition-all duration-200
+           hover:border-gray-400;
+  }
+  .input {
+    @apply block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm
+           placeholder:text-gray-400 focus:border-zhiyan-500 focus:ring-2 focus:ring-zhiyan-500/20 outline-none transition-all duration-200;
+  }
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+  .badge-green { @apply badge bg-green-50 text-green-700 ring-1 ring-green-600/10; }
+  .badge-yellow { @apply badge bg-yellow-50 text-yellow-700 ring-1 ring-yellow-600/10; }
+  .badge-red { @apply badge bg-red-50 text-red-700 ring-1 ring-red-600/10; }
+  .badge-blue { @apply badge bg-blue-50 text-blue-700 ring-1 ring-blue-600/10; }
+
+  .page-transition {
+    animation: fadeSlideIn 0.4s ease-out;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-zhiyan-600 to-zhiyan-400;
+  }
+  .bg-brand-pattern {
+    background-image: radial-gradient(circle at 1px 1px, rgb(37 99 235 / 0.06) 1px, transparent 0);
+    background-size: 32px 32px;
+  }
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+.animate-pulse-dot:nth-child(2) { animation-delay: 0.2s; }
+.animate-pulse-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* 仪表盘进度条 */
+.gauge-bar {
+  @apply h-2 rounded-full bg-gray-100 overflow-hidden;
+}
+.gauge-fill {
+  @apply h-full rounded-full transition-all duration-1000 ease-out;
+}

@@ -1,0 +1,466 @@
+import { useState } from 'react';
+import type { ReactElement } from 'react';
+
+interface ResultViewProps {
+  result: any;
+  onNewGoal: () => void;
+}
+
+const AGENT_META: Record<string, { title: string; icon: string }> = {
+  dfm_check: { title: 'DFM检查报告', icon: '📐' },
+  bom_selector: { title: 'BOM选型分析', icon: '🔬' },
+  oee_optimizer: { title: 'OEE优化分析', icon: '⚡' },
+  eco_change: { title: 'ECO变更影响分析', icon: '🔄' },
+  smt_changeover: { title: 'SMT换线优化', icon: '🔀' },
+  aoi_judge: { title: 'AOI判定分析', icon: '👁' },
+  ipc_standard: { title: 'IPC标准判定', icon: '📋' },
+};
+
+export default function GenericResultView({ result, onNewGoal }: ResultViewProps) {
+  const agent = result.agent || 'unknown';
+  const meta = AGENT_META[agent] || { title: '分析结果', icon: '📊' };
+  const [activeTab, setActiveTab] = useState(0);
+
+  const tabs = getTabs(agent, result);
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-4 animate-fade-in">
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">{meta.icon}</span>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">{meta.title}</h2>
+              <p className="text-sm text-gray-500">{result.summary || ''}</p>
+            </div>
+          </div>
+          <span className={`px-3 py-1 text-xs font-medium rounded-full ${
+            result.status === 'completed' ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'
+          }`}>
+            {result.status === 'completed' ? '已完成' : result.status}
+          </span>
+        </div>
+
+        {tabs.length > 1 && (
+          <div className="flex gap-1 mb-4 border-b border-gray-200">
+            {tabs.map((t, i) => (
+              <button
+                key={i}
+                className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === i ? 'border-zhiyan-500 text-zhiyan-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+                onClick={() => setActiveTab(i)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="space-y-3">
+          {tabs[activeTab]?.content}
+        </div>
+      </div>
+
+      {result.recommendations && result.recommendations.length > 0 && (
+        <div className="bg-blue-50 rounded-xl p-5 border border-blue-100">
+          <h3 className="text-sm font-semibold text-blue-900 mb-2">建议</h3>
+          <div className="space-y-1.5">
+            {result.recommendations.map((r: string, i: number) => (
+              <p key={i} className="text-sm text-blue-800">{r}</p>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="flex justify-center pt-2">
+        <button
+          onClick={onNewGoal}
+          className="px-6 py-2.5 bg-zhiyan-600 text-white text-sm font-medium rounded-lg hover:bg-zhiyan-700 transition-colors"
+        >
+          新建目标
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function getTabs(agent: string, result: any): { label: string; content: ReactElement }[] {
+  switch (agent) {
+    case 'dfm_check':
+      return getDFMTabs(result);
+    case 'bom_selector':
+      return getBOMTabs(result);
+    case 'oee_optimizer':
+      return getOEETabs(result);
+    case 'eco_change':
+      return getECOTabs(result);
+    case 'smt_changeover':
+      return getChangeoverTabs(result);
+    case 'aoi_judge':
+      return getAOITabs(result);
+    case 'ipc_standard':
+      return getIPCTabs(result);
+    default:
+      return [{ label: '结果', content: <pre className="text-xs text-gray-600 whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre> }];
+  }
+}
+
+function StatCard({ label, value, unit, color }: { label: string; value: string | number; unit?: string; color?: string }) {
+  return (
+    <div className="bg-gray-50 rounded-lg p-3 text-center">
+      <p className="text-xs text-gray-500 mb-1">{label}</p>
+      <p className={`text-xl font-semibold ${color || 'text-gray-900'}`}>{value}{unit && <span className="text-sm text-gray-400 ml-1">{unit}</span>}</p>
+    </div>
+  );
+}
+
+function Badge({ status, children }: { status: string; children: React.ReactNode }) {
+  const colors: Record<string, string> = {
+    fail: 'bg-red-50 text-red-700',
+    warning: 'bg-amber-50 text-amber-700',
+    pass: 'bg-green-50 text-green-700',
+    critical: 'bg-red-100 text-red-800',
+    high: 'bg-orange-50 text-orange-700',
+    medium: 'bg-amber-50 text-amber-700',
+    low: 'bg-green-50 text-green-700',
+    excellent: 'bg-green-50 text-green-700',
+    good: 'bg-blue-50 text-blue-700',
+    positive: 'bg-green-50 text-green-700',
+    neutral: 'bg-gray-100 text-gray-600',
+    none: 'bg-gray-100 text-gray-500',
+    defect: 'bg-red-100 text-red-800',
+    acceptable: 'bg-green-50 text-green-700',
+  };
+  return <span className={`px-2 py-0.5 text-xs font-medium rounded ${colors[status] || 'bg-gray-100 text-gray-600'}`}>{children}</span>;
+}
+
+function getDFMTabs(result: any) {
+  const gradeColor = result.overall_grade === 'A' ? 'text-green-600' : result.overall_grade === 'B' ? 'text-blue-600' : result.overall_grade === 'C' ? 'text-amber-600' : 'text-red-600';
+  return [
+    {
+      label: '概览',
+      content: (
+        <div className="space-y-3">
+          <div className="grid grid-cols-4 gap-3">
+            <StatCard label="评级" value={result.overall_grade} color={gradeColor} />
+            <StatCard label="总检查项" value={result.total_checks || 0} />
+            <StatCard label="不合格" value={result.fail_count || 0} color="text-red-600" />
+            <StatCard label="警告" value={result.warning_count || 0} color="text-amber-600" />
+          </div>
+          <p className="text-sm text-gray-700 bg-gray-50 rounded-lg p-3">{result.verdict}</p>
+        </div>
+      ),
+    },
+    {
+      label: '检查明细',
+      content: (
+        <div className="space-y-2">
+          {(result.checks || []).map((c: any, i: number) => (
+            <div key={i} className="flex items-start gap-3 p-2.5 bg-gray-50 rounded-lg">
+              <div className="flex-shrink-0 mt-0.5"><Badge status={c.status}>{c.status}</Badge></div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900">{c.rule}</p>
+                <p className="text-xs text-gray-500">{c.location}</p>
+                {c.risk_detail && <p className="text-xs text-gray-600 mt-1">{c.risk_detail}</p>}
+                <p className="text-xs text-gray-400 mt-0.5">实际: {c.actual} {c.unit} / 要求: {c.required} {c.unit}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+  ];
+}
+
+function getBOMTabs(result: any) {
+  return [
+    {
+      label: '目标器件',
+      content: (
+        <div className="space-y-3">
+          <div className="grid grid-cols-3 gap-3">
+            <StatCard label="当前单价" value={`$${result.target_component?.unit_price || 0}`} />
+            <StatCard label="生命周期" value={result.target_component?.lifecycle || ''} />
+            <StatCard label="交期" value={`${result.target_component?.lead_time || 0}天`} />
+          </div>
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-sm text-gray-700">{result.target_component?.manufacturer} {result.target_component?.part_number}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      label: '替代方案',
+      content: (
+        <div className="space-y-2">
+          {(result.alternatives || []).map((a: any, i: number) => (
+            <div key={i} className={`p-3 rounded-lg border ${i === 0 ? 'border-zhiyan-300 bg-zhiyan-50' : 'border-gray-200 bg-gray-50'}`}>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-sm font-medium text-gray-900">{a.part_number} {a.is_domestic && '🇨🇳'}</p>
+                <Badge status={a.compatibility === 'pin-to-pin' ? 'pass' : 'warning'}>{a.compatibility}</Badge>
+              </div>
+              <p className="text-xs text-gray-500">{a.manufacturer} · ${a.unit_price} ({a.price_diff_pct > 0 ? '+' : ''}{a.price_diff_pct}%) · 交期{a.lead_time_days}天 · 库存{a.stock_qty}</p>
+              <p className="text-xs text-gray-600 mt-1">{a.compatibility_notes}</p>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      label: '成本分析',
+      content: (
+        <div className="space-y-3">
+          <div className="grid grid-cols-3 gap-3">
+            <StatCard label="年用量" value={result.cost_analysis?.annual_qty || 0} unit="pcs" />
+            <StatCard label="年节省" value={`$${result.cost_analysis?.annual_savings_usd || 0}`} color="text-green-600" />
+            <StatCard label="节省比例" value={`${result.cost_analysis?.savings_pct || 0}%`} color="text-green-600" />
+          </div>
+        </div>
+      ),
+    },
+  ];
+}
+
+function getOEETabs(result: any) {
+  return [
+    {
+      label: 'OEE总览',
+      content: (
+        <div className="space-y-3">
+          <div className="grid grid-cols-4 gap-3">
+            <StatCard label="平均OEE" value={`${result.avg_oee || 0}%`} color={(result.avg_oee || 0) >= 85 ? 'text-green-600' : 'text-amber-600'} />
+            <StatCard label="目标" value={`${result.oee_target || 85}%`} />
+            <StatCard label="差距" value={`${result.gap_to_target || 0}%`} color={(result.gap_to_target || 0) < 0 ? 'text-red-600' : 'text-green-600'} />
+            <StatCard label="瓶颈产线" value={result.bottleneck?.slice(-3) || ''} color="text-red-600" />
+          </div>
+        </div>
+      ),
+    },
+    {
+      label: '产线详情',
+      content: (
+        <div className="space-y-2">
+          {(result.lines || []).map((l: any, i: number) => (
+            <div key={i} className="p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-gray-900">{l.line_name}</p>
+                <Badge status={l.status}>{l.oee}%</Badge>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                <span className="text-gray-600">可用率: <span className="font-medium text-gray-900">{l.availability}%</span></span>
+                <span className="text-gray-600">性能率: <span className="font-medium text-gray-900">{l.performance}%</span></span>
+                <span className="text-gray-600">质量率: <span className="font-medium text-gray-900">{l.quality}%</span></span>
+              </div>
+              <div className="mt-2 space-y-0.5">
+                {(l.losses || []).filter((x: any) => x.impact_hours > 0.1 || x.impact_qty > 10).map((loss: any, j: number) => (
+                  <p key={j} className="text-xs text-gray-500">{loss.name}: {loss.detail}</p>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+  ];
+}
+
+function getECOTabs(result: any) {
+  return [
+    {
+      label: '变更概览',
+      content: (
+        <div className="space-y-3">
+          <div className="grid grid-cols-3 gap-3">
+            <StatCard label="优先级" value={result.priority || ''} color={result.priority === 'high' ? 'text-red-600' : 'text-amber-600'} />
+            <StatCard label="库存暴露" value={`$${(result.inventory_exposure_usd || 0).toLocaleString()}`} color="text-red-600" />
+            <StatCard label="年节省" value={`$${(result.annual_savings_usd || 0).toLocaleString()}`} color="text-green-600" />
+          </div>
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-sm font-medium text-gray-900">{result.title}</p>
+            <p className="text-xs text-gray-500 mt-1">发起人: {result.initiator} · 涉及部门: {(result.departments_involved || []).join('/')}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      label: '受影响项',
+      content: (
+        <div className="space-y-2">
+          {(result.affected_items || []).map((item: any, i: number) => (
+            <div key={i} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg">
+              <div>
+                <p className="text-sm font-medium text-gray-900">{item.category}: {item.part}</p>
+                <p className="text-xs text-gray-500">{item.action}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-medium text-gray-900">{item.qty?.toLocaleString()}</p>
+                {item.value_usd > 0 && <p className="text-xs text-gray-500">${item.value_usd.toLocaleString()}</p>}
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      label: '行动项',
+      content: (
+        <div className="space-y-2">
+          {(result.required_actions || []).map((a: any, i: number) => (
+            <div key={i} className="flex items-start gap-3 p-2.5 bg-gray-50 rounded-lg">
+              <span className="px-2 py-0.5 text-xs font-medium bg-zhiyan-50 text-zhiyan-700 rounded flex-shrink-0">{a.dept}</span>
+              <div className="flex-1">
+                <p className="text-sm text-gray-900">{a.action}</p>
+                <p className="text-xs text-gray-400">截止: {a.deadline}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+  ];
+}
+
+function getChangeoverTabs(result: any) {
+  const smed = result.smed_analysis || {};
+  return [
+    {
+      label: '换线计划',
+      content: (
+        <div className="space-y-3">
+          <div className="grid grid-cols-4 gap-3">
+            <StatCard label="预估时间" value={`${result.estimated_time_min || 0}min`} />
+            <StatCard label="历史平均" value={`${result.avg_history_time_min || 0}min`} />
+            <StatCard label="SMED优化后" value={`${result.optimized_time_min || 0}min`} color="text-green-600" />
+            <StatCard label="节省" value={`${result.improvement_min || 0}min`} color="text-green-600" />
+          </div>
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-sm text-gray-700">{result.from_product} → {result.to_product}</p>
+            <p className="text-xs text-gray-500 mt-1">Feeder: 拆{result.feeder_changes?.remove} 加{result.feeder_changes?.add} 留{result.feeder_changes?.keep} · 钢网: {result.stencil_id}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      label: '关键路径',
+      content: (
+        <div className="space-y-1.5">
+          {(result.critical_path || []).map((s: any, i: number) => (
+            <div key={i} className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
+              <span className="w-6 h-6 rounded-full bg-zhiyan-100 text-zhiyan-700 text-xs font-medium flex items-center justify-center flex-shrink-0">{s.step}</span>
+              <p className="flex-1 text-sm text-gray-900">{s.action}</p>
+              <span className="text-xs text-gray-500">{s.time_min}min</span>
+              <Badge status={s.type === 'internal' ? 'good' : 'medium'}>{s.type}</Badge>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      label: '检查清单',
+      content: (
+        <div className="space-y-1.5">
+          {(result.checklist || []).map((c: string, i: number) => (
+            <div key={i} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+              <span className="w-4 h-4 border-2 border-gray-300 rounded flex-shrink-0"></span>
+              <p className="text-sm text-gray-700">{c}</p>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+  ];
+}
+
+function getAOITabs(result: any) {
+  return [
+    {
+      label: '误报概览',
+      content: (
+        <div className="space-y-3">
+          <div className="grid grid-cols-4 gap-3">
+            <StatCard label="当前误报率" value={`${result.false_alarm_rate || 0}%`} color="text-red-600" />
+            <StatCard label="优化后" value={`${result.optimized_false_alarm_rate || 0}%`} color="text-green-600" />
+            <StatCard label="复判工时" value={`${result.operator_review_time_min || 0}min`} />
+            <StatCard label="节省工时" value={`${result.review_time_saved_min || 0}min`} color="text-green-600" />
+          </div>
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-sm text-gray-700">{result.line_name} · {result.product}</p>
+            <p className="text-xs text-gray-500 mt-1">总检测{result.total_inspections} · 呼叫{result.total_calls} · 真缺陷{result.true_defects} · 误报{result.false_alarms}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      label: '缺陷分类',
+      content: (
+        <div className="space-y-2">
+          {(result.defect_categories || []).map((c: any, i: number) => (
+            <div key={i} className="p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-sm font-medium text-gray-900">{c.type}</p>
+                <span className="text-sm font-medium text-red-600">{c.false_alarm_rate}%</span>
+              </div>
+              <p className="text-xs text-gray-500">呼叫{c.total_calls} · 真缺陷{c.true_defects} · 误报{c.false_alarms} · 位置: {c.common_location}</p>
+              <p className="text-xs text-gray-600 mt-1">根因: {c.root_cause}</p>
+              <p className="text-xs text-blue-600 mt-1">建议: {c.threshold_suggestion}</p>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+  ];
+}
+
+function getIPCTabs(result: any) {
+  const j = result.judgment || {};
+  return [
+    {
+      label: '判定结果',
+      content: (
+        <div className="space-y-3">
+          <div className="bg-gray-50 rounded-lg p-4">
+            <p className="text-sm font-medium text-gray-900 mb-2">{j.defect_type || '缺陷判定'}</p>
+            <p className="text-sm text-gray-700">{j.explanation || ''}</p>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-xs text-gray-500 mb-1">Class 1 (通用)</p>
+              <p className="text-sm font-medium text-gray-900">{j.class_1_limit || 'N/A'}</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-xs text-gray-500 mb-1">Class 2 (专用)</p>
+              <p className="text-sm font-medium text-gray-900">{j.class_2_limit || 'N/A'}</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-xs text-gray-500 mb-1">Class 3 (高性能)</p>
+              <p className="text-sm font-medium text-gray-900">{j.class_3_limit || 'N/A'}</p>
+            </div>
+          </div>
+          {j.inspection_method && (
+            <div className="bg-blue-50 rounded-lg p-3">
+              <p className="text-xs text-blue-700">检验方法: {j.inspection_method}</p>
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      label: '标准信息',
+      content: (
+        <div className="space-y-2">
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-sm font-medium text-gray-900">{result.standard_name}</p>
+            <p className="text-xs text-gray-500">{result.standard_version} · {result.matched_category}</p>
+          </div>
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-xs text-gray-500 mb-1">可查询标准</p>
+            {Object.entries(result.standards_available || {}).map(([k, v]) => (
+              <p key={k} className="text-xs text-gray-700">{k}: {v as string}</p>
+            ))}
+          </div>
+        </div>
+      ),
+    },
+  ];
+}
