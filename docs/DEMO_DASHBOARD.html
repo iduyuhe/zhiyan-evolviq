@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>智衍 EvolvIQ · 运维演示看板</title>
+<style>
+:root{--accent:#2563eb;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--soft:#f1f5f9;--soft2:#eff6ff;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);background:#fff;line-height:1.55;padding:32px 20px;}
+.wrap{max-width:1080px;margin:0 auto;}
+header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid var(--accent);padding-bottom:18px;margin-bottom:28px;}
+.brand{font-size:24px;font-weight:800;letter-spacing:.5px;}
+.brand small{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-top:4px;letter-spacing:0;}
+.tag{font-size:12px;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:4px 12px;white-space:nowrap;}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:36px;}
+.kpi{background:var(--soft2);border-radius:12px;padding:18px 20px;}
+.kpi .num{font-size:30px;font-weight:800;color:var(--accent);line-height:1.1;}
+.kpi .lbl{font-size:13px;color:var(--muted);margin-top:6px;}
+.kpi .sub{font-size:12px;color:var(--ink);margin-top:2px;}
+section{margin-bottom:34px;}
+h2{font-size:17px;font-weight:700;margin-bottom:14px;padding-left:11px;border-left:4px solid var(--accent);}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);}
+th{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+td .nm{font-weight:600;}
+.bar{height:8px;background:var(--soft);border-radius:5px;overflow:hidden;width:120px;display:inline-block;vertical-align:middle;margin-right:8px;}
+.bar>i{display:block;height:100%;background:var(--accent);}
+.badge{display:inline-block;font-size:12px;padding:3px 10px;border-radius:6px;border:1px solid var(--accent);color:var(--accent);background:#fff;font-weight:600;}
+.badge.none{color:var(--muted);border-color:var(--line);}
+.sugs{display:grid;grid-template-columns:1fr;gap:12px;}
+.sug{border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;padding:14px 16px;background:#fff;}
+.sug .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.sug .who{font-weight:700;}
+.sug .tl{font-size:12px;font-weight:700;color:var(--accent);border:1px solid var(--accent);border-radius:6px;padding:2px 9px;}
+.sug .delta{font-size:13px;margin-bottom:4px;}
+.sug .delta b{color:var(--accent);}
+.sug .why{font-size:12.5px;color:var(--muted);}
+.gw{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
+.gcard{border:1px solid var(--line);border-radius:10px;padding:14px;}
+.gcard .gn{font-weight:600;font-size:14px;}
+.gcard .gm{font-size:12px;color:var(--muted);margin-top:4px;}
+.gcard .gs{font-size:12px;color:var(--accent);font-weight:600;margin-top:6px;}
+.kg{font-size:14px;color:var(--ink);}
+.kg b{color:var(--accent);font-size:18px;}
+footer{margin-top:40px;border-top:1px solid var(--line);padding-top:16px;font-size:12px;color:var(--muted);}
+@media print{body{padding:14px;} .kpi{background:var(--soft2)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}.bar>i,.tag,.tl,.badge,.gs,.kg b,.kpi .num{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+</style></head>
+<body><div class="wrap">
+<header>
+  <div class="brand">智衍 EvolvIQ<small>工业智能体平台 · 运维演示看板</small></div>
+  <div class="tag">V1 收官 · 数据快照</div>
+</header>
+
+<div class="kpis"><div class="kpi"><div class="num">76.1%</div><div class="lbl">全局自主率</div><div class="sub">目标 ≥ 70% · 达标 ✓</div></div><div class="kpi"><div class="num">91.7%</div><div class="lbl">介入批准率</div><div class="sub">已决策 121 次</div></div><div class="kpi"><div class="num">11</div><div class="lbl">在册 Agent</div><div class="sub">工业智能体</div></div><div class="kpi"><div class="num">10</div><div class="lbl">调参建议</div><div class="sub">引擎实时生成</div></div><div class="kpi"><div class="num">102/95</div><div class="lbl">知识图谱</div><div class="sub">节点 / 边</div></div><div class="kpi"><div class="num">4/4</div><div class="lbl">网关就绪</div><div class="sub">工业协议接入</div></div></div>
+
+<section><h2>各 Agent 效果信号与调参建议</h2><table><thead><tr><th>Agent</th><th>自主率</th><th>人工批准率</th><th>样本量</th><th>调参建议</th></tr></thead><tbody><tr><td><span class='nm'>供应链</span><br><small style='color:var(--muted)'>supply_chain</small></td><td><span class='bar'><i style='width:85%'></i></span>85.0%</td><td>100.0%</td><td>56</td><td><span class="badge">提升每日自主上限</span></td></tr><tr><td><span class='nm'>设备维保</span><br><small style='color:var(--muted)'>pm_maintenance</small></td><td><span class='bar'><i style='width:72%'></i></span>72.7%</td><td>90.0%</td><td>32</td><td><span class="badge">收紧置信阈值</span></td></tr><tr><td><span class='nm'>质量追溯</span><br><small style='color:var(--muted)'>quality_trace</small></td><td><span class='bar'><i style='width:71%'></i></span>71.4%</td><td>83.3%</td><td>40</td><td><span class="badge">收紧置信阈值</span></td></tr><tr><td><span class='nm'>IPC 标准</span><br><small style='color:var(--muted)'>ipc_standard</small></td><td><span class='bar'><i style='width:73%'></i></span>73.3%</td><td>100.0%</td><td>20</td><td><span class="badge none">无</span></td></tr><tr><td><span class='nm'>OEE 优化</span><br><small style='color:var(--muted)'>oee_optimizer</small></td><td><span class='bar'><i style='width:85%'></i></span>85.7%</td><td>100.0%</td><td>49</td><td><span class="badge">提升每日自主上限</span></td></tr><tr><td><span class='nm'>SMT 换线</span><br><small style='color:var(--muted)'>smt_changeover</small></td><td><span class='bar'><i style='width:87%'></i></span>87.5%</td><td>100.0%</td><td>45</td><td><span class="badge">提升每日自主上限</span></td></tr><tr><td><span class='nm'>AOI 判级</span><br><small style='color:var(--muted)'>aoi_judge</small></td><td><span class='bar'><i style='width:86%'></i></span>86.7%</td><td>100.0%</td><td>40</td><td><span class="badge">提升每日自主上限</span></td></tr><tr><td><span class='nm'>DFM 检查</span><br><small style='color:var(--muted)'>dfm_check</small></td><td><span class='bar'><i style='width:60%'></i></span>60.0%</td><td>85.7%</td><td>39</td><td><span class="badge">放宽置信阈值</span></td></tr><tr><td><span class='nm'>BOM 选择</span><br><small style='color:var(--muted)'>bom_selector</small></td><td><span class='bar'><i style='width:60%'></i></span>60.0%</td><td>88.9%</td><td>29</td><td><span class="badge">放宽置信阈值</span></td></tr><tr><td><span class='nm'>工程变更</span><br><small style='color:var(--muted)'>eco_change</small></td><td><span class='bar'><i style='width:55%'></i></span>55.6%</td><td>66.7%</td><td>27</td><td><span class="badge">收紧置信阈值</span></td></tr><tr><td><span class='nm'>良率分析</span><br><small style='color:var(--muted)'>yield_analysis</small></td><td><span class='bar'><i style='width:75%'></i></span>75.0%</td><td>88.9%</td><td>33</td><td><span class="badge">收紧置信阈值</span></td></tr></tbody></table></section>
+
+<section><h2>调参建议清单（效果驱动 · 引擎实时生成）</h2><div class="sugs"><div class="sug"><div class="top"><span class="who">供应链 <small style="color:var(--muted);font-weight:400">supply_chain</small></span><span class="tl">提升每日自主上限</span></div><div class="delta">当前 <b>20</b> → 建议 <b>25</b> <small style="color:var(--muted)">(max_daily_autonomous)</small></div><div class="why">自主率 85% 且批准率 100% 均优→运行稳健，建议上调每日自主上限</div></div><div class="sug"><div class="top"><span class="who">设备维保 <small style="color:var(--muted);font-weight:400">pm_maintenance</small></span><span class="tl">收紧置信阈值</span></div><div class="delta">当前 <b>0.85</b> → 建议 <b>0.9</b> <small style="color:var(--muted)">(confidence_threshold)</small></div><div class="why">人工驳回 1 次 / 批准率 0.9 偏低→动作偏激进，建议上调置信阈值收紧</div></div><div class="sug"><div class="top"><span class="who">质量追溯 <small style="color:var(--muted);font-weight:400">quality_trace</small></span><span class="tl">收紧置信阈值</span></div><div class="delta">当前 <b>0.85</b> → 建议 <b>0.9</b> <small style="color:var(--muted)">(confidence_threshold)</small></div><div class="why">人工驳回 2 次 / 批准率 0.833 偏低→动作偏激进，建议上调置信阈值收紧</div></div><div class="sug"><div class="top"><span class="who">OEE 优化 <small style="color:var(--muted);font-weight:400">oee_optimizer</small></span><span class="tl">提升每日自主上限</span></div><div class="delta">当前 <b>20</b> → 建议 <b>25</b> <small style="color:var(--muted)">(max_daily_autonomous)</small></div><div class="why">自主率 86% 且批准率 100% 均优→运行稳健，建议上调每日自主上限</div></div><div class="sug"><div class="top"><span class="who">SMT 换线 <small style="color:var(--muted);font-weight:400">smt_changeover</small></span><span class="tl">提升每日自主上限</span></div><div class="delta">当前 <b>20</b> → 建议 <b>25</b> <small style="color:var(--muted)">(max_daily_autonomous)</small></div><div class="why">自主率 88% 且批准率 100% 均优→运行稳健，建议上调每日自主上限</div></div><div class="sug"><div class="top"><span class="who">AOI 判级 <small style="color:var(--muted);font-weight:400">aoi_judge</small></span><span class="tl">提升每日自主上限</span></div><div class="delta">当前 <b>20</b> → 建议 <b>25</b> <small style="color:var(--muted)">(max_daily_autonomous)</small></div><div class="why">自主率 87% 且批准率 100% 均优→运行稳健，建议上调每日自主上限</div></div><div class="sug"><div class="top"><span class="who">DFM 检查 <small style="color:var(--muted);font-weight:400">dfm_check</small></span><span class="tl">放宽置信阈值</span></div><div class="delta">当前 <b>0.85</b> → 建议 <b>0.8</b> <small style="color:var(--muted)">(confidence_threshold)</small></div><div class="why">自主率 60% 低于目标 70%，且人工批准率 86% 高→动作偏保守，建议下调置信阈值放权</div></div><div class="sug"><div class="top"><span class="who">BOM 选择 <small style="color:var(--muted);font-weight:400">bom_selector</small></span><span class="tl">放宽置信阈值</span></div><div class="delta">当前 <b>0.85</b> → 建议 <b>0.8</b> <small style="color:var(--muted)">(confidence_threshold)</small></div><div class="why">自主率 60% 低于目标 70%，且人工批准率 89% 高→动作偏保守，建议下调置信阈值放权</div></div><div class="sug"><div class="top"><span class="who">工程变更 <small style="color:var(--muted);font-weight:400">eco_change</small></span><span class="tl">收紧置信阈值</span></div><div class="delta">当前 <b>0.85</b> → 建议 <b>0.9</b> <small style="color:var(--muted)">(confidence_threshold)</small></div><div class="why">人工驳回 3 次 / 批准率 0.667 偏低→动作偏激进，建议上调置信阈值收紧</div></div><div class="sug"><div class="top"><span class="who">良率分析 <small style="color:var(--muted);font-weight:400">yield_analysis</small></span><span class="tl">收紧置信阈值</span></div><div class="delta">当前 <b>0.8</b> → 建议 <b>0.85</b> <small style="color:var(--muted)">(confidence_threshold)</small></div><div class="why">人工驳回 1 次 / 批准率 0.889 偏低→动作偏激进，建议上调置信阈值收紧</div></div></div></section>
+
+<section><h2>网关与知识图谱</h2>
+  <div class="gw"><div class="gcard"><div class="gn">Modbus TCP</div><div class="gm">running</div><div class="gs">就绪</div></div><div class="gcard"><div class="gn">MQTT Broker</div><div class="gm">running</div><div class="gs">就绪</div></div><div class="gcard"><div class="gn">OPC-UA Server</div><div class="gm">simulated</div><div class="gs">就绪</div></div><div class="gcard"><div class="gn">IPC-CFX</div><div class="gm">simulated</div><div class="gs">就绪</div></div></div>
+  <div class="kg">知识图谱：<b>102</b> 个实体节点 / <b>95</b> 条关系边，覆盖设备·工艺·物料·质量等工业对象，由 <code>data/seed/*.json</code> 种子自动构建。</div>
+</section>
+
+<footer>
+  数据来源：演示种子 <code>data/seed/metrics_demo.json</code>（环境变量 <code>ZHIYAN_DEMO_DATA=1</code> 启动时由
+  <code>main.lifespan</code> 注入 metrics 与介入队列）；效果信号与建议由 <code>StrategyTuner</code> 真实引擎计算。
+  知识图谱与网关为种子构建 / 模拟态，数值稳定可复现。生成于 2026-07-16 07:53 UTC。
+</footer>
+</div></body></html>

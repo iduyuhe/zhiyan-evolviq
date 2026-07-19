@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>智衍 EvolvIQ · V1 版本发布说明</title>
+<style>
+  :root{
+    --accent:#2563eb;
+    --accent-soft:#eff6ff;
+    --ink:#1e293b;
+    --muted:#64748b;
+    --line:#e2e8f0;
+    --zebra:#f1f5f9;
+    --bg:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Segoe UI","PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,sans-serif;
+    color:var(--ink);background:#f1f5f9;line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{
+    max-width:880px;margin:32px auto;background:var(--bg);
+    border:1px solid var(--line);border-radius:14px;overflow:hidden;
+    box-shadow:0 6px 30px rgba(15,23,42,.06);
+  }
+  /* ===== 封面 ===== */
+  .cover{position:relative;background:var(--accent);color:#fff;padding:0;}
+  .cover svg{display:block;width:100%;height:auto;}
+  .cover .ctitle{
+    position:absolute;left:48px;top:40px;right:48px;
+  }
+  .cover .kicker{font-size:13px;letter-spacing:.22em;text-transform:uppercase;opacity:.85;margin:0 0 10px;}
+  .cover h1{font-size:34px;line-height:1.25;margin:0;font-weight:700;}
+  .cover .sub{margin:14px 0 0;font-size:15px;opacity:.92;max-width:560px;}
+  .cover .meta{position:absolute;left:48px;bottom:26px;font-size:13px;opacity:.9;}
+  /* ===== 正文 ===== */
+  .body{padding:40px 48px 48px;}
+  .lead{font-size:15.5px;color:#334155;}
+  h2{
+    font-size:21px;margin:38px 0 14px;padding-left:13px;
+    border-left:4px solid var(--accent);line-height:1.3;
+  }
+  h3{font-size:16.5px;margin:22px 0 8px;color:var(--accent);}
+  p{margin:10px 0;font-size:14.5px;}
+  ul.facts{margin:10px 0;padding-left:0;list-style:none;}
+  ul.facts li{
+    position:relative;padding:6px 0 6px 22px;font-size:14.5px;
+    border-bottom:1px dashed var(--line);
+  }
+  ul.facts li:last-child{border-bottom:none;}
+  ul.facts li::before{content:"";position:absolute;left:4px;top:14px;width:7px;height:7px;border-radius:50%;background:var(--accent);}
+  /* ===== 表格 ===== */
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;}
+  thead th{background:var(--accent);color:#fff;text-align:left;padding:10px 12px;font-weight:600;}
+  tbody td{padding:9px 12px;border:1px solid var(--line);vertical-align:top;}
+  tbody tr:nth-child(even){background:var(--zebra);}
+  /* ===== 卡片 ===== */
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0;}
+  .card{background:var(--accent-soft);border:1px solid #dbeafe;border-radius:10px;padding:14px;text-align:center;}
+  .card .n{font-size:26px;font-weight:700;color:var(--accent);line-height:1.1;}
+  .card .t{font-size:12.5px;color:var(--muted);margin-top:6px;}
+  .note{background:#f8fafc;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;padding:12px 16px;font-size:13.5px;color:#475569;margin:14px 0;}
+  .rule{background:#fffbeb;border:1px solid #fde68a;border-left:4px solid #d97706;border-radius:8px;padding:12px 16px;font-size:13.5px;color:#92400e;margin:14px 0;}
+  footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);}
+  @media (max-width:640px){
+    .body{padding:28px 22px;}
+    .cover .ctitle{left:24px;right:24px;top:26px;}
+    .cover .meta{left:24px;}
+    .cards{grid-template-columns:repeat(2,1fr);}
+  }
+  @media print{
+    body{background:#fff;}
+    .page{margin:0;border:none;box-shadow:none;border-radius:0;}
+    .card,.note,.rule{break-inside:avoid;}
+    h2{break-after:avoid;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ===== 封面（内嵌 SVG，零外部依赖）===== -->
+  <div class="cover">
+    <svg viewBox="0 0 880 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="V1 发布说明封面">
+      <rect width="880" height="280" fill="#2563eb"/>
+      <!-- 力导向语义网motif -->
+      <g stroke="#ffffff" stroke-opacity="0.35" stroke-width="1.2">
+        <line x1="640" y1="70" x2="720" y2="120"/>
+        <line x1="720" y1="120" x2="660" y2="180"/>
+        <line x1="640" y1="70" x2="660" y2="180"/>
+        <line x1="720" y1="120" x2="790" y2="80"/>
+        <line x1="660" y1="180" x2="760" y2="210"/>
+        <line x1="790" y1="80" x2="760" y2="210"/>
+        <line x1="560" y1="140" x2="640" y2="70"/>
+        <line x1="560" y1="140" x2="660" y2="180"/>
+      </g>
+      <g fill="#ffffff" fill-opacity="0.92">
+        <circle cx="560" cy="140" r="9"/>
+        <circle cx="640" cy="70" r="8"/>
+        <circle cx="720" cy="120" r="8"/>
+        <circle cx="660" cy="180" r="8"/>
+        <circle cx="790" cy="80" r="7"/>
+        <circle cx="760" cy="210" r="7"/>
+      </g>
+      <g fill="#bfdbfe">
+        <circle cx="560" cy="140" r="3.5"/>
+        <circle cx="720" cy="120" r="3.5"/>
+        <circle cx="660" cy="180" r="3.5"/>
+      </g>
+      <!-- 四类网关方块motif -->
+      <g>
+        <rect x="600" y="225" width="22" height="22" rx="4" fill="#ffffff" fill-opacity="0.9"/>
+        <rect x="630" y="225" width="22" height="22" rx="4" fill="#ffffff" fill-opacity="0.7"/>
+        <rect x="660" y="225" width="22" height="22" rx="4" fill="#ffffff" fill-opacity="0.5"/>
+        <rect x="690" y="225" width="22" height="22" rx="4" fill="#ffffff" fill-opacity="0.35"/>
+      </g>
+      <!-- 策略滑块motif -->
+      <g>
+        <rect x="560" y="40" width="150" height="8" rx="4" fill="#ffffff" fill-opacity="0.35"/>
+        <circle cx="660" cy="44" r="9" fill="#ffffff"/>
+      </g>
+    </svg>
+    <div class="ctitle">
+      <p class="kicker">EvolvIQ · Release Note</p>
+      <h1>智衍 EvolvIQ · V1 版本发布说明</h1>
+      <p class="sub">战略增强版 — 知识沉淀 · 能力开放 · 协议接入 · 策略自治，四个维度达到生产可用。</p>
+    </div>
+    <div class="meta">版本 V1　|　发布日期 2026-07-16　|　适用平台 Agent Studio MVP　|　工业5点0产业生态联盟 · 智衍 EvolvIQ 团队</div>
+  </div>
+
+  <!-- ===== 正文 ===== -->
+  <div class="body">
+
+    <p class="lead">V1 在既有 MVP（11 Agent 真实落地 · LLM 推理层接通 · 数据层落库 · 供应链 ROI 闭环）基础上，闭合了 02 方案 P2 清单中挂起的 <b>4 个战略项</b>，使平台在「知识沉淀、能力开放、协议接入、策略自治」四个维度达到生产可用。</p>
+
+    <div class="cards">
+      <div class="card"><div class="n">102/95</div><div class="t">KG 节点 / 边</div></div>
+      <div class="card"><div class="n">38</div><div class="t">MCP 联邦工具</div></div>
+      <div class="card"><div class="n">4</div><div class="t">工业协议网关</div></div>
+      <div class="card"><div class="n">48/48</div><div class="t">单元测试</div></div>
+    </div>
+
+    <h2>一、版本定位</h2>
+    <table>
+      <thead><tr><th>战略项</th><th>能力</th><th>交付形态</th></tr></thead>
+      <tbody>
+        <tr><td><b>V1-1</b> 跨 Agent 知识图谱</td><td>Neo4j + 内存图双模语义网</td><td><code>/kg/*</code> API · 前端知识图谱 Tab</td></tr>
+        <tr><td><b>V1-2</b> 全 11 Agent MCP 能力层联邦</td><td>统一联邦注册表（38 工具）</td><td>HTTP + stdio 双传输</td></tr>
+        <tr><td><b>V1-3</b> 工业协议网关齐备</td><td>Modbus / MQTT / OPC-UA / IPC-CFX</td><td><code>/gateways</code> API</td></tr>
+        <tr><td><b>V1-4</b> 控制台「按效果调参」</td><td>策略调参引擎</td><td><code>/strategy</code> API · 前端策略调参 Tab</td></tr>
+      </tbody>
+    </table>
+
+    <h2>二、核心交付与实证</h2>
+
+    <h3>V1-1 · 跨 Agent 知识图谱</h3>
+    <ul class="facts">
+      <li>把 11 个 Agent 的工业语义（物料 / 设备 / 产品 / 缺陷 / 产线 / 部件 / 订单 / 元件 / 标准 / 变更 / 良率）桥接成一张跨域语义网；质量案例经设备类型关键词自动桥接 PM 设备与部件；引擎执行结果以 fire-and-forget 方式增量写入图谱。</li>
+      <li>种子构建 <b>102 节点 / 95 边</b>；Neo4j 不可达时自动回退内存图（dict 邻接表），生产可达自动切换 Neo4j 模式，<b>零启动中断</b>。</li>
+      <li>前端：知识图谱 Tab（统计 + 按类型/邻居查询 + 跨 Agent 桥接示例 + 力导向图可视化）。</li>
+    </ul>
+
+    <h3>V1-2 · 全 11 Agent MCP 能力层联邦</h3>
+    <ul class="facts">
+      <li>采用「能力层联邦」——统一 MCP server 对外暴露 11 Agent 的 in-process 工具，Agent 内部仍走 in-process 主路径，<b>与 T4「收敛删死代码」方向一致，零运行时风险</b>。</li>
+      <li><code>{agent}__{method}</code> 命名空间统一注册 <b>38 个工具</b>（供应链 6 / 设备 4 / 良率 4 / 其余 8 Agent 各 3）；HTTP + stdio 双传输均从联邦注册表驱动；保留 6 个旧版供应链工具短名别名以兼容既有 MCP 客户端。</li>
+      <li>11/11 Agent 代表工具经真实 API 全 200；未知工具正确 404；集成测试 <code>/mcp/tools</code> 6 工具契约保持不变。</li>
+    </ul>
+
+    <h3>V1-3 · 工业协议网关齐备</h3>
+    <ul class="facts">
+      <li>四类工业协议网关（Modbus / MQTT / OPC-UA / IPC-CFX）均实现 <code>BaseGateway</code> 统一接口（read / write / connect / health）；<code>GatewayManager</code> 统一持有并 best-effort 初始化；<code>/gateways</code> API 暴露健康总览、单网关详情与实时读数。</li>
+      <li>沙箱无真实 OPC-UA Server / AMQP Broker 时，四类网关自动 <code>simulated</code> 模式，读数正常、绝不破管；<b>附带收益</b>——Modbus / MQTT 经 <code>GatewayManager</code> 首次获得运行时可观测能力，消除原死代码隐患。</li>
+      <li>前端：网关 Tab（4 类网关健康卡 + 实时读数轮询面板）。</li>
+    </ul>
+
+    <h3>V1-4 · 控制台「按效果调参」</h3>
+    <ul class="facts">
+      <li><code>StrategyTuner</code> 汇聚「放权度（自主率）vs 人类信任度（介入批准率/驳回）」，生成调参建议（放权 / 收紧）；采纳建议或手动调参后<b>实时改写运行时授权边界</b>并留审计轨迹。</li>
+      <li>关键修复：补齐漏掉的 <code>yield_analysis</code> 第 11 个授权边界，使 11/11 Agent 均有授权边界。</li>
+      <li>supply_chain 置信阈值 <code>0.8 → 0.72</code> <b>运行时真正改写</b>；调参夹紧区间 [0.5, 0.95]；非法参数 400 / 未知 Agent 404；审计轨迹可查。</li>
+      <li>前端：策略调参 Tab（旋钮 + 效果一页视图、建议采纳、手动调参、审计轨迹）。</li>
+    </ul>
+    <div class="rule"><b>铁律：</b>调参引擎只调整策略阈值，绝不改写任何业务数字或动作。</div>
+
+    <h2>三、质量与验证</h2>
+    <table>
+      <thead><tr><th>维度</th><th>结果</th></tr></thead>
+      <tbody>
+        <tr><td>单元测试</td><td><code>pytest</code> <b>48/48</b>（基线 31 → 净增 17，无回归）</td></tr>
+        <tr><td>务实化验证</td><td>8/8 Agent 无随机 · 可复现</td></tr>
+        <tr><td>闭环验证</td><td>8/8（<code>pending=7</code> 符合预期）</td></tr>
+        <tr><td>端到端脚本</td><td><code>verify_kg</code> / <code>verify_federation</code> / <code>verify_gateways</code> / <code>verify_strategy</code> 经真实 HTTP API 全绿</td></tr>
+        <tr><td>战略对齐矩阵</td><td>M1–M9 <b>全绿</b></td></tr>
+        <tr><td>前端构建</td><td><code>vite build</code> 干净（47 modules）</td></tr>
+        <tr><td>演示数据快照</td><td><code>ZHIYAN_DEMO_DATA=1</code> 启动 → 11 Agent 效果信号 / 10 条调参建议 / 4 网关就绪</td></tr>
+      </tbody>
+    </table>
+
+    <h2>四、架构与韧性说明（升级要点）</h2>
+    <ul class="facts">
+      <li><b>韧性降级铁律</b>：所有外部依赖（PostgreSQL / Neo4j / OPC-UA Server / AMQP Broker / MCP 客户端库）均<b>惰性导入 + 不可达自动回退本地替代</b>（SQLite / 内存图 / simulated），绝不阻断启动或执行管道。</li>
+      <li><b>幂等自初始化</b>：需 FastAPI lifespan 初始化的组件（网关管理器）在 API handler 内以 <code>ensure_ready()</code> 幂等守卫首调自初始化，兼容「寿命周期未跑」的调用场景。</li>
+      <li><b>事实锚点铁律</b>：调参 / 优化只改策略阈值或实体关系，绝不改写业务数字或动作。</li>
+      <li><b>收敛一致</b>：V1-2 能力层联邦与 T4「收敛删死代码」方向一致，未新增 Agent 执行分支。</li>
+    </ul>
+
+    <h2>五、剩余范围（非本次发布）</h2>
+    <ul class="facts">
+      <li><b>多 Agent 协作 / 编排</b>：与 T4「收敛」方向相反，为既定非目标，V1 未纳入。</li>
+      <li>多租户 / 企业版隔离（V2 范围）：暂无 <code>tenant_id</code> / <code>plant_id</code> 三级隔离。</li>
+    </ul>
+
+    <div class="note">本说明与 <code>docs/ALIGNMENT_REPORT.md</code>（战略对齐矩阵）及 <code>docs/RETROSPECTIVE_2026-07-16.md</code>（收官复盘）互为补充。</div>
+
+    <footer>
+      智衍 EvolvIQ · V1 版本发布说明　|　生成于 2026-07-16　|　自包含 HTML（内嵌 SVG 封面，可打印为 PDF）
+    </footer>
+  </div>
+</div>
+</body>
+</html>
