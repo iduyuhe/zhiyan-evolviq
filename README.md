@@ -10,6 +10,7 @@
 - **跨 Agent 知识图谱**：基于 Neo4j 的可追溯知识网络（缺 Neo4j 时自动回退内存图）
 - **按效果调参的授权引擎**：置信度阈值、每日自主上限、人类介入队列
 - **韧性降级**：PostgreSQL / Neo4j / 各网关不可达时自动回退 SQLite / 内存图 / 模拟模式，绝不阻断启动
+- **多租户隔离**：行级 `tenant_id` 隔离 + API Key 认证（`X-Tenant-Key`），开放自助注册，未带密钥自动归属默认租户 `default`，向后兼容
 
 ## 🧩 11 个 Agent 一览
 
@@ -60,6 +61,75 @@ docker compose up -d
 | `ZHIYAN_DB_URL` | PostgreSQL 连接串；留空自动用 SQLite |
 | `NEO4J_URI` / `NEO4J_PASSWORD` | Neo4j；留空自动回退内存图 |
 | `ZHIYAN_DEMO_DATA` | `1` = 启动时注入演示数据 |
+| `TENANT_ADMIN_KEY` | 平台管理员密钥；配置后 `GET /tenants` 等管理接口生效（见下方多租户模式） |
+
+## 🏢 多租户模式
+
+智衍内置完整多租户能力：多个租户共享同一套部署，数据按 `tenant_id` 行级隔离，彼此不可见。**未携带租户密钥的请求自动归属默认租户 `default`**，因此现有匿名调用与集成测试行为完全不变（向后兼容）。
+
+### 隔离范围
+
+- 会话（`AgentSession`）、审计日志（`AuditLog`）、授权边界（`AuthorizationBoundary`）按租户隔离
+- 跨 Agent 知识图谱的节点 / 边带 `tenant` 标签，查询按租户过滤
+- 工业协议网关可按租户覆写连接参数；未配置则共享平台网关
+- MCP 能力联邦、按效果调参的授权引擎均按租户隔离
+
+### 认证方式
+
+需要隔离的接口通过请求头 `X-Tenant-Key: <api_key>` 识别租户。平台密钥仅存储哈希，明文 `api_key` 仅在**注册 / 轮换时一次性返回**，请妥善保存。无效或已失效的密钥返回 `401`。
+
+### 快速使用
+
+**1. 注册租户**（开放自助，返回明文 `api_key`）
+
+```bash
+curl -X POST http://localhost:8000/tenants/register \
+  -H "Content-Type: application/json" \
+  -d '{"name": "acme"}'
+# → {"tenant_id":"t_xxx","name":"acme","api_key":"<明文 key，仅此一次可见>","note":"..."}
+```
+
+**2. 携带密钥调用平台接口**（会话 / 边界 / 审计 / 知识图谱 / 网关 / MCP 全部按租户隔离）
+
+```bash
+curl http://localhost:8000/sessions -H "X-Tenant-Key: <你的 api_key>"
+```
+
+**3. 查询 / 轮换 / 注销当前租户**
+
+```bash
+curl http://localhost:8000/tenants/me              -H "X-Tenant-Key: <key>"
+curl -X POST http://localhost:8000/tenants/rotate  -H "X-Tenant-Key: <key>"
+curl -X DELETE http://localhost:8000/tenants/me    -H "X-Tenant-Key: <key>"
+```
+
+**4. 为租户配置独立工业网关**（可选，缺省字段沿用平台共享网关）
+
+```bash
+curl -X PUT http://localhost:8000/tenants/gateway-config \
+  -H "X-Tenant-Key: <key>" -H "Content-Type: application/json" \
+  -d '{"modbus_host":"10.0.0.5","mqtt_broker":"broker.acme.com"}'
+```
+
+**5. 平台管理**（需配置 `TENANT_ADMIN_KEY` 环境变量，并以请求头 `X-Platform-Admin-Key` 调用）
+
+```bash
+curl http://localhost:8000/tenants -H "X-Platform-Admin-Key: <admin_key>"
+```
+
+### 租户管理接口一览
+
+| 方法 | 路径 | 说明 | 鉴权 |
+|------|------|------|------|
+| POST | `/tenants/register` | 自助注册，返回明文 `api_key` | 开放 |
+| GET | `/tenants/me` | 当前租户信息 | `X-Tenant-Key` |
+| POST | `/tenants/rotate` | 轮换密钥，返回新明文 key（旧 key 立即失效） | `X-Tenant-Key` |
+| DELETE | `/tenants/me` | 注销当前租户（默认租户不可删） | `X-Tenant-Key` |
+| GET | `/tenants` | 列出全部租户 | `X-Platform-Admin-Key` |
+| PUT | `/tenants/gateway-config` | 设置租户网关连接参数覆写 | `X-Tenant-Key` |
+| GET | `/tenants/gateway-config` | 读取租户网关配置（`null` = 共享平台网关） | `X-Tenant-Key` |
+
+完整接口定义与字段见 `http://localhost:8000/docs`（Swagger UI）。
 
 ## 📂 目录结构
 
