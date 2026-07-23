@@ -266,8 +266,12 @@ async def build_from_seeds() -> dict:
     return await neo.graph_stats()
 
 
-async def apply_execution_result(agent_name: str, session_id: str, result: dict) -> None:
-    """Agent 执行后增量写入图谱（仅基于确定性结果，事实锚点铁律）。"""
+async def apply_execution_result(tenant_id: str, agent_name: str, session_id: str, result: dict) -> None:
+    """Agent 执行后增量写入图谱（仅基于确定性结果，事实锚点铁律）。
+
+    写入的节点/关系均带 tenant 属性，使知识图谱按租户隔离：
+    同租户的执行数据可经 /kg/query?tenant=... 精确查询，互不可见。
+    """
     try:
         if agent_name == "supply_chain":
             for act in result.get("actions_taken", []) or []:
@@ -276,14 +280,14 @@ async def apply_execution_result(agent_name: str, session_id: str, result: dict)
                     alt = act.get("alt_code") or act.get("alternative_code")
                     if old and alt:
                         await neo.merge_edge(f"MAT:{old}", f"MAT:{alt}", "锁定替代",
-                                             {"session_id": session_id, "status": act.get("status")})
+                                             {"session_id": session_id, "status": act.get("status"), "tenant": tenant_id})
         elif agent_name == "quality_trace":
             for act in result.get("actions_taken", []) or []:
                 if act.get("type") == "create_capa":
                     cid = act.get("case_id")
                     if cid:
-                        await neo.merge_node("CAPA", f"CAPA:{cid}", {"case_id": cid})
-                        await neo.merge_edge(f"CASE:{cid}", f"CAPA:{cid}", "已开CAPA")
+                        await neo.merge_node("CAPA", f"CAPA:{cid}", {"case_id": cid, "tenant": tenant_id})
+                        await neo.merge_edge(f"CASE:{cid}", f"CAPA:{cid}", "已开CAPA", {"tenant": tenant_id})
     except Exception as e:
         logger.warning(f"图谱增量写入失败（不破管）：{e}")
 

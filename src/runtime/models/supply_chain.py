@@ -137,6 +137,7 @@ class AuthorizationBoundary(Base, TimestampMixin):
     __tablename__ = "authorization_boundaries"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tenant_id: Mapped[str] = mapped_column(String(64), default="default", index=True)
     name: Mapped[str] = mapped_column(String(128))
     enabled: Mapped[bool] = mapped_column(default=True)
     # 授权规则（JSON格式存储）

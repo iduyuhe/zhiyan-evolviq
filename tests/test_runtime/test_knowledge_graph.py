@@ -56,6 +56,6 @@ async def test_apply_execution_lock_alternative():
     result = {"actions_taken": [
         {"type": "lock_alternative", "material_code": "PCB-0001", "alt_code": "二极管-0002", "status": "auto"}
     ]}
-    await kg.apply_execution_result("supply_chain", "sess-x", result)
+    await kg.apply_execution_result("default", "supply_chain", "sess-x", result)
     nb = await neo.get_neighbors("MAT:PCB-0001", edge="锁定替代")
     assert nb, "锁定替代边应写入图谱"

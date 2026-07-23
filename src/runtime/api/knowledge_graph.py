@@ -32,18 +32,23 @@ async def query(
     direction: str = Query("out", description="out / in / any"),
     category: str | None = Query(None, description="属性过滤，如 Material.category=三极管"),
     name: str | None = Query(None, description="name 属性过滤"),
+    tenant: str | None = Query(None, description="按租户隔离查询（仅返回该租户执行写入的图谱）；缺省返回全量（含共享参考图谱）"),
 ):
-    """预定义查询：按 label + 属性过滤节点，或按 node_id 查邻居。"""
+    """预定义查询：按 label + 属性过滤节点，或按 node_id 查邻居。
+
+    tenant 参数用于多租户隔离：传入时仅返回该租户执行写入的节点/关系；
+    不传则返回全部（含平台共享的参考图谱种子）。
+    """
     try:
         if node_id:
-            return {"node_id": node_id, "neighbors": await neo.get_neighbors(node_id, edge, direction)}
+            return {"tenant": tenant, "node_id": node_id, "neighbors": await neo.get_neighbors(node_id, edge, direction, tenant=tenant)}
         if label:
             filters = {}
             if category:
                 filters["category"] = category
             if name:
                 filters["name"] = name
-            return {"label": label, "nodes": await neo.query_nodes(label, **filters)}
+            return {"tenant": tenant, "label": label, "nodes": await neo.query_nodes(label, tenant=tenant, **filters)}
         return {"hint": "需提供 label（列节点）或 node_id（查邻居）"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -25,6 +25,7 @@ class AgentSession(Base, TimestampMixin):
     __tablename__ = "agent_sessions"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tenant_id: Mapped[str] = mapped_column(String(64), default="default", index=True)
     user_id: Mapped[str] = mapped_column(String(128), default="anonymous")
     goal: Mapped[str] = mapped_column(Text)  # 自然语言目标
     plan: Mapped[str | None] = mapped_column(Text, nullable=True)  # Agent生成的规划（JSON/Markdown）
@@ -46,6 +47,7 @@ class AuditLog(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     session_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), index=True)
+    tenant_id: Mapped[str] = mapped_column(String(64), default="default", index=True)
     event_type: Mapped[str] = mapped_column(String(64), index=True)  # goal_set, plan_created, approved, executed, rejected, intervened
     actor: Mapped[str] = mapped_column(String(64))  # human / agent_name
     detail: Mapped[str] = mapped_column(Text)

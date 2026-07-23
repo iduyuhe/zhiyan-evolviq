@@ -120,8 +120,8 @@ async def get_node(node_id: str) -> Optional[dict]:
     return None
 
 
-async def get_neighbors(node_id: str, edge: Optional[str] = None, direction: str = "out") -> list[dict]:
-    """返回邻居节点（含关系类型）。direction: out/in/any。"""
+async def get_neighbors(node_id: str, edge: Optional[str] = None, direction: str = "out", tenant: Optional[str] = None) -> list[dict]:
+    """返回邻居节点（含关系类型）。direction: out/in/any。tenant: 按租户隔离（仅返回该租户写入的关系）。"""
     result = []
     if neo_mode == "neo4j" and driver is not None:
         try:
@@ -131,7 +131,9 @@ async def get_neighbors(node_id: str, edge: Optional[str] = None, direction: str
                 q = "MATCH (a {id:$id})<-[r]-(b) RETURN r, b"
             else:
                 q = "MATCH (a {id:$id})-[r]-(b) RETURN r, b"
-            rec = await driver.execute_query(q, parameters_={"id": node_id})
+            if tenant:
+                q = q.replace(" RETURN", " WHERE r.tenant = $p_tenant RETURN")
+            rec = await driver.execute_query(q, parameters_={"id": node_id, "p_tenant": tenant} if tenant else {"id": node_id})
             for r in rec.records:
                 rel, nb = r["r"], r["b"]
                 if edge and rel.type != edge:
@@ -147,6 +149,8 @@ async def get_neighbors(node_id: str, edge: Optional[str] = None, direction: str
     for e in _memory_edges:
         if edge and e["type"] != edge:
             continue
+        if tenant and e["props"].get("tenant") != tenant:
+            continue
         match = (direction in ("out", "any") and e["from"] == node_id) or \
                 (direction in ("in", "any") and e["to"] == node_id)
         if not match:
@@ -161,13 +165,17 @@ async def get_neighbors(node_id: str, edge: Optional[str] = None, direction: str
     return result
 
 
-async def query_nodes(label: str, **filters) -> list[dict]:
-    """按 label + 属性过滤返回节点。"""
+async def query_nodes(label: str, tenant: Optional[str] = None, **filters) -> list[dict]:
+    """按 label + 属性过滤返回节点。tenant: 按租户隔离（仅返回该租户写入的节点）。"""
     if neo_mode == "neo4j" and driver is not None:
         try:
             where = " AND ".join(f"n.`{k}` = $p_{k}" for k in filters) if filters else ""
+            if tenant:
+                where = (where + " AND " if where else "") + "n.tenant = $p_tenant"
             q = f"MATCH (n:`{label}`)" + (f" WHERE {where}" if where else "") + " RETURN n"
             params = {f"p_{k}": v for k, v in filters.items()}
+            if tenant:
+                params["p_tenant"] = tenant
             rec = await driver.execute_query(q, parameters_=params)
             return [
                 {"id": r["n"]["id"], "labels": list(r["n"].labels), "props": dict(r["n"])}
@@ -179,6 +187,8 @@ async def query_nodes(label: str, **filters) -> list[dict]:
     out = []
     for nid, n in _memory_nodes.items():
         if label not in n["labels"]:
+            continue
+        if tenant and n["props"].get("tenant") != tenant:
             continue
         if all(n["props"].get(k) == v for k, v in filters.items()):
             out.append({"id": nid, "labels": list(n["labels"]), "props": n["props"]})

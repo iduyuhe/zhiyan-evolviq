@@ -11,7 +11,7 @@
 import json
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 
 from src.agents.supply_chain.tools import SupplyChainTools
@@ -20,6 +20,7 @@ from src.runtime.mcp.federation import (
     federation_summary,
     dispatch,
 )
+from src.runtime.api.deps import get_tenant
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/mcp", tags=["mcp-tools"])
@@ -74,10 +75,10 @@ async def list_tools():
 
 
 @router.post("/tools/{tool_name}/call")
-async def call_tool(tool_name: str, req: ToolCallRequest):
+async def call_tool(tool_name: str, req: ToolCallRequest, tenant: str = Depends(get_tenant)):
     """调用指定工具（MCP call_tool协议兼容，供应链6工具）"""
     args = req.arguments
-    logger.info(f"MCP call: {tool_name}({args})")
+    logger.info(f"MCP call: {tool_name}({args}) tenant={tenant}")
 
     try:
         if tool_name == "get_bom":
@@ -106,7 +107,7 @@ async def call_tool(tool_name: str, req: ToolCallRequest):
         else:
             raise HTTPException(status_code=404, detail=f"Unknown tool: {tool_name}")
 
-        return {"tool": tool_name, "result": result}
+        return {"tenant_id": tenant, "tool": tool_name, "result": result}
 
     except HTTPException:
         raise
@@ -130,12 +131,12 @@ async def list_federation_tools():
 
 
 @router.post("/federation/{tool_name}/call")
-async def call_federation_tool(tool_name: str, req: ToolCallRequest):
+async def call_federation_tool(tool_name: str, req: ToolCallRequest, tenant: str = Depends(get_tenant)):
     """调用联邦工具，tool_name 形如 supply_chain__get_bom。"""
-    logger.info(f"MCP federation call: {tool_name}({req.arguments})")
+    logger.info(f"MCP federation call: {tool_name}({req.arguments}) tenant={tenant}")
     try:
-        result = await dispatch(tool_name, req.arguments)
-        return {"tool": tool_name, "result": result}
+        result = await dispatch(tool_name, req.arguments, tenant_id=tenant)
+        return {"tenant_id": tenant, "tool": tool_name, "result": result}
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:

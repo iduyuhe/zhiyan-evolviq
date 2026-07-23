@@ -39,7 +39,7 @@ class StrategyTuner:
         self._cache: list[dict] = []  # 最近一次 suggest() 产出的建议，供 apply_suggestion 反查
 
     # ---------- 读取：当前策略旋钮 ----------
-    def current(self) -> list[dict]:
+    def current(self, tenant: str = "default") -> list[dict]:
         """所有 Agent 的当前策略旋钮（来自授权引擎，运行时实时生效）"""
         return [
             {
@@ -54,7 +54,7 @@ class StrategyTuner:
                 "require_approval_actions": b.require_approval_actions,
                 "enabled": b.enabled,
             }
-            for b in authorization.list()
+            for b in authorization.for_tenant(tenant).list()
         ]
 
     # ---------- 读取：效果信号 ----------
@@ -67,12 +67,12 @@ class StrategyTuner:
             d[ivt["status"]] = d.get(ivt["status"], 0) + 1
         return stats
 
-    def effect_signals(self) -> dict:
+    def effect_signals(self, tenant: str = "default") -> dict:
         """一页看清每个 Agent 的「放权度 vs 人类信任度」"""
         per_agent = {r["agent"]: r for r in metrics.per_agent_report()}
         ivt = self._agent_intervention_stats()
         signals: dict[str, dict] = {}
-        for b in authorization.list():
+        for b in authorization.for_tenant(tenant).list():
             a = b.agent
             pa = per_agent.get(a, {})
             iv = ivt.get(a, {})
@@ -105,9 +105,9 @@ class StrategyTuner:
             "expected_effect": expected,
         }
 
-    def suggest(self) -> dict:
+    def suggest(self, tenant: str = "default") -> dict:
         """基于效果信号产出调参建议；无数据时不臆造（sample_size 不足则跳过）。"""
-        signals = self.effect_signals()
+        signals = self.effect_signals(tenant)
         suggestions: list[dict] = []
         for b in authorization.list():
             a = b.agent
@@ -152,9 +152,9 @@ class StrategyTuner:
         }
 
     # ---------- 调整：真正改写运行时旋钮 + 审计 ----------
-    def apply(self, agent: str, param: str, value, reason: str, basis: str = "manual") -> dict:
+    def apply(self, agent: str, param: str, value, reason: str, basis: str = "manual", tenant: str = "default") -> dict:
         """控制台直接调参：夹紧后写入授权引擎，记入审计轨迹。"""
-        b = authorization.get_for_agent(agent)
+        b = authorization.for_tenant(tenant).get_for_agent(agent)
         if not b:
             raise KeyError(f"未找到 Agent 的授权边界: {agent}")
         if param == "confidence_threshold":
@@ -169,7 +169,7 @@ class StrategyTuner:
             raise ValueError(f"不支持调整的参数: {param}")
 
         old = getattr(b, param)
-        updated = authorization.patch(b.id, **{param: value})
+        updated = authorization.for_tenant(tenant).patch(b.id, **{param: value})
         entry = {
             "ts": datetime.now(timezone.utc).isoformat(),
             "agent": agent,

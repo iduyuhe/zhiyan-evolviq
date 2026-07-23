@@ -52,6 +52,7 @@ async def save_session(
     error: str | None = None,
     auth_boundary_id: str | None = None,
     user_id: str = "anonymous",
+    tenant_id: str = "default",
 ) -> None:
     """upsert AgentSession（以 session_id 为 PK）。db 不可用时静默跳过。"""
     if not db.db_available or db.async_session is None:
@@ -63,8 +64,10 @@ async def save_session(
         async with db.async_session() as s:
             obj = await s.get(AgentSession, sid)
             if obj is None:
-                obj = AgentSession(id=sid, user_id=user_id, goal=goal)
+                obj = AgentSession(id=sid, tenant_id=tenant_id, user_id=user_id, goal=goal)
                 s.add(obj)
+            else:
+                obj.tenant_id = tenant_id
             obj.plan = plan
             obj.status = _coerce_status(status)
             if result is not None:
@@ -80,7 +83,7 @@ async def save_session(
         logger.warning(f"⚠️ save_session 失败（已忽略，不影响执行）：{type(e).__name__} {e}")
 
 
-async def log_audit(session_id: str, event_type: str, actor: str, detail) -> None:
+async def log_audit(session_id: str, event_type: str, actor: str, detail, tenant_id: str = "default") -> None:
     """插入一条审计日志。db 不可用时静默跳过。"""
     if not db.db_available or db.async_session is None:
         return
@@ -92,6 +95,7 @@ async def log_audit(session_id: str, event_type: str, actor: str, detail) -> Non
             s.add(
                 AuditLog(
                     session_id=uuid.UUID(session_id) if _is_uuid(session_id) else uuid.uuid4(),
+                    tenant_id=tenant_id,
                     event_type=event_type,
                     actor=actor,
                     detail=detail_str,
@@ -113,27 +117,29 @@ async def get_session(session_id: str) -> dict | None:
         return None
 
 
-async def list_sessions(limit: int = 50) -> list[dict]:
+async def list_sessions(limit: int = 50, tenant_id: str = "default") -> list[dict]:
     if not db.db_available or db.async_session is None:
         return []
     try:
         async with db.async_session() as s:
-            rows = (
-                await s.execute(
-                    select(AgentSession).order_by(AgentSession.created_at.desc()).limit(limit)
-                )
-            ).scalars().all()
+            q = (
+                select(AgentSession)
+                .where(AgentSession.tenant_id == tenant_id)
+                .order_by(AgentSession.created_at.desc())
+                .limit(limit)
+            )
+            rows = (await s.execute(q)).scalars().all()
             return [_session_to_dict(o) for o in rows]
     except Exception:
         return []
 
 
-async def get_audit_logs(session_id: str | None = None, limit: int = 200) -> list[dict]:
+async def get_audit_logs(session_id: str | None = None, limit: int = 200, tenant_id: str = "default") -> list[dict]:
     if not db.db_available or db.async_session is None:
         return []
     try:
         async with db.async_session() as s:
-            q = select(AuditLog).order_by(AuditLog.created_at.desc())
+            q = select(AuditLog).where(AuditLog.tenant_id == tenant_id).order_by(AuditLog.created_at.desc())
             if session_id and _is_uuid(session_id):
                 q = q.where(AuditLog.session_id == uuid.UUID(session_id))
             rows = (await s.execute(q.limit(limit))).scalars().all()
@@ -156,6 +162,7 @@ def _session_to_dict(o: AgentSession) -> dict:
     result = json.loads(o.result) if o.result else None
     return {
         "session_id": str(o.id),
+        "tenant_id": o.tenant_id,
         "user_id": o.user_id,
         "goal": o.goal,
         "status": o.status.value if hasattr(o.status, "value") else o.status,

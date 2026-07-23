@@ -7,6 +7,7 @@
 - 不引入运行时 MCP 传输依赖到 Agent 内部，零韧性风险。
 """
 
+import contextvars
 import logging
 
 from src.agents.aoi_judge.tools import AOITools
@@ -22,6 +23,15 @@ from src.agents.supply_chain.tools import SupplyChainTools
 from src.agents.yield_analysis.tools import YieldTools
 
 logger = logging.getLogger(__name__)
+
+# 多租户上下文：dispatch 调用期间记录当前租户，供下游工具在需要时读取。
+# （参考目录数据【物料/BOM/库存/PO】为平台级共享目录；租户上下文用于调用隔离与审计。）
+current_tenant: contextvars.ContextVar = contextvars.ContextVar("zhiyan_tenant", default="default")
+
+
+def get_current_tenant() -> str:
+    """读取当前调用所属租户（工具内可用）。"""
+    return current_tenant.get()
 
 # 每个 Agent 的 in-process 工具实例（与运行时同一套实现）
 _INSTANCES = {
@@ -115,10 +125,11 @@ def federation_summary() -> dict:
     }
 
 
-async def dispatch(tool_name: str, arguments: dict | None) -> dict:
+async def dispatch(tool_name: str, arguments: dict | None, tenant_id: str | None = None) -> dict:
     """按命名空间路由到对应 Agent 的 in-process 工具方法。
 
     事实锚点铁律：仅透传调用确定性工具，不改写任何业务数字。
+    tenant_id：当前调用所属租户，写入上下文变量供工具读取（调用隔离/审计）。
     """
     spec = TOOL_REGISTRY.get(tool_name)
     if not spec:
@@ -126,4 +137,8 @@ async def dispatch(tool_name: str, arguments: dict | None) -> dict:
     agent, method, _desc, _params = spec
     inst = _INSTANCES[agent]
     func = getattr(inst, method)
-    return await func(**(arguments or {}))
+    token = current_tenant.set(tenant_id or "default")
+    try:
+        return await func(**(arguments or {}))
+    finally:
+        current_tenant.reset(token)

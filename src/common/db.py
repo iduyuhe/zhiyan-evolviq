@@ -67,7 +67,7 @@ async def init_db() -> bool:
     if engine is None:
         configure_db()
     # 确保领域模型类已注册到 Base.metadata（否则 create_all 建不出表）
-    from src.runtime.models import agent_session, supply_chain  # noqa: F401
+    from src.runtime.models import agent_session, supply_chain, tenant  # noqa: F401
     # 1) 先试配置的目标库
     try:
         async with engine.begin() as conn:

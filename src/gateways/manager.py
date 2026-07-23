@@ -21,16 +21,34 @@ logger = logging.getLogger(__name__)
 
 
 class GatewayManager:
-    """统一网关管理器（单例语义，由 main lifespan 持有）"""
+    """统一网关管理器（单例语义，由 main lifespan 持有）
 
-    def __init__(self):
+    多租户：支持按租户覆写工业协议网关连接参数。
+    - 未配置 gateway_config 的租户 → 共享平台网关（默认单例 `manager`）。
+    - 已配置的租户 → 惰性构建独立的 GatewayManager 实例（隔离数据源），由 get_for_tenant 返回。
+    """
+
+    def __init__(self, overrides: dict | None = None):
+        cfg = {
+            "modbus_host": settings.modbus_host,
+            "modbus_port": settings.modbus_port,
+            "mqtt_broker": settings.mqtt_broker,
+            "mqtt_port": settings.mqtt_port,
+            "opcua_endpoint": settings.opcua_endpoint,
+            "ipc_cfx_broker": settings.ipc_cfx_broker,
+        }
+        if overrides:
+            cfg.update({k: v for k, v in overrides.items() if k in cfg})
+        self._cfg = cfg
+        self._tenant_id = overrides.get("_tenant_id") if overrides else None
         self._gateways = {
-            "modbus": ModbusGateway(host=settings.modbus_host, port=settings.modbus_port),
-            "mqtt": MQTTGateway(broker=settings.mqtt_broker, port=settings.mqtt_port),
-            "opcua": OpcUaGateway(endpoint=settings.opcua_endpoint),
-            "ipc_cfx": IpcCfxGateway(broker=settings.ipc_cfx_broker),
+            "modbus": ModbusGateway(host=cfg["modbus_host"], port=cfg["modbus_port"]),
+            "mqtt": MQTTGateway(broker=cfg["mqtt_broker"], port=cfg["mqtt_port"]),
+            "opcua": OpcUaGateway(endpoint=cfg["opcua_endpoint"]),
+            "ipc_cfx": IpcCfxGateway(broker=cfg["ipc_cfx_broker"]),
         }
         self._initialized = False
+        self._tenant_managers: dict[str, "GatewayManager"] = {}
 
     async def initialize(self) -> dict:
         """逐个 best-effort 连接；失败仅告警，不阻断启动。
@@ -109,6 +127,25 @@ class GatewayManager:
 
     def get(self, name: str):
         return self._gateways.get(name)
+
+    async def get_for_tenant(self, tenant_id: str):
+        """返回某租户的网关管理器：未配置则共享平台网关；已配置则返回隔离实例。
+
+        Returns:
+            (gw_manager, is_shared)
+        """
+        from src.runtime.tenant_store import tenant_store
+
+        if tenant_id in ("default", None):
+            return self, True
+        cfg = tenant_store.get_gateway_config(tenant_id)
+        if not cfg:
+            return self, True
+        if tenant_id not in self._tenant_managers:
+            mgr = GatewayManager(overrides={**cfg, "_tenant_id": tenant_id})
+            await mgr.initialize()
+            self._tenant_managers[tenant_id] = mgr
+        return self._tenant_managers[tenant_id], False
 
     async def read(self, name: str, address: str, count: int = 1) -> list[DataPoint]:
         gw = self._gateways.get(name)

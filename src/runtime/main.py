@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.runtime.api import agents_api, auth, audit, events_api, health, mcp_tools, scheduler_api, sessions, supply_chain
-from src.runtime.api import interventions, reports, system, knowledge_graph, gateways, strategy
+from src.runtime.api import interventions, reports, system, knowledge_graph, gateways, strategy, tenants
 from src.runtime.core.scheduler import scheduler
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -33,6 +33,11 @@ async def lifespan(app: FastAPI):
         logger.info(f"📦 数据层已接入 [{st['mode']}] {st['url']}")
     else:
         logger.warning("⚠️ 数据层不可用，持久化降级为 no-op（执行管道不受影响）")
+
+    # 多租户：确保默认租户存在并从库加载全部租户（db 不可用时降级内存态）
+    from src.runtime.tenant_store import tenant_store
+    await tenant_store.init()
+    logger.info("🏢 租户存储已初始化")
 
     # 知识图谱（V1-1）：Neo4j 不可达自动回退内存图；从种子构建跨 Agent 语义网
     from src.common import neo4j_client as neo
@@ -96,6 +101,7 @@ app.include_router(system.router)
 app.include_router(knowledge_graph.router)
 app.include_router(gateways.router)
 app.include_router(strategy.router)
+app.include_router(tenants.router)
 
 
 if __name__ == "__main__":

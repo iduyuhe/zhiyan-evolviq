@@ -1,16 +1,18 @@
-"""授权边界配置API——AI原生核心接口
+"""授权边界配置API——AI原生核心接口（多租户版）
 
 提供授权边界的 CRUD，以及按Agent查询当前生效边界。
-边界数据由 AuthorizationEngine 统一内存管理。
+边界数据按租户隔离：所有操作作用于请求所解析出的租户（X-Tenant-Key）。
+未携带密钥 → 默认租户 default。
 
 对应策划方案 模块四「授权边界配置」(MVP必修)
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from src.runtime.core.authorization import authorization
 from src.runtime.models.authorization import AuthBoundary, AuthBoundaryCreate
+from src.runtime.api.deps import get_tenant
 
 router = APIRouter(prefix="/auth", tags=["authorization"])
 
@@ -28,52 +30,55 @@ class UpdateBoundaryRequest(BaseModel):
 
 
 @router.get("/boundaries")
-async def list_boundaries():
-    """列出所有授权边界"""
-    boundaries = authorization.list()
+async def list_boundaries(tenant: str = Depends(get_tenant)):
+    """列出当前租户的全部授权边界"""
+    scope = authorization.for_tenant(tenant)
+    boundaries = scope.list()
     return {
+        "tenant_id": tenant,
         "boundaries": [b.model_dump() for b in boundaries],
         "total": len(boundaries),
     }
 
 
 @router.get("/boundaries/{boundary_id}")
-async def get_boundary(boundary_id: str):
-    b = authorization.get(boundary_id)
+async def get_boundary(boundary_id: str, tenant: str = Depends(get_tenant)):
+    b = authorization.for_tenant(tenant).get(boundary_id)
     if not b:
         raise HTTPException(status_code=404, detail="Boundary not found")
     return b.model_dump()
 
 
 @router.get("/boundaries/agent/{agent}")
-async def get_agent_boundary(agent: str):
-    """取某Agent当前生效边界"""
-    b = authorization.get_for_agent(agent)
+async def get_agent_boundary(agent: str, tenant: str = Depends(get_tenant)):
+    """取某Agent当前生效边界（当前租户内）"""
+    b = authorization.for_tenant(tenant).get_for_agent(agent)
     if not b:
-        return {"boundary": None, "agent": agent}
-    return {"boundary": b.model_dump(), "agent": agent}
+        return {"tenant_id": tenant, "boundary": None, "agent": agent}
+    return {"tenant_id": tenant, "boundary": b.model_dump(), "agent": agent}
 
 
 @router.post("/boundaries")
-async def create_boundary(req: AuthBoundaryCreate):
-    """创建授权边界"""
-    b = authorization.create(req)
-    return {"id": b.id, "name": b.name, "status": "created", "boundary": b.model_dump()}
+async def create_boundary(req: AuthBoundaryCreate, tenant: str = Depends(get_tenant)):
+    """创建授权边界（当前租户内）"""
+    b = authorization.for_tenant(tenant).create(req)
+    return {"tenant_id": tenant, "id": b.id, "name": b.name, "status": "created", "boundary": b.model_dump()}
 
 
 @router.put("/boundaries/{boundary_id}")
-async def update_boundary(boundary_id: str, req: AuthBoundaryCreate):
-    """全量更新授权边界"""
-    b = authorization.update(boundary_id, req)
+async def update_boundary(boundary_id: str, req: AuthBoundaryCreate, tenant: str = Depends(get_tenant)):
+    """全量更新授权边界（当前租户内）"""
+    b = authorization.for_tenant(tenant).update(boundary_id, req)
     if not b:
         raise HTTPException(status_code=404, detail="Boundary not found")
-    return {"id": boundary_id, "status": "updated", "boundary": b.model_dump()}
+    return {"tenant_id": tenant, "id": boundary_id, "status": "updated", "boundary": b.model_dump()}
 
 
 @router.patch("/boundaries/{boundary_id}")
-async def patch_boundary(boundary_id: str, req: UpdateBoundaryRequest):
-    """局部更新授权边界"""
-    cur = authorization.get(boundary_id)
+async def patch_boundary(boundary_id: str, req: UpdateBoundaryRequest, tenant: str = Depends(get_tenant)):
+    """局部更新授权边界（当前租户内）"""
+    scope = authorization.for_tenant(tenant)
+    cur = scope.get(boundary_id)
     if not cur:
         raise HTTPException(status_code=404, detail="Boundary not found")
     updates = {k: v for k, v in req.model_dump().items() if v is not None}
@@ -83,13 +88,13 @@ async def patch_boundary(boundary_id: str, req: UpdateBoundaryRequest):
     merged.pop("id", None)
     merged.pop("created_at", None)
     merged.pop("updated_at", None)
-    updated = authorization.update(boundary_id, AuthBoundaryCreate(**merged))
-    return {"id": boundary_id, "status": "patched", "boundary": updated.model_dump()}
+    updated = scope.update(boundary_id, AuthBoundaryCreate(**merged))
+    return {"tenant_id": tenant, "id": boundary_id, "status": "patched", "boundary": updated.model_dump()}
 
 
 @router.delete("/boundaries/{boundary_id}")
-async def delete_boundary(boundary_id: str):
-    ok = authorization.delete(boundary_id)
+async def delete_boundary(boundary_id: str, tenant: str = Depends(get_tenant)):
+    ok = authorization.for_tenant(tenant).delete(boundary_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Boundary not found")
-    return {"id": boundary_id, "status": "deleted"}
+    return {"tenant_id": tenant, "id": boundary_id, "status": "deleted"}

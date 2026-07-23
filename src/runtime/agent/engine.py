@@ -22,7 +22,7 @@ class AgentEngine:
     def __init__(self):
         self._sessions: dict[str, dict] = {}
 
-    async def plan(self, session_id: str, goal: str, auth_boundary_id: str | None = None) -> str:
+    async def plan(self, session_id: str, goal: str, auth_boundary_id: str | None = None, tenant_id: str = "default") -> str:
         """
         接收自然语言目标 → 让Agent生成规划路径
 
@@ -30,6 +30,7 @@ class AgentEngine:
             session_id: 会话ID
             goal: 自然语言描述的目标
             auth_boundary_id: 授权边界配置ID（可选）
+            tenant_id: 所属租户（多租户隔离用，默认 default）
 
         Returns:
             plan: Agent生成的规划（Markdown格式，展示给人确认）
@@ -38,18 +39,20 @@ class AgentEngine:
         self._sessions[session_id] = {
             "goal": goal,
             "auth_boundary_id": auth_boundary_id,
+            "tenant_id": tenant_id,
             "status": "planning",
             "plan": None,
         }
 
         # 落库：AgentSession（planning）
         await persistence.save_session(
-            session_id, goal, status="planning", auth_boundary_id=auth_boundary_id
+            session_id, goal, status="planning", auth_boundary_id=auth_boundary_id,
+            tenant_id=tenant_id,
         )
 
         # 审计：目标设定
         from src.meta_agent.audit import audit_logger
-        audit_logger.log(session_id, "goal_set", "human", {"goal": goal[:200]})
+        audit_logger.log(session_id, "goal_set", "human", {"goal": goal[:200]}, tenant_id=tenant_id)
 
         # Step 2: 路由到合适的Agent生成规划
         from src.runtime.agent.router import route_goal
@@ -157,19 +160,20 @@ class AgentEngine:
         # 落库：AgentSession（awaiting_approval + plan）
         await persistence.save_session(
             session_id, goal, plan=plan_text, status="awaiting_approval",
-            auth_boundary_id=auth_boundary_id,
+            auth_boundary_id=auth_boundary_id, tenant_id=tenant_id,
         )
         # 审计：规划已生成
-        audit_logger.log(session_id, "plan_created", self._sessions[session_id].get("agent", "agent"), {"plan_length": len(plan_text)})
+        audit_logger.log(session_id, "plan_created", self._sessions[session_id].get("agent", "agent"), {"plan_length": len(plan_text)}, tenant_id=tenant_id)
         logger.info(f"Session {session_id}: {self._sessions[session_id].get('agent', 'agent')} plan generated")
         return plan_text
 
-    async def execute(self, session_id: str) -> dict:
+    async def execute(self, session_id: str, tenant_id: str | None = None) -> dict:
         """
         人确认规划后，Agent开始执行
 
         Args:
             session_id: 会话ID
+            tenant_id: 所属租户（缺省时从会话上下文回退）
 
         Returns:
             result: 执行结果
@@ -177,6 +181,8 @@ class AgentEngine:
         session = self._sessions.get(session_id)
         if not session:
             raise ValueError(f"Session {session_id} not found")
+        # 优先使用显式传入；否则从会话上下文取
+        tid = tenant_id or session.get("tenant_id", "default")
 
         session["status"] = "executing"
         # 落库：AgentSession（executing）
@@ -184,10 +190,11 @@ class AgentEngine:
             session_id, session["goal"], status="executing",
             plan=session.get("plan"),
             auth_boundary_id=session.get("auth_boundary_id"),
+            tenant_id=tid,
         )
         # 审计：人已确认
         from src.meta_agent.audit import audit_logger
-        audit_logger.log(session_id, "approved", "human", {"feedback": "Confirmed by human"})
+        audit_logger.log(session_id, "approved", "human", {"feedback": "Confirmed by human"}, tenant_id=tid)
 
         goal = session["goal"]
         agent_name = session.get("agent", "supply_chain")
@@ -198,7 +205,7 @@ class AgentEngine:
 
         # ===== AI原生核心：授权边界评估 + 异常介入闭环 =====
         autonomous_actions, pending_interventions = await self._apply_authorization(
-            session_id, agent_name, goal, result
+            session_id, agent_name, goal, result, tenant_id=tid
         )
         result["autonomous_actions"] = autonomous_actions
         result["pending_interventions"] = pending_interventions
@@ -216,6 +223,7 @@ class AgentEngine:
         await persistence.save_session(
             session_id, goal, plan=session.get("plan"), status="completed",
             result=result, auth_boundary_id=session.get("auth_boundary_id"),
+            tenant_id=tid,
         )
         # 审计：执行完成
         audit_logger.log(session_id, "executed", "agent", {
@@ -223,14 +231,14 @@ class AgentEngine:
             "completeness": result.get("completeness_pct"),
             "autonomous": len(autonomous_actions),
             "pending": len(pending_interventions),
-        })
+        }, tenant_id=tid)
 
         # ===== 知识图谱增量写入（V1-1）=====
         # 基于确定性执行结果，fire-and-forget 不阻塞执行管道；失败不外溢。
         try:
             from src.runtime import knowledge_graph as kg
 
-            asyncio.create_task(kg.apply_execution_result(agent_name, session_id, result))
+            asyncio.create_task(kg.apply_execution_result(tid, agent_name, session_id, result))
         except Exception as e:
             logger.warning(f"知识图谱增量写入调度失败（不破管）：{e}")
 
@@ -248,7 +256,7 @@ class AgentEngine:
         return result
 
     async def _apply_authorization(
-        self, session_id: str, agent_name: str, goal: str, result: dict
+        self, session_id: str, agent_name: str, goal: str, result: dict, tenant_id: str = "default"
     ) -> tuple[list[dict], list[dict]]:
         """对执行结果中的动作应用授权边界评估
 
@@ -261,13 +269,14 @@ class AgentEngine:
         from src.runtime.models.authorization import PlannedAction
         from src.meta_agent.audit import audit_logger
 
-        # 取边界：优先会话指定，否则取Agent默认
+        # 取边界：优先会话指定，否则取Agent默认（均限定在当前租户内）
+        auth_scope = authorization.for_tenant(tenant_id)
         boundary = None
         bid = self._sessions.get(session_id, {}).get("auth_boundary_id")
         if bid:
-            boundary = authorization.get(bid)
+            boundary = auth_scope.get(bid)
         if boundary is None:
-            boundary = authorization.get_for_agent(agent_name)
+            boundary = auth_scope.get_for_agent(agent_name)
         if boundary is None:
             # 无边界配置：全部视为自主（演示默认行为）
             return [], []
@@ -306,7 +315,7 @@ class AgentEngine:
         if not actions:
             return [], []
 
-        decisions = authorization.evaluate_batch(boundary, actions)
+        decisions = auth_scope.evaluate_batch(boundary, actions)
 
         autonomous: list[dict] = []
         pending: list[dict] = []
@@ -331,7 +340,7 @@ class AgentEngine:
                 audit_logger.log(session_id, "intercepted", "agent", {
                     "action": dec.action.type,
                     "reason": dec.reason,
-                })
+                }, tenant_id=tenant_id)
                 # 事件：推送异常介入
                 event_bus.publish(
                     "intervention_required",
@@ -438,9 +447,10 @@ class AgentEngine:
             return "PCB"
         return "其他"
 
-    async def reject(self, session_id: str, feedback: str | None = None):
+    async def reject(self, session_id: str, feedback: str | None = None, tenant_id: str = "default"):
         """人驳回规划"""
         session = self._sessions.get(session_id)
+        tid = tenant_id or (session.get("tenant_id", "default") if session else "default")
         if session:
             session["status"] = "rejected"
             session["feedback"] = feedback
@@ -449,6 +459,7 @@ class AgentEngine:
                 session_id, session.get("goal", ""), status="rejected",
                 plan=session.get("plan"),
                 auth_boundary_id=session.get("auth_boundary_id"),
+                tenant_id=tid,
             )
             logger.info(f"Session {session_id}: Rejected. Feedback: {feedback}")
 
@@ -519,12 +530,15 @@ class AgentEngine:
         lines.append("\n> Confirm to execute?")
         return "\n".join(lines)
 
-    def list_sessions(self) -> list[dict]:
-        """列出所有会话摘要"""
+    def list_sessions(self, tenant_id: str | None = None) -> list[dict]:
+        """列出会话摘要（tenant_id 提供时按租户隔离）"""
         summaries = []
         for sid, s in self._sessions.items():
+            if tenant_id and s.get("tenant_id", "default") != tenant_id:
+                continue
             summaries.append({
                 "session_id": sid,
+                "tenant_id": s.get("tenant_id", "default"),
                 "goal": s.get("goal", "")[:80],
                 "status": s.get("status", "unknown"),
                 "completeness": s.get("result", {}).get("completeness_pct") if s.get("result") else None,

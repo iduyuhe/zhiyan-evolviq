@@ -6,10 +6,11 @@
 对应策划方案 V1-4「控制台策略调整·按效果调参」
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 
 from src.runtime.core.strategy_tuner import tuner
+from src.runtime.api.deps import get_tenant
 
 router = APIRouter(prefix="/strategy", tags=["strategy"])
 
@@ -22,26 +23,27 @@ class TuneRequest(BaseModel):
 
 
 @router.get("")
-async def strategy_panel():
-    """控制台一页视图：当前旋钮 + 效果信号 + 调参建议"""
+async def strategy_panel(tenant: str = Depends(get_tenant)):
+    """控制台一页视图：当前旋钮 + 效果信号 + 调参建议（当前租户）"""
     return {
-        "current": tuner.current(),
-        "effect_signals": tuner.effect_signals(),
-        "suggestions": tuner.suggest()["suggestions"],
+        "tenant_id": tenant,
+        "current": tuner.current(tenant),
+        "effect_signals": tuner.effect_signals(tenant),
+        "suggestions": tuner.suggest(tenant)["suggestions"],
     }
 
 
 @router.get("/suggestions")
-async def strategy_suggestions():
-    """仅返回效果驱动的调参建议"""
-    return tuner.suggest()
+async def strategy_suggestions(tenant: str = Depends(get_tenant)):
+    """仅返回效果驱动的调参建议（当前租户）"""
+    return tuner.suggest(tenant)
 
 
 @router.post("/tune")
-async def tune_strategy(req: TuneRequest):
-    """控制台手动调参：夹紧后写入运行时授权边界，并记录审计轨迹"""
+async def tune_strategy(req: TuneRequest, tenant: str = Depends(get_tenant)):
+    """控制台手动调参：夹紧后写入运行时授权边界，并记录审计轨迹（当前租户）"""
     try:
-        result = tuner.apply(req.agent, req.param, req.value, req.reason, basis="console")
+        result = tuner.apply(req.agent, req.param, req.value, req.reason, basis="console", tenant=tenant)
     except KeyError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
@@ -50,6 +52,6 @@ async def tune_strategy(req: TuneRequest):
 
 
 @router.get("/history")
-async def strategy_history():
-    """调参审计轨迹"""
-    return {"history": tuner.history(), "total": len(tuner.history())}
+async def strategy_history(tenant: str = Depends(get_tenant)):
+    """调参审计轨迹（全局，按租户调参均记录于此）"""
+    return {"tenant_id": tenant, "history": tuner.history(), "total": len(tuner.history())}

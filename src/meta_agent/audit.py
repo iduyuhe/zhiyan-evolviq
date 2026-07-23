@@ -35,6 +35,7 @@ class AuditLogger:
         event_type: str,
         actor: str,
         detail: str | dict,
+        tenant_id: str = "default",
     ):
         """
         记录一条审计日志
@@ -44,6 +45,7 @@ class AuditLogger:
             event_type: 事件类型（goal_set/plan_created/approved/executed/rejected/intervened）
             actor: 执行者（human / agent_name）
             detail: 事件详情（文本或JSON）
+            tenant_id: 所属租户（多租户隔离用，默认 default）
         """
         detail_str = json.dumps(detail, ensure_ascii=False) if isinstance(detail, dict) else detail
         entry = {
@@ -52,15 +54,16 @@ class AuditLogger:
             "event_type": event_type,
             "actor": actor,
             "detail": detail_str,
+            "tenant_id": tenant_id,
         }
         self._logs.append(entry)
-        logger.info(f"[AUDIT] {entry['actor']} | {entry['event_type']} | session={session_id[:8]}...")
+        logger.info(f"[AUDIT] {entry['actor']} | {entry['event_type']} | tenant={tenant_id} | session={session_id[:8]}...")
 
         # 异步落库（fire-and-forget，不阻塞、不抛异常）
         if self._async_sink is not None:
             try:
                 loop = asyncio.get_running_loop()
-                loop.create_task(self._async_sink(session_id, event_type, actor, detail))
+                loop.create_task(self._async_sink(session_id, event_type, actor, detail, tenant_id))
             except RuntimeError:
                 # 无运行中的事件循环（纯同步上下文）——跳过持久化
                 pass
