@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 def _build_default_boundaries() -> list[AuthBoundary]:
-    """构造 11 个 Agent 的默认授权边界（每次调用返回全新实例，供各租户独立持有）。"""
+    """构造 14 个 Agent 的默认授权边界（每次调用返回全新实例，供各租户独立持有）。"""
     defaults: list[AuthBoundary] = []
 
     defaults.append(AuthBoundary(
@@ -175,6 +175,46 @@ def _build_default_boundaries() -> list[AuthBoundary]:
         max_lock_qty=0,
         confidence_threshold=0.80,
         auto_execute_actions=["create_doe_experiment"],
+        require_approval_actions=[],
+        max_daily_autonomous=15,
+        enabled=True,
+    ))
+    # 经营决策大脑（P1 企业级）
+    defaults.append(AuthBoundary(
+        id="ab-aps-default",
+        name="计划排程默认边界",
+        agent="aps_scheduler",
+        allowed_categories=[],
+        price_tolerance_pct=0.0,
+        max_lock_qty=0,
+        confidence_threshold=0.80,
+        auto_execute_actions=["rebalance_schedule"],
+        require_approval_actions=["expedite_order"],
+        max_daily_autonomous=20,
+        enabled=True,
+    ))
+    defaults.append(AuthBoundary(
+        id="ab-energy-default",
+        name="能源碳ESG默认边界",
+        agent="energy_carbon",
+        allowed_categories=[],
+        price_tolerance_pct=0.0,
+        max_lock_qty=0,
+        confidence_threshold=0.82,
+        auto_execute_actions=["create_saving_task"],
+        require_approval_actions=[],
+        max_daily_autonomous=15,
+        enabled=True,
+    ))
+    defaults.append(AuthBoundary(
+        id="ab-cost-default",
+        name="制造成本默认边界",
+        agent="cost_analysis",
+        allowed_categories=[],
+        price_tolerance_pct=0.0,
+        max_lock_qty=0,
+        confidence_threshold=0.82,
+        auto_execute_actions=["create_cost_reduction"],
         require_approval_actions=[],
         max_daily_autonomous=15,
         enabled=True,

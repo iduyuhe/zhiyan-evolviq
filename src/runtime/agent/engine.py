@@ -136,7 +136,7 @@ class AgentEngine:
 ### Similar historical cases
 {trace_result.get('historical_similar', 0)} cases
 """
-        elif agent_name in ("dfm_check", "bom_selector", "oee_optimizer", "eco_change", "smt_changeover", "aoi_judge", "ipc_standard"):
+        elif agent_name in ("dfm_check", "bom_selector", "oee_optimizer", "eco_change", "smt_changeover", "aoi_judge", "ipc_standard", "aps_scheduler", "energy_carbon", "cost_analysis"):
             plan_text = await self._plan_for_generic_agent(agent_name, goal)
         else:
             plan_text = f"## 目标理解\n> {goal}\n\n无法识别合适的Agent，请明确目标场景。"
@@ -500,9 +500,19 @@ class AgentEngine:
                 lines.append(f"- {a['part_number']} ({a['manufacturer']}): ${a['unit_price']} [{a['compatibility']}]")
 
         if "lines" in result:
-            lines.append("\n### Production lines")
-            for l in result["lines"]:
-                lines.append(f"- {l['line_name']}: OEE {l['oee']}% (A:{l['availability']}% P:{l['performance']}% Q:{l['quality']}%)")
+            # 同一份 result 里 key 名 "lines" 被两类 Agent 复用，需按 schema 区分：
+            #  - OEE 优化 Agent：产线含 oee/availability/performance/quality
+            #  - 能源碳 Agent：产线含 energy_kwh/carbon_t/green_ratio（否则会 KeyError 500）
+            sample = result["lines"][0] if result["lines"] else {}
+            if "oee" in sample:
+                lines.append("\n### Production lines")
+                for l in result["lines"]:
+                    lines.append(f"- {l['line_name']}: OEE {l['oee']}% (A:{l['availability']}% P:{l['performance']}% Q:{l['quality']}%)")
+            elif "energy_kwh" in sample:
+                lines.append("\n### 产线能耗与碳排放")
+                for l in result["lines"]:
+                    lines.append(f"- {l['name']}: 能耗 {l['energy_kwh']} kWh，碳排 {l['carbon_t']} tCO2，绿电 {l['green_ratio']}%")
+            # 其它未知 schema 的 lines 不渲染，避免崩溃
 
         if "defect_categories" in result:
             lines.append("\n### AOI defect categories")

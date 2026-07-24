@@ -1,6 +1,6 @@
 """多Agent路由引擎——根据用户目标自动分派到合适的Agent
 
-当前Agent阵容（11个）：
+当前Agent阵容（14个）：
 1. 供应链Agent (supply_chain) — 物料齐套检查、缺料预警、替代推荐
 2. 设备维护Agent (pm_maintenance) — 设备健康诊断、预测维护
 3. 良率分析Agent (yield_analysis) — 晶圆良率分析、缺陷定位
@@ -12,6 +12,9 @@
 9. 换线Agent (smt_changeover) — SMT换线优化
 10. AOI判定Agent (aoi_judge) — AOI误报智能过滤
 11. IPC标准Agent (ipc_standard) — IPC标准辅助查询与缺陷判定
+12. 计划排程Agent (aps_scheduler) — 生产排程、产能负荷、交期承诺
+13. 能源碳ESG Agent (energy_carbon) — 能耗监控、碳排放核算、节能降碳
+14. 制造成本Agent (cost_analysis) — 单位成本拆解、降本机会、报价支撑
 """
 
 import importlib
@@ -35,6 +38,10 @@ AGENT_REGISTRY: dict[str, tuple[str, str]] = {
     "smt_changeover": ("src.agents.smt_changeover.agent", "smt_changeover_agent"),
     "aoi_judge": ("src.agents.aoi_judge.agent", "aoi_agent"),
     "ipc_standard": ("src.agents.ipc_standard.agent", "ipc_standard_agent"),
+    # 经营决策大脑（P1 企业级）
+    "aps_scheduler": ("src.agents.aps_scheduler.agent", "aps_agent"),
+    "energy_carbon": ("src.agents.energy_carbon.agent", "energy_carbon_agent"),
+    "cost_analysis": ("src.agents.cost_analysis.agent", "cost_agent"),
 }
 
 
@@ -61,6 +68,12 @@ ROUTING_RULES = [
     (["追溯", "trace", "客诉", "投诉", "根因", "root", "cause", "归因", "异常批次"], "quality_trace"),
     # IPC标准Agent触发词（增强：焊点/桥连/拒收/可接受）
     (["ipc", "标准", "判定", "检验规范", "class 1", "class 2", "class 3", "可接受性", "桥连", "焊点", "拒收", "可接受"], "ipc_standard"),
+    # 计划排程Agent触发词（经营决策大脑）
+    (["排程", "排产", "生产计划", "产能", "交期", "工单", "投料", "调度", "负荷", "aps", "scheduling", "ctp"], "aps_scheduler"),
+    # 能源碳ESG Agent触发词（经营决策大脑）
+    (["能耗", "能源", "碳", "碳排放", "碳足迹", "esg", "双碳", "节能", "绿电", "排放", "energy", "carbon"], "energy_carbon"),
+    # 制造成本Agent触发词（经营决策大脑）
+    (["成本", "制造成本", "降本", "报价", "毛利", "费用", "单位成本", "成本核算", "cost"], "cost_analysis"),
     # 良率分析Agent触发词（放最后，作为宽泛兜底）
     (["良率", "yield", "缺陷", "defect", "质量", "quality", "颗粒", "污染", "合格率", "不良"], "yield_analysis"),
 ]

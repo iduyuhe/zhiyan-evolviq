@@ -14,6 +14,9 @@ const AGENT_META: Record<string, { title: string; icon: string }> = {
   smt_changeover: { title: 'SMT换线优化', icon: '🔀' },
   aoi_judge: { title: 'AOI判定分析', icon: '👁' },
   ipc_standard: { title: 'IPC标准判定', icon: '📋' },
+  aps_scheduler: { title: '计划排程分析', icon: '🧠' },
+  energy_carbon: { title: '能源碳ESG分析', icon: '🌿' },
+  cost_analysis: { title: '制造成本分析', icon: '💰' },
 };
 
 export default function GenericResultView({ result, onNewGoal }: ResultViewProps) {
@@ -101,6 +104,12 @@ function getTabs(agent: string, result: any): { label: string; content: ReactEle
       return getAOITabs(result);
     case 'ipc_standard':
       return getIPCTabs(result);
+    case 'aps_scheduler':
+      return getAPSTabs(result);
+    case 'energy_carbon':
+      return getEnergyTabs(result);
+    case 'cost_analysis':
+      return getCostTabs(result);
     default:
       return [{ label: '结果', content: <pre className="text-xs text-gray-600 whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre> }];
   }
@@ -459,6 +468,189 @@ function getIPCTabs(result: any) {
               <p key={k} className="text-xs text-gray-700">{k}: {v as string}</p>
             ))}
           </div>
+        </div>
+      ),
+    },
+  ];
+}
+
+function getAPSTabs(result: any) {
+  return [
+    {
+      label: '排程总览',
+      content: (
+        <div className="space-y-3">
+          <div className="grid grid-cols-4 gap-3">
+            <StatCard label="产能负荷" value={`${result.avg_utilization || 0}%`} color={(result.avg_utilization || 0) >= 85 ? 'text-red-600' : 'text-green-600'} />
+            <StatCard label="交期准时率" value={`${result.on_time_rate || 0}%`} color={(result.on_time_rate || 0) >= 90 ? 'text-green-600' : 'text-amber-600'} />
+            <StatCard label="瓶颈" value={result.bottleneck_wc?.slice(-3) || ''} color="text-red-600" />
+            <StatCard label="交期风险" value={result.at_risk_count || 0} color="text-red-600" />
+          </div>
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-sm text-gray-700">{result.summary}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      label: '工单',
+      content: (
+        <div className="space-y-2">
+          {(result.orders || []).map((o: any, i: number) => (
+            <div key={i} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg">
+              <div>
+                <p className="text-sm font-medium text-gray-900">{o.order_id} · {o.product}</p>
+                <p className="text-xs text-gray-500">交期 {o.due} · 数量 {o.qty?.toLocaleString()}</p>
+              </div>
+              <div className="text-right">
+                <Badge status={o.slack_days < 0 ? 'critical' : o.slack_days <= 1 ? 'high' : 'low'}>
+                  {o.slack_days < 0 ? '逾期' : `缓冲${o.slack_days}天`}
+                </Badge>
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      label: '产能负荷',
+      content: (
+        <div className="space-y-2">
+          {(result.work_centers || []).map((w: any, i: number) => (
+            <div key={i} className="p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-gray-900">{w.name}</p>
+                <Badge status={w.status}>{w.utilization}%</Badge>
+              </div>
+              <div className="text-xs text-gray-500">负荷 {w.load_h}h / 产能 {w.capacity_h}h</div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+  ];
+}
+
+function getEnergyTabs(result: any) {
+  return [
+    {
+      label: '碳概览',
+      content: (
+        <div className="space-y-3">
+          <div className="grid grid-cols-4 gap-3">
+            <StatCard label="周能耗" value={`${((result.total_energy_kwh || 0) / 1000).toFixed(0)}MWh`} />
+            <StatCard label="碳排放" value={`${result.total_carbon_t || 0}t`} color="text-red-600" />
+            <StatCard label="绿电比例" value={`${result.green_ratio || 0}%`} color={(result.green_ratio || 0) >= 30 ? 'text-green-600' : 'text-amber-600'} />
+            <StatCard label="降碳潜力" value={`${result.total_saving_co2_t || 0}t`} color="text-green-600" />
+          </div>
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-sm text-gray-700">{result.summary}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      label: '产线能耗',
+      content: (
+        <div className="space-y-2">
+          {(result.lines || []).map((l: any, i: number) => (
+            <div key={i} className="p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-gray-900">{l.name}</p>
+                <Badge status={l.status}>{l.green_ratio}%绿电</Badge>
+              </div>
+              <div className="text-xs text-gray-500">能耗 {l.energy_kwh?.toLocaleString()} kWh · 碳排 {l.carbon_t}t</div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      label: '降碳机会',
+      content: (
+        <div className="space-y-2">
+          {(result.opportunities || []).map((op: any, i: number) => (
+            <div key={i} className="p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-gray-900">{op.measure}</p>
+                <span className="text-xs text-green-700 font-medium">回收 {op.payback_yr}年</span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                投资 {op.cost_wan} 万 · 节电 {op.saving_kwh?.toLocaleString() || 0} kWh{op.saving_co2_t ? ` · 降碳 ${op.saving_co2_t}t` : ''}
+              </p>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+  ];
+}
+
+function getCostTabs(result: any) {
+  return [
+    {
+      label: '成本总览',
+      content: (
+        <div className="space-y-3">
+          <div className="grid grid-cols-4 gap-3">
+            <StatCard label="平均单位成本" value={`¥${result.avg_unit_cost || 0}`} />
+            <StatCard label="平均毛利率" value={`${result.avg_margin_pct || 0}%`} color={(result.avg_margin_pct || 0) >= 25 ? 'text-green-600' : 'text-amber-600'} />
+            <StatCard label="超目标" value={result.over_target_count || 0} color="text-red-600" />
+            <StatCard label="降本空间" value={`¥${result.total_saving_per_unit || 0}`} color="text-green-600" />
+          </div>
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-sm text-gray-700">{result.summary}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      label: '成本拆解',
+      content: (
+        <div className="space-y-2">
+          {(result.breakdown || []).map((b: any, i: number) => (
+            <div key={i} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-900">{b.category}</p>
+              <div className="text-right">
+                <p className="text-sm font-medium text-gray-900">¥{b.amount}</p>
+                <p className="text-xs text-gray-400">{b.pct}%</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      label: '产品成本',
+      content: (
+        <div className="space-y-2">
+          {(result.products || []).map((p: any, i: number) => (
+            <div key={i} className="p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-gray-900">{p.name}</p>
+                <Badge status={p.variance > 0 ? 'warning' : 'pass'}>毛利{p.margin_pct}%</Badge>
+              </div>
+              <div className="text-xs text-gray-500">
+                单位成本 ¥{p.unit_cost}（目标 ¥{p.target_cost} · {p.variance > 0 ? `超 ${p.variance}` : '达标'}）
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      label: '降本机会',
+      content: (
+        <div className="space-y-2">
+          {(result.saving_opportunities || []).map((s: any, i: number) => (
+            <div key={i} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-900">{s.measure}</p>
+              <div className="text-right">
+                <p className="text-sm font-medium text-green-700">¥{s.saving_per_unit}/片</p>
+                <p className="text-xs text-gray-400">置信度{Math.round((s.confidence || 0) * 100)}%</p>
+              </div>
+            </div>
+          ))}
         </div>
       ),
     },

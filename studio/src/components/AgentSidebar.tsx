@@ -25,7 +25,7 @@ export default function AgentSidebar({ agents, current, onSelect, onItemClick }:
     <div className="p-3">
       <div className="flex items-center justify-between px-1 mb-3">
         <h3 className="text-sm font-semibold text-gray-900">选择 Agent</h3>
-        <span className="text-[10px] text-gray-400">{agents.length} · 4 场景</span>
+        <span className="text-[10px] text-gray-400">{agents.length} · {Object.keys(SCENARIO_GROUPS).length} 场景</span>
       </div>
 
       <div className="space-y-3">

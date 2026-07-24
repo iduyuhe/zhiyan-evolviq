@@ -1,4 +1,4 @@
-"""MCP 能力层联邦——统一注册 11 个 Agent 的 in-process 工具，对外暴露为 MCP 协议能力集。
+"""MCP 能力层联邦——统一注册 14 个 Agent 的 in-process 工具，对外暴露为 MCP 协议能力集。
 
 设计要点（与 T4 收敛一致）：
 - Agent 内部仍走 in-process 工具层（MVP 主路径不变）；本模块是「能力对外暴露层」。
@@ -11,9 +11,12 @@ import contextvars
 import logging
 
 from src.agents.aoi_judge.tools import AOITools
+from src.agents.aps_scheduler.tools import APSTools
 from src.agents.bom_selector.tools import BOMSelectorTools
+from src.agents.cost_analysis.tools import CostAnalysisTools
 from src.agents.dfm_check.tools import DFMTools
 from src.agents.eco_change.tools import ECOTools
+from src.agents.energy_carbon.tools import EnergyCarbonTools
 from src.agents.ipc_standard.tools import IPCStandardTools
 from src.agents.oee_optimizer.tools import OEETools
 from src.agents.pm_maintenance.tools import PMTools
@@ -37,9 +40,12 @@ def get_current_tenant() -> str:
 _INSTANCES = {
     "supply_chain": SupplyChainTools(),
     "aoi_judge": AOITools(),
+    "aps_scheduler": APSTools(),
     "bom_selector": BOMSelectorTools(),
+    "cost_analysis": CostAnalysisTools(),
     "dfm_check": DFMTools(),
     "eco_change": ECOTools(),
+    "energy_carbon": EnergyCarbonTools(),
     "ipc_standard": IPCStandardTools(),
     "oee_optimizer": OEETools(),
     "pm_maintenance": PMTools(),
@@ -100,6 +106,18 @@ TOOL_REGISTRY = {
     "aoi_judge__get_line_result": ("aoi_judge", "get_line_result", "AOI线体结果", {"line_id": "string"}),
     "aoi_judge__list_line_ids": ("aoi_judge", "list_line_ids", "AOI线体列表", {}),
     "aoi_judge__create_threshold_optimization": ("aoi_judge", "create_threshold_optimization", "生成阈值优化", {"line_id": "string", "suggestions": "array"}),
+    # 计划排程
+    "aps_scheduler__get_order_list": ("aps_scheduler", "get_order_list", "列出工单", {}),
+    "aps_scheduler__get_work_centers": ("aps_scheduler", "get_work_centers", "产能负荷", {}),
+    "aps_scheduler__rebalance_schedule": ("aps_scheduler", "rebalance_schedule", "生成产能再平衡", {"from_wc": "string", "to_wc": "string", "qty": "integer"}),
+    # 能源碳ESG
+    "energy_carbon__get_energy_list": ("energy_carbon", "get_energy_list", "各产线能耗", {}),
+    "energy_carbon__get_carbon_summary": ("energy_carbon", "get_carbon_summary", "碳排放汇总", {}),
+    "energy_carbon__create_saving_task": ("energy_carbon", "create_saving_task", "生成节能降碳任务", {"measure": "string"}),
+    # 制造成本
+    "cost_analysis__get_product_costs": ("cost_analysis", "get_product_costs", "产品成本结构", {}),
+    "cost_analysis__get_cost_breakdown": ("cost_analysis", "get_cost_breakdown", "全厂成本拆解", {}),
+    "cost_analysis__create_cost_reduction": ("cost_analysis", "create_cost_reduction", "生成降本任务", {"measure": "string"}),
 }
 
 

@@ -30,6 +30,11 @@ export const SCENARIO_GROUPS: Record<string, { label: string; icon: string; agen
     icon: '🛡️',
     agents: ['yield_analysis', 'quality_trace', 'ipc_standard'],
   },
+  enterprise: {
+    label: '经营决策',
+    icon: '🧠',
+    agents: ['aps_scheduler', 'energy_carbon', 'cost_analysis'],
+  },
 };
 
 const DEFAULT_EXAMPLES: Record<string, string[]> = {
@@ -87,6 +92,21 @@ const DEFAULT_EXAMPLES: Record<string, string[]> = {
     '查询BGA焊球空洞在IPC-A-610标准下的可接受范围',
     '判定Chip组件偏位在不同Class下的可接受标准',
     '查询焊锡桥连在IPC标准下的判定规则',
+  ],
+  aps_scheduler: [
+    '分析全部工单的生产排程与产能负荷，识别瓶颈和交期风险工单',
+    '评估SMT产线2高负荷对交期的影响，给出产能再平衡建议',
+    '基于当前产能给出本月重点工单的交期承诺(CTP)',
+  ],
+  energy_carbon: [
+    '核算本周各产线能耗与碳排放，识别低绿电高耗能环节',
+    '评估空压机能效改造和绿电采购的降碳潜力与回收期',
+    '生成本月ESG碳排放披露看板所需的碳强度指标',
+  ],
+  cost_analysis: [
+    '拆解28nm逻辑芯片的单位制造成本，定位超目标成本的科目',
+    '分析国产替代料与良率提升可带来的降本空间',
+    '基于成本结构给出重点产品的报价底线与毛利率',
   ],
 };
 
@@ -149,7 +169,7 @@ export default function AgentSelector({ onSelect }: { onSelect: (agent: AgentInf
         <div className="absolute top-full mt-2 right-0 w-[480px] bg-white rounded-xl shadow-2xl border border-gray-200 p-3 z-50 animate-fade-in">
           <div className="flex items-center justify-between mb-3 px-1">
             <h3 className="text-sm font-semibold text-gray-900">选择 Agent</h3>
-            <span className="text-[10px] text-gray-400">11 个 Agent · 4 大场景</span>
+            <span className="text-[10px] text-gray-400">{Object.values(SCENARIO_GROUPS).reduce((n, g) => n + g.agents.length, 0)} 个 Agent · {Object.keys(SCENARIO_GROUPS).length} 大场景</span>
           </div>
 
           <div className="space-y-3 max-h-[480px] overflow-y-auto">

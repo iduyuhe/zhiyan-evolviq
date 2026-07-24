@@ -104,6 +104,33 @@ AGENT_REGISTRY = [
         "scenarios": ["标准查询", "缺陷判定", "Class分级", "检验方法"],
         "icon": "📋",
     },
+    {
+        "id": "aps_scheduler",
+        "name": "计划排程Agent",
+        "description": "生产排程、产能负荷、交期承诺(CTP)与工单优先级优化",
+        "status": "active",
+        "version": "0.1.0",
+        "scenarios": ["生产排程", "产能负荷", "交期承诺", "工单优先级", "瓶颈识别"],
+        "icon": "🧠",
+    },
+    {
+        "id": "energy_carbon",
+        "name": "能源碳ESG Agent",
+        "description": "能耗监控、碳排放/碳足迹核算、ESG合规与节能降碳机会",
+        "status": "active",
+        "version": "0.1.0",
+        "scenarios": ["能耗监控", "碳排放核算", "碳强度", "绿电比例", "节能机会", "ESG"],
+        "icon": "🌿",
+    },
+    {
+        "id": "cost_analysis",
+        "name": "制造成本Agent",
+        "description": "单位制造成本拆解（材料/人工/设备/能源/良率）、降本机会与报价支撑",
+        "status": "active",
+        "version": "0.1.0",
+        "scenarios": ["成本核算", "成本拆解", "降本机会", "毛利率", "报价支撑"],
+        "icon": "💰",
+    },
 ]
 
 
