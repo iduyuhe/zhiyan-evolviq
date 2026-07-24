@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 def _build_default_boundaries() -> list[AuthBoundary]:
-    """构造 18 个 Agent 的默认授权边界（每次调用返回全新实例，供各租户独立持有）。"""
+    """构造 20 个 Agent 的默认授权边界（每次调用返回全新实例，供各租户独立持有）。"""
     defaults: list[AuthBoundary] = []
 
     defaults.append(AuthBoundary(
@@ -271,6 +271,33 @@ def _build_default_boundaries() -> list[AuthBoundary]:
         auto_execute_actions=["create_action_item"],
         require_approval_actions=["approve_budget_adjustment"],
         max_daily_autonomous=20,
+        enabled=True,
+    ))
+    # 经营决策大脑（P4 企业级）
+    defaults.append(AuthBoundary(
+        id="ab-npi-default",
+        name="研发新产导入默认边界",
+        agent="rd_npi",
+        allowed_categories=[],
+        price_tolerance_pct=0.0,
+        max_lock_qty=0,
+        confidence_threshold=0.82,
+        auto_execute_actions=["expedite_project"],
+        require_approval_actions=["reprioritize_project"],
+        max_daily_autonomous=15,
+        enabled=True,
+    ))
+    defaults.append(AuthBoundary(
+        id="ab-procurement-default",
+        name="采购与供应商管理默认边界",
+        agent="procurement_manage",
+        allowed_categories=[],
+        price_tolerance_pct=0.0,
+        max_lock_qty=0,
+        confidence_threshold=0.82,
+        auto_execute_actions=["create_supplier_review"],
+        require_approval_actions=["renegotiate_contract"],
+        max_daily_autonomous=15,
         enabled=True,
     ))
     return defaults

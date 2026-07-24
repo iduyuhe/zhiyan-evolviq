@@ -19,6 +19,8 @@
 16. 仓储物流Agent (wms_logistics) — 库存健康、物流时效、授权内自动补货
 17. 质量合规Agent (compliance_q) — 质量体系认证、审核发现、法规合规、CAPA管理
 18. 经营驾驶舱Agent (executive_cockpit) — 经营KPI看板、预算执行、产出追踪
+19. 研发新产导入Agent (rd_npi) — NPI项目全生命周期、里程碑、批量试产
+20. 采购与供应商管理Agent (procurement_manage) — 供应商绩效、合同管理、采购策略
 """
 
 import importlib
@@ -52,6 +54,9 @@ AGENT_REGISTRY: dict[str, tuple[str, str]] = {
     # 经营决策大脑（P3 企业级）
     "compliance_q": ("src.agents.compliance_q.agent", "compliance_agent"),
     "executive_cockpit": ("src.agents.executive_cockpit.agent", "executive_agent"),
+    # 经营决策大脑（P4 企业级）
+    "rd_npi": ("src.agents.rd_npi.agent", "npi_agent"),
+    "procurement_manage": ("src.agents.procurement_manage.agent", "procurement_agent"),
 }
 
 
@@ -62,6 +67,8 @@ ROUTING_RULES = [
     (["dfm", "可制造性", "焊盘间距", "线宽", "阻焊", "过孔", "设计审查", "制造风险"], "dfm_check"),
     # BOM选型Agent触发词（放在供应链之前，避免"替代料"被供应链的"替代"截获）
     (["选型", "替代料", "pin-to-pin", "兼容", "元器件推荐", "lifecycle", "eol", "nrnd", "alternative", "stm32", "gd32", "tps", "mcu选型"], "bom_selector"),
+    # 采购与供应商管理Agent触发词（经营决策大脑；置于供应链之前，靠供应商绩效/合同等管理类复合词截获）
+    (["供应商绩效", "合同到期", "竞价", "srm", "战略采购", "供应商管理", "供应商评审", "长协", "供应商评分", "供应商品质", "供应商业绩"], "procurement_manage"),
     # 仓储物流Agent触发词（经营决策大脑；置于供应链之前，靠仓储/补货/呆滞/物流等专属词截获，不抢物料库存）
     (["仓储", "仓库", "库容", "补货", "呆滞", "物流", "在途", "时效", "wms", "周转", "安全库存", "成品仓"], "wms_logistics"),
     # 供应链Agent触发词（去掉宽泛的"替代"，避免截获BOM选型；靠BOM/缺料/采购等触发）
@@ -92,6 +99,10 @@ ROUTING_RULES = [
     (["合规", "认证", "iso", "审核", "audit", "法规", "rohs", "reach", "capa", "质量体系", "纠正措施", "体系认证", "管理体系"], "compliance_q"),
     # 经营驾驶舱Agent触发词（经营决策大脑；置于良率之前）
     (["经营", "驾驶舱", "kpi", "看板", "财务报表", "预算", "利润", "营收", "产出完成", "决策支持", "毛利率", "现金流", "损益"], "executive_cockpit"),
+    # 研发新产导入Agent触发词（经营决策大脑；置于良率之前）
+    (["npi", "新产", "新产品导入", "研发项目", "里程碑", "试产", "原型", "design review", "量产放行", "产品开发", "项目进度"], "rd_npi"),
+    # 采购与供应商管理Agent触发词（经营决策大脑；用复合词避免被供应链的"采购/供应"截获）
+    (["供应商绩效", "合同到期", "竞价", "srm", "战略采购", "供应商管理", "供应商评审", "长协", "供应商评分", "供应商品质", "供应商业绩"], "procurement_manage"),
     # 良率分析Agent触发词（放最后，作为宽泛兜底）
     (["良率", "yield", "缺陷", "defect", "质量", "quality", "颗粒", "污染", "合格率", "不良"], "yield_analysis"),
 ]

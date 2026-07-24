@@ -21,6 +21,8 @@ const AGENT_META: Record<string, { title: string; icon: string }> = {
   wms_logistics: { title: '仓储物流分析', icon: '🚚' },
   compliance_q: { title: '质量合规分析', icon: '🛡️' },
   executive_cockpit: { title: '经营驾驶舱', icon: '🏢' },
+  rd_npi: { title: '研发新产导入', icon: '🔬' },
+  procurement_manage: { title: '采购供应商', icon: '📑' },
 };
 
 export default function GenericResultView({ result, onNewGoal }: ResultViewProps) {
@@ -122,6 +124,10 @@ function getTabs(agent: string, result: any): { label: string; content: ReactEle
       return getComplianceTabs(result);
     case 'executive_cockpit':
       return getExecutiveTabs(result);
+    case 'rd_npi':
+      return getNpiTabs(result);
+    case 'procurement_manage':
+      return getProcurementTabs(result);
     default:
       return [{ label: '结果', content: <pre className="text-xs text-gray-600 whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre> }];
   }
@@ -884,6 +890,84 @@ function getExecutiveTabs(result: any) {
               <div className="text-right">
                 <Badge status={b.status === 'overspend' ? 'critical' : b.status === 'underspend' ? 'pass' : 'low'}>{b.util_pct}%</Badge>
                 <p className="text-xs text-gray-400 mt-0.5">{b.actual}/{b.plan}万 · {b.variance > 0 ? `超${b.variance}` : `省${Math.abs(b.variance)}`}万</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+  ];
+}
+
+function getNpiTabs(result: any) {
+  return [
+    {
+      label: '项目总览',
+      content: (
+        <div className="space-y-3">
+          <div className="grid grid-cols-4 gap-3">
+            <StatCard label="NPI项目" value={result.total_projects || 0} />
+            <StatCard label="覆盖阶段" value={`${result.stage_coverage || 0}个`} />
+            <StatCard label="按时项目" value={result.on_schedule_count || 0} color="text-green-600" />
+            <StatCard label="高风险" value={result.high_risk_count || 0} color={(result.high_risk_count || 0) > 0 ? 'text-red-600' : 'text-green-600'} />
+          </div>
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-sm text-gray-700">{result.summary}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      label: '项目明细',
+      content: (
+        <div className="space-y-2">
+          {(result.projects || []).map((p: any, i: number) => (
+            <div key={i} className="p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-gray-900">{p.name} <span className="text-xs text-gray-400">· {p.owner}</span></p>
+                <Badge status={p.on_schedule ? 'pass' : 'critical'}>{p.stage} · {p.milestone_pct}%</Badge>
+              </div>
+              <div className="text-xs text-gray-500">
+                ID {p.id} · ETA {p.eta}{p.risk === 'high' ? ` · 🚨 ${p.risk_note}` : ''}
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+  ];
+}
+
+function getProcurementTabs(result: any) {
+  return [
+    {
+      label: '采购总览',
+      content: (
+        <div className="space-y-3">
+          <div className="grid grid-cols-4 gap-3">
+            <StatCard label="供应商" value={result.supplier_count || 0} />
+            <StatCard label="平均评分" value={result.avg_score || 0} color={(result.avg_score || 0) >= 80 ? 'text-green-600' : 'text-amber-600'} />
+            <StatCard label="低绩效" value={result.low_performer_count || 0} color={(result.low_performer_count || 0) > 0 ? 'text-red-600' : 'text-green-600'} />
+            <StatCard label="合同总额" value={`${result.total_contract_value_wan || 0}万`} />
+          </div>
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-sm text-gray-700">{result.summary}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      label: '供应商绩效',
+      content: (
+        <div className="space-y-2">
+          {(result.suppliers || []).map((s: any, i: number) => (
+            <div key={i} className="p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-gray-900">{s.name} <span className="text-xs text-gray-400">· {s.category} · {s.tier}级</span></p>
+                <Badge status={s.score >= 80 ? 'pass' : s.score >= 70 ? 'warning' : 'critical'}>{s.score}</Badge>
+              </div>
+              <div className="text-xs text-gray-500">
+                交期{s.delivery} 质量{s.quality} 成本{s.cost} 合规{s.compliance} · 合同至{s.contract_end}
               </div>
             </div>
           ))}

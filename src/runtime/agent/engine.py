@@ -136,7 +136,7 @@ class AgentEngine:
 ### Similar historical cases
 {trace_result.get('historical_similar', 0)} cases
 """
-        elif agent_name in ("dfm_check", "bom_selector", "oee_optimizer", "eco_change", "smt_changeover", "aoi_judge", "ipc_standard", "aps_scheduler", "energy_carbon", "cost_analysis", "demand_order", "wms_logistics", "compliance_q", "executive_cockpit"):
+        elif agent_name in ("dfm_check", "bom_selector", "oee_optimizer", "eco_change", "smt_changeover", "aoi_judge", "ipc_standard", "aps_scheduler", "energy_carbon", "cost_analysis", "demand_order", "wms_logistics", "compliance_q", "executive_cockpit", "rd_npi", "procurement_manage"):
             plan_text = await self._plan_for_generic_agent(agent_name, goal)
         else:
             plan_text = f"## 目标理解\n> {goal}\n\n无法识别合适的Agent，请明确目标场景。"

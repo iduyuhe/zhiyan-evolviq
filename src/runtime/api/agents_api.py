@@ -167,6 +167,24 @@ AGENT_REGISTRY = [
         "scenarios": ["经营KPI", "预算执行", "产出追踪", "现金流", "利润分析"],
         "icon": "🏢",
     },
+    {
+        "id": "rd_npi",
+        "name": "研发新产导入Agent",
+        "description": "NPI项目全生命周期管理、里程碑跟踪、批量试产与风险识别",
+        "status": "active",
+        "version": "0.1.0",
+        "scenarios": ["NPI项目", "里程碑", "项目风险", "批量试产", "产品导入"],
+        "icon": "🔬",
+    },
+    {
+        "id": "procurement_manage",
+        "name": "采购与供应商管理Agent",
+        "description": "供应商绩效评分（交期/质量/成本/合规）、合同管理与采购策略",
+        "status": "active",
+        "version": "0.1.0",
+        "scenarios": ["供应商绩效", "合同管理", "采购策略", "供应商评审", "战略采购"],
+        "icon": "📑",
+    },
 ]
 
 

@@ -33,7 +33,7 @@ export const SCENARIO_GROUPS: Record<string, { label: string; icon: string; agen
   enterprise: {
     label: '经营决策',
     icon: '🧠',
-    agents: ['aps_scheduler', 'energy_carbon', 'cost_analysis', 'demand_order', 'wms_logistics', 'compliance_q', 'executive_cockpit'],
+    agents: ['aps_scheduler', 'energy_carbon', 'cost_analysis', 'demand_order', 'wms_logistics', 'compliance_q', 'executive_cockpit', 'rd_npi', 'procurement_manage'],
   },
 };
 
@@ -127,6 +127,16 @@ const DEFAULT_EXAMPLES: Record<string, string[]> = {
     '汇总本季经营KPI：营收、毛利率、净利润、现金流，定位超预算部门并生成改善项',
     '分析各产品产出完成率与预算执行差异，给出经营决策建议',
     '生成全厂经营驾驶舱看板，识别超预算和欠产环节，自动生成改善行动项',
+  ],
+  rd_npi: [
+    '检查各NPI项目进度与里程碑，识别高风险和延迟项目，自动生成加速推进建议',
+    '查看BMS控制器R3的里程碑明细，分析延迟根因并给出纠正行动',
+    '汇总全部NPI项目的阶段分布与按时完成率，输出研发管理评审报告',
+  ],
+  procurement_manage: [
+    '分析供应商绩效，识别低评分供应商并自动生成供应商评审任务',
+    '查看合同到期与采购策略执行进度，给出合同续签建议',
+    '对比各供应商绩效评分与供应商品质四维度，输出采购策略建议',
   ],
 };
 

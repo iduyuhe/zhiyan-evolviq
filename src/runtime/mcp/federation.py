@@ -18,6 +18,8 @@ from src.agents.demand_order.tools import DemandOrderTools
 from src.agents.wms_logistics.tools import WMSLogisticsTools
 from src.agents.compliance_q.tools import ComplianceTools
 from src.agents.executive_cockpit.tools import ExecutiveCockpitTools
+from src.agents.rd_npi.tools import NpiTools
+from src.agents.procurement_manage.tools import ProcurementTools
 from src.agents.dfm_check.tools import DFMTools
 from src.agents.eco_change.tools import ECOTools
 from src.agents.energy_carbon.tools import EnergyCarbonTools
@@ -51,6 +53,8 @@ _INSTANCES = {
     "wms_logistics": WMSLogisticsTools(),
     "compliance_q": ComplianceTools(),
     "executive_cockpit": ExecutiveCockpitTools(),
+    "rd_npi": NpiTools(),
+    "procurement_manage": ProcurementTools(),
     "dfm_check": DFMTools(),
     "eco_change": ECOTools(),
     "energy_carbon": EnergyCarbonTools(),
@@ -142,6 +146,14 @@ TOOL_REGISTRY = {
     "executive_cockpit__get_kpi_dashboard": ("executive_cockpit", "get_kpi_dashboard", "经营KPI看板", {}),
     "executive_cockpit__get_budget_utilization": ("executive_cockpit", "get_budget_utilization", "预算执行情况", {}),
     "executive_cockpit__create_action_item": ("executive_cockpit", "create_action_item", "生成改善行动项", {"dept": "string", "issue": "string"}),
+    # 研发新产导入
+    "rd_npi__get_npi_projects": ("rd_npi", "get_npi_projects", "NPI项目列表", {}),
+    "rd_npi__get_milestones": ("rd_npi", "get_milestones", "项目里程碑", {"project_id": "string"}),
+    "rd_npi__expedite_project": ("rd_npi", "expedite_project", "生成加速推进行动", {"project_id": "string", "action": "string"}),
+    # 采购与供应商管理
+    "procurement_manage__get_suppliers": ("procurement_manage", "get_suppliers", "供应商绩效列表", {}),
+    "procurement_manage__get_contracts": ("procurement_manage", "get_contracts", "合同列表", {}),
+    "procurement_manage__create_supplier_review": ("procurement_manage", "create_supplier_review", "生成供应商评审", {"supplier_id": "string", "reason": "string"}),
 }
 
 

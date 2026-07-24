@@ -1,18 +1,18 @@
 # 智衍 EvolvIQ · AI 原生工业智能体平台
 
-> 智衍（EvolvIQ）是一个面向电子制造 / 半导体行业的 **AI 原生工业智能体开发与部署平台**：把供应链、设备维护、良率、质量、DFM、BOM 选型、OEE、ECO、换线、AOI、IPC 标准、计划排程、能源碳 ESG、制造成本等 18 类工业场景，封装为可直接调用的自治 Agent，并通过统一网关接入 Modbus / MQTT / OPC-UA / IPC-CFX 等工业协议，配合跨 Agent 知识图谱与按效果调参的授权引擎，实现「感知—规划—执行—复盘」闭环。
+> 智衍（EvolvIQ）是一个面向电子制造 / 半导体行业的 **AI 原生工业智能体开发与部署平台**：把供应链、设备维护、良率、质量、DFM、BOM 选型、OEE、ECO、换线、AOI、IPC 标准、计划排程、能源碳 ESG、制造成本等 20 类工业场景，封装为可直接调用的自治 Agent，并通过统一网关接入 Modbus / MQTT / OPC-UA / IPC-CFX 等工业协议，配合跨 Agent 知识图谱与按效果调参的授权引擎，实现「感知—规划—执行—复盘」闭环。
 
 ## ✨ 核心特性
 
-- **18 个工业 Agent**：覆盖研发、供应链、制造、质量、经营决策全链路（见下表）
+- **20 个工业 Agent**：覆盖研发、供应链、制造、质量、经营决策全链路（见下表）
 - **4 类工业协议网关**：Modbus / MQTT / OPC-UA / IPC-CFX，真实数据源或模拟模式自动切换
-- **MCP 能力联邦**：59 个标准化工具，HTTP + stdio 双传输
+- **MCP 能力联邦**：65 个标准化工具，HTTP + stdio 双传输
 - **跨 Agent 知识图谱**：基于 Neo4j 的可追溯知识网络（缺 Neo4j 时自动回退内存图）
 - **按效果调参的授权引擎**：置信度阈值、每日自主上限、人类介入队列
 - **韧性降级**：PostgreSQL / Neo4j / 各网关不可达时自动回退 SQLite / 内存图 / 模拟模式，绝不阻断启动
 - **多租户隔离**：行级 `tenant_id` 隔离 + API Key 认证（`X-Tenant-Key`），开放自助注册，未带密钥自动归属默认租户 `default`，向后兼容
 
-## 🧩 18 个 Agent 一览
+## 🧩 20 个 Agent 一览
 
 | Agent | 场景 | 核心能力 |
 |------|------|------|
@@ -34,6 +34,8 @@
 | `wms_logistics` 仓储物流 | 库存健康 / 物流时效 / 自动补货 | 安全库存预警、周转与呆滞、在途监控 |
 | `compliance_q` 质量合规 | 认证体系 / 审核发现 / 法规合规 | ISO 认证跟踪、CAPA、RoHS/REACH |
 | `executive_cockpit` 经营驾驶舱 | 经营KPI / 预算 / 产出追踪 | 营收/毛利、预算执行、产出完成率 |
+| `rd_npi` 研发新产导入 | NPI 项目 / 里程碑 / 试产 | 项目阶段、里程碑跟踪、风险识别 |
+| `procurement_manage` 采购供应商 | 供应商绩效 / 合同 / 策略 | 四维评分、合同管理、供应商评审 |
 
 ## 🚀 快速开始
 
@@ -140,7 +142,7 @@ curl http://localhost:8000/tenants -H "X-Platform-Admin-Key: <admin_key>"
 
 ## 📂 目录结构
 
-- `src/` 后端（FastAPI 运行时 + 18 个 Agent + 网关 + 知识图谱 + 授权引擎）
+- `src/` 后端（FastAPI 运行时 + 20 个 Agent + 网关 + 知识图谱 + 授权引擎）
 - `studio/` 前端（React + Vite + Tailwind）
 - `infra/` Dockerfile 与网关模拟器
 - `scripts/` 种子 / 压测 / 验证脚本
