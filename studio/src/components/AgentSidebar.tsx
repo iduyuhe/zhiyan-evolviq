@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { AgentInfo } from './AgentSelector';
 import { SCENARIO_GROUPS } from './AgentSelector';
 
@@ -10,6 +11,16 @@ interface AgentSidebarProps {
 }
 
 export default function AgentSidebar({ agents, current, onSelect, onItemClick }: AgentSidebarProps) {
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const toggleGroup = (key: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
   return (
     <div className="p-3">
       <div className="flex items-center justify-between px-1 mb-3">
@@ -20,11 +31,17 @@ export default function AgentSidebar({ agents, current, onSelect, onItemClick }:
       <div className="space-y-3">
         {Object.entries(SCENARIO_GROUPS).map(([groupKey, group]) => (
           <div key={groupKey}>
-            <div className="flex items-center gap-1.5 px-1 mb-1.5">
+            <button
+              type="button"
+              onClick={() => toggleGroup(groupKey)}
+              className="w-full flex items-center gap-1.5 px-1 mb-1.5 text-left cursor-pointer hover:bg-gray-50 rounded transition-colors"
+            >
+              <span className="text-[10px] text-gray-400 w-3 flex-shrink-0">{collapsedGroups.has(groupKey) ? '▸' : '▾'}</span>
               <span className="text-sm">{group.icon}</span>
               <span className="text-xs font-semibold text-gray-500">{group.label}</span>
               <span className="text-[10px] text-gray-400">({group.agents.length})</span>
-            </div>
+            </button>
+            {!collapsedGroups.has(groupKey) && (
             <div className="space-y-1">
               {group.agents.map((agentId) => {
                 const agent = agents.find((a) => a.id === agentId);
@@ -59,7 +76,8 @@ export default function AgentSidebar({ agents, current, onSelect, onItemClick }:
                   </button>
                 );
               })}
-            </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
