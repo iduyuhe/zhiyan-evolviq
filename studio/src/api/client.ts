@@ -1,12 +1,31 @@
 // API基地址：开发模式通过Vite代理(/api→local), 生产模式指向远程服务器
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
+// ============ 多租户：当前租户 Key（由 TenantContext 注入） ============
+// 所有受租户隔离的接口都会自动在请求头带上 X-Tenant-Key；
+// 为 null 时后端回退到 default 租户（向后兼容）。
+let _tenantKey: string | null = null;
+export function setTenantKey(key: string | null): void {
+  _tenantKey = key;
+}
+export function getTenantKey(): string | null {
+  return _tenantKey;
+}
+function authHeaders(extra?: Record<string, string>): Record<string, string> {
+  return {
+    'Content-Type': 'application/json',
+    ...(_tenantKey ? { 'X-Tenant-Key': _tenantKey } : {}),
+    ...(extra ?? {}),
+  };
+}
+
 export interface Session {
   session_id: string;
   status: string;
   plan?: string;
   result?: ExecutionResult;
   feedback?: string;
+  tenant_id?: string;
 }
 
 export interface SupplyChainMetrics {
@@ -87,7 +106,7 @@ export async function healthCheck(): Promise<HealthStatus> {
 export async function createSession(goal: string): Promise<Session> {
   const res = await fetch(`${API_BASE}/sessions`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify({ goal }),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -97,7 +116,7 @@ export async function createSession(goal: string): Promise<Session> {
 export async function approveSession(sessionId: string, approved: boolean, feedback?: string): Promise<Session> {
   const res = await fetch(`${API_BASE}/sessions/${sessionId}/approve`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify({ approved, feedback }),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -107,8 +126,18 @@ export async function approveSession(sessionId: string, approved: boolean, feedb
 export async function interveneSession(sessionId: string, action: string, newGoal?: string): Promise<Session> {
   const res = await fetch(`${API_BASE}/sessions/${sessionId}/intervene`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify({ action, new_goal: newGoal }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function quickCheck(goal: string): Promise<{ result: ExecutionResult }> {
+  const res = await fetch(`${API_BASE}/sessions/quick-check`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ goal }),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
@@ -138,6 +167,7 @@ export interface AuthBoundary {
   require_approval_actions: string[];
   max_daily_autonomous: number;
   enabled: boolean;
+  tenant_id?: string;
 }
 
 export interface Intervention {
@@ -164,7 +194,7 @@ export interface EffectReport {
 }
 
 export async function getBoundaries(): Promise<AuthBoundary[]> {
-  const res = await fetch(`${API_BASE}/auth/boundaries`);
+  const res = await fetch(`${API_BASE}/auth/boundaries`, { headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
   const d = await res.json();
   return d.boundaries || [];
@@ -173,7 +203,7 @@ export async function getBoundaries(): Promise<AuthBoundary[]> {
 export async function patchBoundary(id: string, patch: Partial<AuthBoundary>): Promise<void> {
   const res = await fetch(`${API_BASE}/auth/boundaries/${id}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify(patch),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -181,7 +211,7 @@ export async function patchBoundary(id: string, patch: Partial<AuthBoundary>): P
 
 export async function getInterventions(status?: string): Promise<{ interventions: Intervention[]; pending: number }> {
   const url = status ? `${API_BASE}/interventions?status=${status}` : `${API_BASE}/interventions`;
-  const res = await fetch(url);
+  const res = await fetch(url, { headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
   const d = await res.json();
   return { interventions: d.interventions || [], pending: d.pending || 0 };
@@ -190,14 +220,14 @@ export async function getInterventions(status?: string): Promise<{ interventions
 export async function decideIntervention(id: string, approved: boolean, note: string): Promise<void> {
   const res = await fetch(`${API_BASE}/interventions/${id}/decide`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify({ approved, note }),
   });
   if (!res.ok) throw new Error(await res.text());
 }
 
 export async function getEffectReport(): Promise<EffectReport> {
-  const res = await fetch(`${API_BASE}/reports/effect`);
+  const res = await fetch(`${API_BASE}/reports/effect`, { headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -238,7 +268,7 @@ export interface KgNeighbor {
 }
 
 export async function getKgStats(): Promise<KgStats> {
-  const res = await fetch(`${API_BASE}/kg/stats`);
+  const res = await fetch(`${API_BASE}/kg/stats`, { headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -258,13 +288,13 @@ export async function queryKg(params: {
   if (params.direction) qs.set('direction', params.direction);
   if (params.category) qs.set('category', params.category);
   if (params.name) qs.set('name', params.name);
-  const res = await fetch(`${API_BASE}/kg/query?${qs.toString()}`);
+  const res = await fetch(`${API_BASE}/kg/query?${qs.toString()}`, { headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 export async function rebuildKg(): Promise<{ mode: string; stats: KgStats }> {
-  const res = await fetch(`${API_BASE}/kg/rebuild`, { method: 'POST' });
+  const res = await fetch(`${API_BASE}/kg/rebuild`, { method: 'POST', headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -325,7 +355,7 @@ export interface StrategyHistoryEntry {
 }
 
 export async function getStrategyPanel(): Promise<StrategyPanel> {
-  const res = await fetch(`${API_BASE}/strategy`);
+  const res = await fetch(`${API_BASE}/strategy`, { headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -334,7 +364,7 @@ export async function getStrategySuggestions(): Promise<{
   target_autonomous_rate: number;
   suggestions: StrategySuggestion[];
 }> {
-  const res = await fetch(`${API_BASE}/strategy/suggestions`);
+  const res = await fetch(`${API_BASE}/strategy/suggestions`, { headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -347,7 +377,7 @@ export async function tuneStrategy(req: {
 }): Promise<{ status: string; agent: string; param: string; old: number; new: number }> {
   const res = await fetch(`${API_BASE}/strategy/tune`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify(req),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -355,7 +385,7 @@ export async function tuneStrategy(req: {
 }
 
 export async function getStrategyHistory(): Promise<{ history: StrategyHistoryEntry[]; total: number }> {
-  const res = await fetch(`${API_BASE}/strategy/history`);
+  const res = await fetch(`${API_BASE}/strategy/history`, { headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -398,7 +428,7 @@ export interface GatewayReadResult {
 }
 
 export async function getGateways(): Promise<GatewayOverview> {
-  const res = await fetch(`${API_BASE}/gateways`);
+  const res = await fetch(`${API_BASE}/gateways`, { headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -406,8 +436,95 @@ export async function getGateways(): Promise<GatewayOverview> {
 export async function readGateway(name: string, address = '*', count = 8): Promise<GatewayReadResult> {
   const res = await fetch(`${API_BASE}/gateways/${name}/read`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify({ address, count }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+// ============ 多租户管理 API ============
+
+export interface TenantInfo {
+  id: string;
+  name: string;
+  is_active: boolean;
+  created_at?: string;
+  gateway_config?: GatewayConfig | null;
+}
+
+export interface GatewayConfig {
+  modbus_host?: string;
+  modbus_port?: number;
+  mqtt_broker?: string;
+  mqtt_port?: number;
+  opcua_endpoint?: string;
+  ipc_cfx_broker?: string;
+}
+
+export interface RegisterResult {
+  tenant_id: string;
+  name: string;
+  api_key: string;
+  note?: string;
+}
+
+export interface RotateResult {
+  tenant_id: string;
+  api_key: string;
+  note?: string;
+}
+
+/** 自助注册新租户。明文 api_key 仅此一次返回。 */
+export async function registerTenant(name: string): Promise<RegisterResult> {
+  const res = await fetch(`${API_BASE}/tenants/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+/** 查询当前租户信息（需 X-Tenant-Key）。 */
+export async function getTenantMe(): Promise<TenantInfo> {
+  const res = await fetch(`${API_BASE}/tenants/me`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+/** 轮换当前租户密钥（需 X-Tenant-Key）。 */
+export async function rotateTenantKey(): Promise<RotateResult> {
+  const res = await fetch(`${API_BASE}/tenants/rotate`, {
+    method: 'POST',
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+/** 注销当前租户（默认租户不可删，需 X-Tenant-Key）。 */
+export async function deleteTenant(): Promise<void> {
+  const res = await fetch(`${API_BASE}/tenants/me`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(await res.text());
+}
+
+/** 读取当前租户网关配置（需 X-Tenant-Key）。 */
+export async function getTenantGatewayConfig(): Promise<{ tenant_id: string; gateway_config: GatewayConfig | null }> {
+  const res = await fetch(`${API_BASE}/tenants/gateway-config`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+/** 设置当前租户网关配置覆写（需 X-Tenant-Key）。 */
+export async function putTenantGatewayConfig(cfg: GatewayConfig): Promise<{ tenant_id: string; gateway_config: GatewayConfig | null }> {
+  const res = await fetch(`${API_BASE}/tenants/gateway-config`, {
+    method: 'PUT',
+    headers: authHeaders(),
+    body: JSON.stringify(cfg),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();

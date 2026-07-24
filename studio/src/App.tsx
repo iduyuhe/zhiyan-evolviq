@@ -18,13 +18,13 @@ import NotificationBell from './components/NotificationBell';
 import AgentSelector from './components/AgentSelector';
 import type { AgentInfo } from './components/AgentSelector';
 import { DEFAULT_EXAMPLES } from './components/AgentSelector';
-import { createSession, approveSession } from './api/client';
+import TenantSwitcher from './components/TenantSwitcher';
+import TenantManagement from './components/TenantManagement';
+import { createSession, approveSession, quickCheck } from './api/client';
 import type { Session, ExecutionResult } from './api/client';
 
-const API_BASE = '/api';
-
 type Stage = 'input' | 'planning' | 'approving' | 'executing' | 'result' | 'error';
-type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway';
+type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'tenant';
 
 const STEPS = [
   { key: 'input', label: '目标设定', icon: '🎯' },
@@ -54,13 +54,7 @@ export default function App() {
     setExecuting(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE}/sessions/quick-check`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ goal }),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
+      const data = await quickCheck(goal);
       setResult(data.result);
       setStage('result');
     } catch (e) {
@@ -141,6 +135,7 @@ export default function App() {
                 { key: 'knowledge' as Tab, label: '知识图谱', icon: '🕸️' },
                 { key: 'strategy' as Tab, label: '策略调参', icon: '🎚️' },
                 { key: 'gateway' as Tab, label: '网关', icon: '🛰️' },
+                { key: 'tenant' as Tab, label: '租户', icon: '🏢' },
               ].map(t => (
                 <button
                   key={t.key}
@@ -158,8 +153,9 @@ export default function App() {
             <AgentSelector onSelect={handleAgentChange} />
           </div>
 
-          {/* 右：通知 */}
+          {/* 右：租户切换 + 通知 */}
           <div className="flex items-center gap-1 flex-shrink-0">
+            <TenantSwitcher onManage={() => setTab('tenant')} />
             <NotificationBell />
           </div>
         </div>
@@ -196,6 +192,7 @@ export default function App() {
         {tab === 'knowledge' && <KnowledgeGraphTab />}
         {tab === 'strategy' && <StrategyTuningTab />}
         {tab === 'gateway' && <GatewayTab />}
+        {tab === 'tenant' && <TenantManagement />}
 
         {tab === 'studio' && stage === 'input' && <GoalInput onSubmit={handleSubmitGoal} onQuickCheck={handleQuickCheck} loading={false} agentExamples={examples} />}
 
