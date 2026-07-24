@@ -44,6 +44,20 @@ export default function App() {
   const [currentAgent, setCurrentAgent] = useState<string>('supply_chain');
   const [examples, setExamples] = useState<string[]>(DEFAULT_EXAMPLES.supply_chain);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // 桌面侧栏折叠偏好持久化
+  useEffect(() => {
+    const saved = localStorage.getItem('zhiyan_sidebar_collapsed');
+    if (saved === '1') setSidebarCollapsed(true);
+  }, []);
+  const toggleSidebar = () => {
+    setSidebarCollapsed((c) => {
+      const next = !c;
+      localStorage.setItem('zhiyan_sidebar_collapsed', next ? '1' : '0');
+      return next;
+    });
+  };
 
   const currentAgentInfo = agents.find((a) => a.id === currentAgent) || agents[0];
 
@@ -200,24 +214,46 @@ export default function App() {
       {/* 主内容 */}
       {tab === 'studio' ? (
         <div className="max-w-7xl mx-auto flex">
-          {/* 左侧 Agent 侧栏（桌面常驻） */}
-          <aside className="hidden lg:flex lg:flex-col w-64 shrink-0 border-r border-gray-200 bg-white sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
-            <AgentSidebar agents={agents} current={currentAgent} onSelect={handleAgentChange} />
-          </aside>
+          {/* 左侧 Agent 侧栏（桌面常驻，可收起） */}
+          {!sidebarCollapsed && (
+            <aside className="hidden lg:flex lg:flex-col w-64 shrink-0 border-r border-gray-200 bg-white sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
+              <div className="flex items-center justify-end px-2 pt-2">
+                <button
+                  onClick={toggleSidebar}
+                  title="收起侧栏"
+                  className="w-7 h-7 flex items-center justify-center rounded-md text-gray-400 hover:text-zhiyan-600 hover:bg-zhiyan-50 transition-colors"
+                >
+                  «
+                </button>
+              </div>
+              <AgentSidebar agents={agents} current={currentAgent} onSelect={handleAgentChange} />
+            </aside>
+          )}
 
           {/* 右侧 Studio 主区 */}
           <div className="flex-1 min-w-0">
-            {/* 窄屏：当前 Agent 切换入口 */}
-            <div className="lg:hidden flex items-center gap-2 px-4 py-3 border-b border-gray-100 bg-white sticky top-16 z-10">
+            {/* 顶部条：桌面折叠时的展开入口 / 窄屏抽屉切换入口 */}
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 bg-white sticky top-16 z-10">
+              {/* 桌面 + 侧栏已收起：展开入口 */}
+              {sidebarCollapsed && (
+                <button
+                  onClick={toggleSidebar}
+                  className="hidden lg:flex items-center gap-2 px-3 py-1.5 border border-zhiyan-200 rounded-lg bg-zhiyan-50 text-zhiyan-700 text-sm"
+                >
+                  <span className="leading-none">»</span>
+                  <span className="font-medium">选择 Agent</span>
+                </button>
+              )}
+              {/* 窄屏：当前 Agent 抽屉切换 */}
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="flex items-center gap-2 px-3 py-1.5 border border-zhiyan-200 rounded-lg bg-zhiyan-50 text-zhiyan-700 text-sm"
+                className="lg:hidden flex items-center gap-2 px-3 py-1.5 border border-zhiyan-200 rounded-lg bg-zhiyan-50 text-zhiyan-700 text-sm"
               >
                 <span className="text-base leading-none">{currentAgentInfo?.icon}</span>
                 <span className="font-medium">{currentAgentInfo?.name || '选择 Agent'}</span>
                 <span className="text-zhiyan-400">▾</span>
               </button>
-              <span className="text-xs text-gray-400">切换 Agent</span>
+              <span className="text-xs text-gray-400 lg:hidden">切换 Agent</span>
             </div>
 
             <div className="max-w-3xl mx-auto px-4 py-8 space-y-4">
