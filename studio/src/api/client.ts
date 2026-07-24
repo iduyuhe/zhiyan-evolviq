@@ -11,10 +11,12 @@ export function setTenantKey(key: string | null): void {
 export function getTenantKey(): string | null {
   return _tenantKey;
 }
-function authHeaders(extra?: Record<string, string>): Record<string, string> {
+function authHeaders(extra?: Record<string, string>, key?: string | null): Record<string, string> {
+  // key 为 undefined → 使用全局激活租户 _tenantKey；为 null → 显式匿名（default）；为字符串 → 临时指定某个租户 Key
+  const effectiveKey = key === undefined ? _tenantKey : key;
   return {
     'Content-Type': 'application/json',
-    ...(_tenantKey ? { 'X-Tenant-Key': _tenantKey } : {}),
+    ...(effectiveKey ? { 'X-Tenant-Key': effectiveKey } : {}),
     ...(extra ?? {}),
   };
 }
@@ -137,6 +139,42 @@ export async function quickCheck(goal: string): Promise<{ result: ExecutionResul
   const res = await fetch(`${API_BASE}/sessions/quick-check`, {
     method: 'POST',
     headers: authHeaders(),
+    body: JSON.stringify({ goal }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+// ============ 隔离演示专用：允许临时指定租户 Key 调用 ============
+// 用于「跨租户隔离演示」——用主体/对照两个租户各自的 Key 调用，验证相互不可见。
+
+export interface SessionSummary {
+  session_id: string;
+  tenant_id: string;
+  goal: string;
+  status: string;
+  completeness: number | null;
+}
+
+export interface SessionList {
+  tenant_id: string;
+  sessions: SessionSummary[];
+  total: number;
+}
+
+export async function listSessions(key?: string | null): Promise<SessionList> {
+  const res = await fetch(`${API_BASE}/sessions`, { headers: authHeaders(undefined, key) });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function quickCheckWithKey(
+  goal: string,
+  key?: string | null,
+): Promise<{ tenant_id: string; session_id: string; status: string; result: ExecutionResult }> {
+  const res = await fetch(`${API_BASE}/sessions/quick-check`, {
+    method: 'POST',
+    headers: authHeaders(undefined, key),
     body: JSON.stringify({ goal }),
   });
   if (!res.ok) throw new Error(await res.text());

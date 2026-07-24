@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTenant, type StoredTenant } from '../tenant/TenantContext';
 import {
   getTenantGatewayConfig,
   putTenantGatewayConfig,
+  listSessions,
+  quickCheckWithKey,
   type GatewayConfig,
 } from '../api/client';
 
@@ -46,6 +48,40 @@ export default function TenantManagement() {
   const [gw, setGw] = useState<GatewayConfig>({});
   const [gwLoading, setGwLoading] = useState(false);
   const [gwMsg, setGwMsg] = useState('');
+
+  // 跨租户隔离演示
+  const [demoPartner, setDemoPartner] = useState<string>('');
+  const [demoRunning, setDemoRunning] = useState(false);
+  const [demoError, setDemoError] = useState('');
+  const [demoResult, setDemoResult] = useState<{
+    myLabel: string;
+    partnerLabel: string;
+    myTotal: number;
+    partnerTotal: number;
+    myHas: boolean;
+    partnerHas: boolean;
+    invalidRejected: boolean;
+    invalidErr: string;
+    isolated: boolean;
+    mySessionId: string;
+  } | null>(null);
+
+  // 可选的对照租户：当前激活租户之外的已注册租户；主体为 default 时对照必须是真实租户
+  const partnerCandidates = useMemo(() => {
+    const others = tenants.filter((t) => !(activeTenant && t.tenant_id === activeTenant.tenant_id));
+    if (activeTenant) {
+      return [{ id: '__default__', name: '默认租户 (default)' }, ...others.map((t) => ({ id: t.tenant_id, name: t.name }))];
+    }
+    // 主体即 default：对照必须是真实租户
+    return others.map((t) => ({ id: t.tenant_id, name: t.name }));
+  }, [tenants, activeTenant]);
+
+  // 对照租户未选时默认取第一个候选
+  useEffect(() => {
+    if (partnerCandidates.length && (!demoPartner || !partnerCandidates.some((c) => c.id === demoPartner))) {
+      setDemoPartner(partnerCandidates[0].id);
+    }
+  }, [partnerCandidates, demoPartner]);
 
   // 加载当前租户网关配置
   useEffect(() => {
@@ -122,6 +158,63 @@ export default function TenantManagement() {
       setGwMsg('✅ 已清除网关覆写（改用平台共享网关）');
     } catch (e) {
       setGwMsg(`❌ ${e instanceof Error ? e.message : '清除失败'}`);
+    }
+  };
+
+  const handleRunDemo = async () => {
+    setDemoError('');
+    setDemoResult(null);
+    setDemoRunning(true);
+    try {
+      const myKey = activeTenant ? getStoredKey(activeTenant.tenant_id) : null;
+      const partner = tenants.find((t) => t.tenant_id === demoPartner);
+      const partnerKey = demoPartner === '__default__' ? null : partner?.api_key || null;
+      const myLabel = activeTenant ? activeTenant.name : '默认租户 (default)';
+      const partnerLabel = demoPartner === '__default__' ? '默认租户 (default)' : partner?.name || demoPartner;
+
+      if (!demoPartner || (!partner && demoPartner !== '__default__')) {
+        throw new Error('请先选择一个对照租户');
+      }
+
+      // 1) 主体租户执行一次快速检查，产生一条带 tenant_id 的会话
+      const qc = await quickCheckWithKey('多租户隔离演示：示例齐套分析', myKey);
+      const mySessionId = qc.session_id;
+
+      // 2) 主体租户列出自己的会话——应能看见刚产生的那条
+      const myList = await listSessions(myKey);
+      const myHas = myList.sessions.some((s) => s.session_id === mySessionId);
+
+      // 3) 对照租户列出会话——绝不应包含主体的那条
+      const partnerList = await listSessions(partnerKey);
+      const partnerHas = partnerList.sessions.some((s) => s.session_id === mySessionId);
+
+      // 4) 无效密钥——应被 401 拒绝
+      let invalidRejected = false;
+      let invalidErr = '';
+      try {
+        await listSessions('__invalid_tenant_key_for_demo__');
+      } catch (e) {
+        invalidRejected = true;
+        invalidErr = e instanceof Error ? e.message : String(e);
+      }
+
+      const isolated = myHas && !partnerHas && invalidRejected;
+      setDemoResult({
+        myLabel,
+        partnerLabel,
+        myTotal: myList.total,
+        partnerTotal: partnerList.total,
+        myHas,
+        partnerHas,
+        invalidRejected,
+        invalidErr,
+        isolated,
+        mySessionId,
+      });
+    } catch (e) {
+      setDemoError(e instanceof Error ? e.message : '演示失败');
+    } finally {
+      setDemoRunning(false);
     }
   };
 
@@ -304,6 +397,68 @@ export default function TenantManagement() {
           </div>
         </div>
       )}
+
+      {/* 跨租户隔离演示 */}
+      <div className="card border-zhiyan-200">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-lg">🔬</span>
+          <h2 className="text-base font-semibold text-gray-800">跨租户隔离演示</h2>
+        </div>
+        <p className="text-xs text-gray-400 mb-4">
+          用「当前租户」执行一次分析产生专属会话，再分别用当前租户与对照租户的密钥去查询——
+          验证彼此数据互不可见，且无效密钥被拒绝。演示会在所选租户下创建 1 条内存态会话（重启即清，不影响业务）。
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm text-gray-600">对照租户</span>
+          <select
+            className="input w-auto"
+            value={demoPartner}
+            onChange={(e) => setDemoPartner(e.target.value)}
+            disabled={partnerCandidates.length === 0}
+          >
+            {partnerCandidates.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+          <button
+            className="btn-primary"
+            onClick={handleRunDemo}
+            disabled={demoRunning || partnerCandidates.length === 0}
+          >
+            {demoRunning ? '运行中…' : '运行隔离演示'}
+          </button>
+          {partnerCandidates.length === 0 && (
+            <span className="text-xs text-amber-600">请至少再注册 1 个租户作为对照</span>
+          )}
+        </div>
+        {demoError && <p className="text-sm text-red-500 mt-2">{demoError}</p>}
+
+        {demoResult && (
+          <div className="mt-4 space-y-3">
+            <div className={`rounded-lg p-3 text-sm font-medium ${demoResult.isolated ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+              {demoResult.isolated ? '✅ 隔离验证通过：租户间数据完全不可见' : '❌ 隔离验证未通过'}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="rounded-lg border border-gray-200 p-3">
+                <p className="text-xs text-gray-400 mb-1">主体：{demoResult.myLabel}</p>
+                <p className="text-sm text-gray-700">会话总数：<b>{demoResult.myTotal}</b></p>
+                <p className="text-sm text-gray-700">可见演示会话：{demoResult.myHas ? '✅ 是' : '❌ 否'}</p>
+                <p className="text-[10px] font-mono text-gray-400 mt-1 break-all">{demoResult.mySessionId}</p>
+              </div>
+              <div className="rounded-lg border border-gray-200 p-3">
+                <p className="text-xs text-gray-400 mb-1">对照：{demoResult.partnerLabel}</p>
+                <p className="text-sm text-gray-700">会话总数：<b>{demoResult.partnerTotal}</b></p>
+                <p className="text-sm text-gray-700">可见主体演示会话：{demoResult.partnerHas ? '❌ 是（泄露！）' : '✅ 否'}</p>
+              </div>
+              <div className="rounded-lg border border-gray-200 p-3">
+                <p className="text-xs text-gray-400 mb-1">无效密钥</p>
+                <p className="text-sm text-gray-700">调用被拒绝：{demoResult.invalidRejected ? '✅ 是 (401)' : '❌ 否'}</p>
+                {demoResult.invalidErr && <p className="text-[10px] text-gray-400 mt-1 break-all">{demoResult.invalidErr.slice(0, 80)}</p>}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* 隔离说明 */}
       <div className="card bg-gradient-to-br from-zhiyan-50/40 to-white border-zhiyan-100">
