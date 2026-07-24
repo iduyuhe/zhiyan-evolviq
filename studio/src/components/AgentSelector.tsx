@@ -9,7 +9,7 @@ export interface AgentInfo {
   version: string;
 }
 
-const SCENARIO_GROUPS: Record<string, { label: string; icon: string; agents: string[] }> = {
+export const SCENARIO_GROUPS: Record<string, { label: string; icon: string; agents: string[] }> = {
   supply: {
     label: '供应链指挥官',
     icon: '📦',

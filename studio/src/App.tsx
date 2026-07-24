@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import GoalInput from './components/GoalInput';
 import PlanPreview from './components/PlanPreview';
 import ExecutionResultView from './components/ExecutionResult';
@@ -15,9 +15,9 @@ import StrategyTuningTab from './components/StrategyTuningTab';
 import GatewayTab from './components/GatewayTab';
 import AiInsightPanel from './components/AiInsightPanel';
 import NotificationBell from './components/NotificationBell';
-import AgentSelector from './components/AgentSelector';
 import type { AgentInfo } from './components/AgentSelector';
 import { DEFAULT_EXAMPLES } from './components/AgentSelector';
+import AgentSidebar from './components/AgentSidebar';
 import TenantSwitcher from './components/TenantSwitcher';
 import TenantManagement from './components/TenantManagement';
 import { createSession, approveSession, quickCheck } from './api/client';
@@ -40,14 +40,29 @@ export default function App() {
   const [result, setResult] = useState<ExecutionResult | null>(null);
   const [error, setError] = useState<string>('');
   const [executing, setExecuting] = useState(false);
+  const [agents, setAgents] = useState<AgentInfo[]>([]);
   const [currentAgent, setCurrentAgent] = useState<string>('supply_chain');
   const [examples, setExamples] = useState<string[]>(DEFAULT_EXAMPLES.supply_chain);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const currentAgentInfo = agents.find((a) => a.id === currentAgent) || agents[0];
 
   const handleAgentChange = (agent: AgentInfo) => {
     setCurrentAgent(agent.id);
     setExamples(DEFAULT_EXAMPLES[agent.id] || DEFAULT_EXAMPLES.supply_chain);
     handleNewGoal();
   };
+
+  useEffect(() => {
+    fetch('/api/agents')
+      .then((r) => r.json())
+      .then((d) => {
+        const list = (d.agents || []) as AgentInfo[];
+        setAgents(list);
+        if (list.length > 0) handleAgentChange(list[0]);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleQuickCheck = useCallback(async (goal: string) => {
     setStage('executing');
@@ -150,7 +165,6 @@ export default function App() {
                 </button>
               ))}
             </div>
-            <AgentSelector onSelect={handleAgentChange} />
           </div>
 
           {/* 右：租户切换 + 通知 */}
@@ -184,94 +198,140 @@ export default function App() {
       </header>
 
       {/* 主内容 */}
-      <main className="max-w-3xl mx-auto px-4 py-8 space-y-4">
-        {tab === 'monitor' && <DeviceMonitor />}
-        {tab === 'history' && <SessionHistory onSelect={(id) => { setTab('studio'); }} />}
-        {tab === 'audit' && <AuditLogView />}
-        {tab === 'console' && <ConsoleTab />}
-        {tab === 'knowledge' && <KnowledgeGraphTab />}
-        {tab === 'strategy' && <StrategyTuningTab />}
-        {tab === 'gateway' && <GatewayTab />}
-        {tab === 'tenant' && <TenantManagement />}
+      {tab === 'studio' ? (
+        <div className="max-w-7xl mx-auto flex">
+          {/* 左侧 Agent 侧栏（桌面常驻） */}
+          <aside className="hidden lg:flex lg:flex-col w-64 shrink-0 border-r border-gray-200 bg-white sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
+            <AgentSidebar agents={agents} current={currentAgent} onSelect={handleAgentChange} />
+          </aside>
 
-        {tab === 'studio' && stage === 'input' && <GoalInput onSubmit={handleSubmitGoal} onQuickCheck={handleQuickCheck} loading={false} agentExamples={examples} />}
-
-        {tab === 'studio' && stage === 'planning' && (
-          <div className="page-transition card text-center py-16">
-            <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-gradient-to-br from-zhiyan-50 to-zhiyan-100 flex items-center justify-center shadow-inner">
-              <span className="w-8 h-8 border-[3px] border-zhiyan-500 border-t-transparent rounded-full animate-spin" />
+          {/* 右侧 Studio 主区 */}
+          <div className="flex-1 min-w-0">
+            {/* 窄屏：当前 Agent 切换入口 */}
+            <div className="lg:hidden flex items-center gap-2 px-4 py-3 border-b border-gray-100 bg-white sticky top-16 z-10">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="flex items-center gap-2 px-3 py-1.5 border border-zhiyan-200 rounded-lg bg-zhiyan-50 text-zhiyan-700 text-sm"
+              >
+                <span className="text-base leading-none">{currentAgentInfo?.icon}</span>
+                <span className="font-medium">{currentAgentInfo?.name || '选择 Agent'}</span>
+                <span className="text-zhiyan-400">▾</span>
+              </button>
+              <span className="text-xs text-gray-400">切换 Agent</span>
             </div>
-            <p className="text-gray-700 font-medium">Agent 正在分析目标</p>
-            <p className="text-sm text-gray-400 mt-2">解读业务意图 · 规划执行路径 · 计算所需数据</p>
-            <div className="flex justify-center gap-1.5 mt-4">
-              {[0, 1, 2].map(i => (
-                <span key={i} className="w-2 h-2 rounded-full bg-zhiyan-400 animate-pulse-dot" />
-              ))}
+
+            <div className="max-w-3xl mx-auto px-4 py-8 space-y-4">
+              {stage === 'input' && <GoalInput onSubmit={handleSubmitGoal} onQuickCheck={handleQuickCheck} loading={false} agentExamples={examples} />}
+
+              {stage === 'planning' && (
+                <div className="page-transition card text-center py-16">
+                  <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-gradient-to-br from-zhiyan-50 to-zhiyan-100 flex items-center justify-center shadow-inner">
+                    <span className="w-8 h-8 border-[3px] border-zhiyan-500 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                  <p className="text-gray-700 font-medium">Agent 正在分析目标</p>
+                  <p className="text-sm text-gray-400 mt-2">解读业务意图 · 规划执行路径 · 计算所需数据</p>
+                  <div className="flex justify-center gap-1.5 mt-4">
+                    {[0, 1, 2].map(i => (
+                      <span key={i} className="w-2 h-2 rounded-full bg-zhiyan-400 animate-pulse-dot" />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {stage === 'approving' && session?.plan && (
+                <PlanPreview plan={session.plan} onApprove={handleApprove} loading={executing} />
+              )}
+
+              {stage === 'executing' && (
+                <div className="page-transition card text-center py-16">
+                  <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center shadow-inner">
+                    <span className="w-8 h-8 border-[3px] border-green-500 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                  <p className="text-gray-700 font-medium">Agent 正在自主执行</p>
+                  <p className="text-sm text-gray-400 mt-2">
+                    <span className="inline-flex items-center gap-1.5">
+                      <span>查询数据</span>
+                      <span className="text-gray-300">→</span>
+                      <span>分析缺料</span>
+                      <span className="text-gray-300">→</span>
+                      <span>检索替代</span>
+                      <span className="text-gray-300">→</span>
+                      <span>执行操作</span>
+                    </span>
+                  </p>
+                  <div className="flex justify-center gap-1.5 mt-4">
+                    {[0, 1, 2].map(i => (
+                      <span key={i} className="w-2 h-2 rounded-full bg-green-400 animate-pulse-dot" />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {stage === 'result' && result && (
+                <div className="space-y-4">
+                  {/* AI 决策辅助（统一展示于各结果视图之上；无 LLM 时自动隐藏） */}
+                  <AiInsightPanel insight={result.ai_insight} source={result.ai_insight_source} />
+                  {currentAgent === 'pm_maintenance' ? (
+                    <PMResultView result={result as any} onNewGoal={handleNewGoal} />
+                  ) : currentAgent === 'yield_analysis' ? (
+                    <YieldResultView result={result as any} onNewGoal={handleNewGoal} />
+                  ) : currentAgent === 'quality_trace' ? (
+                    <TraceResultView result={result as any} onNewGoal={handleNewGoal} />
+                  ) : ['dfm_check','bom_selector','oee_optimizer','eco_change','smt_changeover','aoi_judge','ipc_standard'].includes(currentAgent) ? (
+                    <GenericResultView result={result as any} onNewGoal={handleNewGoal} />
+                  ) : (
+                    <ExecutionResultView result={result as any} onNewGoal={handleNewGoal} />
+                  )}
+                </div>
+              )}
+
+              {stage === 'error' && (
+                <div className="page-transition card border-red-200 text-center py-12">
+                  <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-red-50 flex items-center justify-center">
+                    <span className="text-2xl">❌</span>
+                  </div>
+                  <p className="text-gray-800 font-medium mb-1">出错了</p>
+                  <p className="text-sm text-gray-500 mb-6">{error}</p>
+                  <div className="flex gap-3 justify-center">
+                    <button className="btn-secondary" onClick={handleNewGoal}>重新开始</button>
+                    <button className="btn-primary" onClick={() => window.location.reload()}>刷新页面</button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        )}
 
-        {tab === 'studio' && stage === 'approving' && session?.plan && (
-          <PlanPreview plan={session.plan} onApprove={handleApprove} loading={executing} />
-        )}
-
-        {tab === 'studio' && stage === 'executing' && (
-          <div className="page-transition card text-center py-16">
-            <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center shadow-inner">
-              <span className="w-8 h-8 border-[3px] border-green-500 border-t-transparent rounded-full animate-spin" />
+          {/* 窄屏抽屉：复用 AgentSidebar */}
+          {sidebarOpen && (
+            <div className="lg:hidden fixed inset-0 z-40 flex">
+              <div className="flex-1 bg-black/30" onClick={() => setSidebarOpen(false)} />
+              <div className="w-72 max-w-[80%] bg-white h-full overflow-y-auto shadow-xl">
+                <div className="flex items-center justify-between px-3 py-3 border-b border-gray-100 sticky top-0 bg-white">
+                  <span className="text-sm font-semibold text-gray-900">选择 Agent</span>
+                  <button onClick={() => setSidebarOpen(false)} className="text-gray-400 text-xl leading-none px-2">×</button>
+                </div>
+                <AgentSidebar
+                  agents={agents}
+                  current={currentAgent}
+                  onSelect={handleAgentChange}
+                  onItemClick={() => setSidebarOpen(false)}
+                />
+              </div>
             </div>
-            <p className="text-gray-700 font-medium">Agent 正在自主执行</p>
-            <p className="text-sm text-gray-400 mt-2">
-              <span className="inline-flex items-center gap-1.5">
-                <span>查询数据</span>
-                <span className="text-gray-300">→</span>
-                <span>分析缺料</span>
-                <span className="text-gray-300">→</span>
-                <span>检索替代</span>
-                <span className="text-gray-300">→</span>
-                <span>执行操作</span>
-              </span>
-            </p>
-            <div className="flex justify-center gap-1.5 mt-4">
-              {[0, 1, 2].map(i => (
-                <span key={i} className="w-2 h-2 rounded-full bg-green-400 animate-pulse-dot" />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {tab === 'studio' && stage === 'result' && result && (
-          <div className="space-y-4">
-            {/* AI 决策辅助（统一展示于各结果视图之上；无 LLM 时自动隐藏） */}
-            <AiInsightPanel insight={result.ai_insight} source={result.ai_insight_source} />
-            {currentAgent === 'pm_maintenance' ? (
-              <PMResultView result={result as any} onNewGoal={handleNewGoal} />
-            ) : currentAgent === 'yield_analysis' ? (
-              <YieldResultView result={result as any} onNewGoal={handleNewGoal} />
-            ) : currentAgent === 'quality_trace' ? (
-              <TraceResultView result={result as any} onNewGoal={handleNewGoal} />
-            ) : ['dfm_check','bom_selector','oee_optimizer','eco_change','smt_changeover','aoi_judge','ipc_standard'].includes(currentAgent) ? (
-              <GenericResultView result={result as any} onNewGoal={handleNewGoal} />
-            ) : (
-              <ExecutionResultView result={result as any} onNewGoal={handleNewGoal} />
-            )}
-          </div>
-        )}
-
-        {tab === 'studio' && stage === 'error' && (
-          <div className="page-transition card border-red-200 text-center py-12">
-            <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-red-50 flex items-center justify-center">
-              <span className="text-2xl">❌</span>
-            </div>
-            <p className="text-gray-800 font-medium mb-1">出错了</p>
-            <p className="text-sm text-gray-500 mb-6">{error}</p>
-            <div className="flex gap-3 justify-center">
-              <button className="btn-secondary" onClick={handleNewGoal}>重新开始</button>
-              <button className="btn-primary" onClick={() => window.location.reload()}>刷新页面</button>
-            </div>
-          </div>
-        )}
-      </main>
+          )}
+        </div>
+      ) : (
+        <main className="max-w-3xl mx-auto px-4 py-8 space-y-4">
+          {tab === 'monitor' && <DeviceMonitor />}
+          {tab === 'history' && <SessionHistory onSelect={() => { setTab('studio'); }} />}
+          {tab === 'audit' && <AuditLogView />}
+          {tab === 'console' && <ConsoleTab />}
+          {tab === 'knowledge' && <KnowledgeGraphTab />}
+          {tab === 'strategy' && <StrategyTuningTab />}
+          {tab === 'gateway' && <GatewayTab />}
+          {tab === 'tenant' && <TenantManagement />}
+        </main>
+      )}
 
       {/* 底部 */}
       <footer className="border-t border-gray-100 mt-16 py-6 text-center">
