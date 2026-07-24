@@ -1,8 +1,0 @@
-blank_issues_enabled: false
-contact_links:
-  - name: 讨论区 / Discussions
-    url: https://github.com/iduyuhe/zhiyan-evolviq/discussions
-    about: 想法交流、使用问题、经验分享，请到 Discussions
-  - name: 安全漏洞 / Security
-    url: https://github.com/iduyuhe/zhiyan-evolviq/security/policy
-    about: 发现安全漏洞？请勿公开提交 Issue，按安全策略私下报告
