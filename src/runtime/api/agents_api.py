@@ -131,6 +131,24 @@ AGENT_REGISTRY = [
         "scenarios": ["成本核算", "成本拆解", "降本机会", "毛利率", "报价支撑"],
         "icon": "💰",
     },
+    {
+        "id": "demand_order",
+        "name": "需求订单Agent",
+        "description": "需求预测、订单履约率、未交付风险与产销协同(S&OP)供给再平衡",
+        "status": "active",
+        "version": "0.1.0",
+        "scenarios": ["需求预测", "订单履约", "未交付风险", "产销协同", "S&OP"],
+        "icon": "📊",
+    },
+    {
+        "id": "wms_logistics",
+        "name": "仓储物流Agent",
+        "description": "库存健康度、库容利用、物流时效与在途监控，授权内自动补货",
+        "status": "active",
+        "version": "0.1.0",
+        "scenarios": ["库存健康", "安全库存", "物流时效", "呆滞占比", "自动补货"],
+        "icon": "🚚",
+    },
 ]
 
 

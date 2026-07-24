@@ -1,4 +1,4 @@
-"""MCP 能力层联邦——统一注册 14 个 Agent 的 in-process 工具，对外暴露为 MCP 协议能力集。
+"""MCP 能力层联邦——统一注册 16 个 Agent 的 in-process 工具，对外暴露为 MCP 协议能力集。
 
 设计要点（与 T4 收敛一致）：
 - Agent 内部仍走 in-process 工具层（MVP 主路径不变）；本模块是「能力对外暴露层」。
@@ -14,6 +14,8 @@ from src.agents.aoi_judge.tools import AOITools
 from src.agents.aps_scheduler.tools import APSTools
 from src.agents.bom_selector.tools import BOMSelectorTools
 from src.agents.cost_analysis.tools import CostAnalysisTools
+from src.agents.demand_order.tools import DemandOrderTools
+from src.agents.wms_logistics.tools import WMSLogisticsTools
 from src.agents.dfm_check.tools import DFMTools
 from src.agents.eco_change.tools import ECOTools
 from src.agents.energy_carbon.tools import EnergyCarbonTools
@@ -43,6 +45,8 @@ _INSTANCES = {
     "aps_scheduler": APSTools(),
     "bom_selector": BOMSelectorTools(),
     "cost_analysis": CostAnalysisTools(),
+    "demand_order": DemandOrderTools(),
+    "wms_logistics": WMSLogisticsTools(),
     "dfm_check": DFMTools(),
     "eco_change": ECOTools(),
     "energy_carbon": EnergyCarbonTools(),
@@ -118,6 +122,14 @@ TOOL_REGISTRY = {
     "cost_analysis__get_product_costs": ("cost_analysis", "get_product_costs", "产品成本结构", {}),
     "cost_analysis__get_cost_breakdown": ("cost_analysis", "get_cost_breakdown", "全厂成本拆解", {}),
     "cost_analysis__create_cost_reduction": ("cost_analysis", "create_cost_reduction", "生成降本任务", {"measure": "string"}),
+    # 需求订单
+    "demand_order__get_demand_list": ("demand_order", "get_demand_list", "各产品需求/订单/未交付", {}),
+    "demand_order__get_order_fulfillment": ("demand_order", "get_order_fulfillment", "订单履约汇总", {}),
+    "demand_order__reallocate_supply": ("demand_order", "reallocate_supply", "生成产销协同供给再平衡", {"from_product": "string", "to_product": "string", "qty_wan": "number"}),
+    # 仓储物流
+    "wms_logistics__get_inventory": ("wms_logistics", "get_inventory", "库存健康度", {}),
+    "wms_logistics__get_logistics": ("wms_logistics", "get_logistics", "物流时效与准时率", {}),
+    "wms_logistics__create_replenishment": ("wms_logistics", "create_replenishment", "生成补货任务", {"material": "string", "qty_wan": "number"}),
 }
 
 

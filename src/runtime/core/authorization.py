@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 def _build_default_boundaries() -> list[AuthBoundary]:
-    """构造 14 个 Agent 的默认授权边界（每次调用返回全新实例，供各租户独立持有）。"""
+    """构造 16 个 Agent 的默认授权边界（每次调用返回全新实例，供各租户独立持有）。"""
     defaults: list[AuthBoundary] = []
 
     defaults.append(AuthBoundary(
@@ -216,6 +216,33 @@ def _build_default_boundaries() -> list[AuthBoundary]:
         confidence_threshold=0.82,
         auto_execute_actions=["create_cost_reduction"],
         require_approval_actions=[],
+        max_daily_autonomous=15,
+        enabled=True,
+    ))
+    # 经营决策大脑（P2 企业级）
+    defaults.append(AuthBoundary(
+        id="ab-demand-default",
+        name="需求订单默认边界",
+        agent="demand_order",
+        allowed_categories=[],
+        price_tolerance_pct=0.0,
+        max_lock_qty=0,
+        confidence_threshold=0.80,
+        auto_execute_actions=["reallocate_supply"],
+        require_approval_actions=["expedite_order"],
+        max_daily_autonomous=20,
+        enabled=True,
+    ))
+    defaults.append(AuthBoundary(
+        id="ab-wms-default",
+        name="仓储物流默认边界",
+        agent="wms_logistics",
+        allowed_categories=[],
+        price_tolerance_pct=0.0,
+        max_lock_qty=0,
+        confidence_threshold=0.82,
+        auto_execute_actions=["create_replenishment"],
+        require_approval_actions=["reroute_shipment"],
         max_daily_autonomous=15,
         enabled=True,
     ))

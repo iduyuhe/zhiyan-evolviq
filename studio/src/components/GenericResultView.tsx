@@ -17,6 +17,8 @@ const AGENT_META: Record<string, { title: string; icon: string }> = {
   aps_scheduler: { title: '计划排程分析', icon: '🧠' },
   energy_carbon: { title: '能源碳ESG分析', icon: '🌿' },
   cost_analysis: { title: '制造成本分析', icon: '💰' },
+  demand_order: { title: '需求订单分析', icon: '📊' },
+  wms_logistics: { title: '仓储物流分析', icon: '🚚' },
 };
 
 export default function GenericResultView({ result, onNewGoal }: ResultViewProps) {
@@ -110,6 +112,10 @@ function getTabs(agent: string, result: any): { label: string; content: ReactEle
       return getEnergyTabs(result);
     case 'cost_analysis':
       return getCostTabs(result);
+    case 'demand_order':
+      return getDemandTabs(result);
+    case 'wms_logistics':
+      return getWmsTabs(result);
     default:
       return [{ label: '结果', content: <pre className="text-xs text-gray-600 whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre> }];
   }
@@ -648,6 +654,118 @@ function getCostTabs(result: any) {
               <div className="text-right">
                 <p className="text-sm font-medium text-green-700">¥{s.saving_per_unit}/片</p>
                 <p className="text-xs text-gray-400">置信度{Math.round((s.confidence || 0) * 100)}%</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+  ];
+}
+
+function getDemandTabs(result: any) {
+  return [
+    {
+      label: '需求总览',
+      content: (
+        <div className="space-y-3">
+          <div className="grid grid-cols-4 gap-3">
+            <StatCard label="本季需求" value={`${result.total_forecast || 0}万片`} />
+            <StatCard label="已接订单" value={`${result.total_booked || 0}万片`} />
+            <StatCard label="未交付" value={`${result.total_backlog || 0}万片`} color={(result.total_backlog || 0) > 30 ? 'text-red-600' : 'text-amber-600'} />
+            <StatCard label="满足率" value={`${result.avg_fill_rate || 0}%`} color={(result.avg_fill_rate || 0) >= 90 ? 'text-green-600' : 'text-red-600'} />
+          </div>
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-sm text-gray-700">{result.summary}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      label: '产品需求',
+      content: (
+        <div className="space-y-2">
+          {(result.demand_items || []).map((d: any, i: number) => (
+            <div key={i} className="p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-gray-900">{d.name}</p>
+                <Badge status={d.at_risk ? 'critical' : 'low'}>{d.fill_rate}%</Badge>
+              </div>
+              <div className="text-xs text-gray-500">
+                需求 {d.forecast} · 已接 {d.booked} · 未交付 {d.backlog} 万片
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      label: '交期风险',
+      content: (
+        <div className="space-y-2">
+          {(result.demand_items || []).filter((d: any) => d.at_risk).map((d: any, i: number) => (
+            <div key={i} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-900">{d.name}</p>
+              <div className="text-right">
+                <p className="text-sm font-medium text-red-600">未交付 {d.backlog} 万片</p>
+                <p className="text-xs text-gray-400">满足率 {d.fill_rate}%</p>
+              </div>
+            </div>
+          ))}
+          {(result.at_risk_count || 0) === 0 && (
+            <p className="text-sm text-gray-500 p-2.5 bg-gray-50 rounded-lg">✅ 全部产品满足率在红线之上</p>
+          )}
+        </div>
+      ),
+    },
+  ];
+}
+
+function getWmsTabs(result: any) {
+  return [
+    {
+      label: '库存总览',
+      content: (
+        <div className="space-y-3">
+          <div className="grid grid-cols-4 gap-3">
+            <StatCard label="库存总额" value={`${result.total_stock_value_wan || 0}万`} />
+            <StatCard label="加权周转" value={`${result.turnover || 0}次`} />
+            <StatCard label="呆滞占比" value={`${result.obsolete_pct || 0}%`} color={(result.obsolete_pct || 0) > 5 ? 'text-amber-600' : 'text-green-600'} />
+            <StatCard label="物流准时" value={`${result.on_time_rate || 0}%`} color={(result.on_time_rate || 0) >= 90 ? 'text-green-600' : 'text-red-600'} />
+          </div>
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-sm text-gray-700">{result.summary}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      label: '库存明细',
+      content: (
+        <div className="space-y-2">
+          {(result.inventory || []).map((m: any, i: number) => (
+            <div key={i} className="p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-gray-900">{m.name} <span className="text-xs text-gray-400">· {m.abc}类</span></p>
+                <Badge status={m.below_safety ? 'critical' : 'low'}>{m.below_safety ? '低于安全' : '达标'}</Badge>
+              </div>
+              <div className="text-xs text-gray-500">
+                库存 {m.stock_value_wan} 万（安全 {m.safety_wan} 万）· 周转 {m.turnover} 次 · 呆滞 {m.obsolete_wan} 万
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      label: '物流时效',
+      content: (
+        <div className="space-y-2">
+          {(result.logistics || []).map((r: any, i: number) => (
+            <div key={i} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-900">{r.route}</p>
+              <div className="text-right">
+                <Badge status={r.status === 'ok' ? 'pass' : r.status === 'delay' ? 'critical' : 'high'}>{r.lead_time}天/{r.on_time_rate}%</Badge>
               </div>
             </div>
           ))}

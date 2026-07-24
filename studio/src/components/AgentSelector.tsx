@@ -33,7 +33,7 @@ export const SCENARIO_GROUPS: Record<string, { label: string; icon: string; agen
   enterprise: {
     label: '经营决策',
     icon: '🧠',
-    agents: ['aps_scheduler', 'energy_carbon', 'cost_analysis'],
+    agents: ['aps_scheduler', 'energy_carbon', 'cost_analysis', 'demand_order', 'wms_logistics'],
   },
 };
 
@@ -107,6 +107,16 @@ const DEFAULT_EXAMPLES: Record<string, string[]> = {
     '拆解28nm逻辑芯片的单位制造成本，定位超目标成本的科目',
     '分析国产替代料与良率提升可带来的降本空间',
     '基于成本结构给出重点产品的报价底线与毛利率',
+  ],
+  demand_order: [
+    '分析本季各产品的需求预测与已接订单，识别未交付与交期风险',
+    '对比需求与产能，给出28nm逻辑芯片的交期承诺与产销协同建议',
+    '汇总全厂订单满足率，对低于红线的产品生成供给再平衡',
+  ],
+  wms_logistics: [
+    '分析关键物料库存健康度，识别低于安全库存的物料并自动补货',
+    '统计各物流路线的时效与准时率，定位慢链路改道建议',
+    '核算库存金额、周转次数与呆滞占比，纳入供应链韧性看板',
   ],
 };
 

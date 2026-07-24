@@ -1,6 +1,6 @@
 """多Agent路由引擎——根据用户目标自动分派到合适的Agent
 
-当前Agent阵容（14个）：
+当前Agent阵容（16个）：
 1. 供应链Agent (supply_chain) — 物料齐套检查、缺料预警、替代推荐
 2. 设备维护Agent (pm_maintenance) — 设备健康诊断、预测维护
 3. 良率分析Agent (yield_analysis) — 晶圆良率分析、缺陷定位
@@ -15,6 +15,8 @@
 12. 计划排程Agent (aps_scheduler) — 生产排程、产能负荷、交期承诺
 13. 能源碳ESG Agent (energy_carbon) — 能耗监控、碳排放核算、节能降碳
 14. 制造成本Agent (cost_analysis) — 单位成本拆解、降本机会、报价支撑
+15. 需求订单Agent (demand_order) — 需求预测、订单履约、产销协同(S&OP)
+16. 仓储物流Agent (wms_logistics) — 库存健康、物流时效、授权内自动补货
 """
 
 import importlib
@@ -42,6 +44,9 @@ AGENT_REGISTRY: dict[str, tuple[str, str]] = {
     "aps_scheduler": ("src.agents.aps_scheduler.agent", "aps_agent"),
     "energy_carbon": ("src.agents.energy_carbon.agent", "energy_carbon_agent"),
     "cost_analysis": ("src.agents.cost_analysis.agent", "cost_agent"),
+    # 经营决策大脑（P2 企业级）
+    "demand_order": ("src.agents.demand_order.agent", "demand_agent"),
+    "wms_logistics": ("src.agents.wms_logistics.agent", "wms_agent"),
 }
 
 
@@ -52,6 +57,8 @@ ROUTING_RULES = [
     (["dfm", "可制造性", "焊盘间距", "线宽", "阻焊", "过孔", "设计审查", "制造风险"], "dfm_check"),
     # BOM选型Agent触发词（放在供应链之前，避免"替代料"被供应链的"替代"截获）
     (["选型", "替代料", "pin-to-pin", "兼容", "元器件推荐", "lifecycle", "eol", "nrnd", "alternative", "stm32", "gd32", "tps", "mcu选型"], "bom_selector"),
+    # 仓储物流Agent触发词（经营决策大脑；置于供应链之前，靠仓储/补货/呆滞/物流等专属词截获，不抢物料库存）
+    (["仓储", "仓库", "库容", "补货", "呆滞", "物流", "在途", "时效", "wms", "周转", "安全库存", "成品仓"], "wms_logistics"),
     # 供应链Agent触发词（去掉宽泛的"替代"，避免截获BOM选型；靠BOM/缺料/采购等触发）
     (["物料", "齐套", "缺料", "BOM", "库存", "PO", "采购", "供应", "硅片", "光刻胶", "靶材", "特气", "supply", "inventory"], "supply_chain"),
     # OEE优化Agent触发词（放在设备维护之前，避免"综合效率"被"设备"截获；去掉"停机"避免抢维护）
@@ -68,6 +75,8 @@ ROUTING_RULES = [
     (["追溯", "trace", "客诉", "投诉", "根因", "root", "cause", "归因", "异常批次"], "quality_trace"),
     # IPC标准Agent触发词（增强：焊点/桥连/拒收/可接受）
     (["ipc", "标准", "判定", "检验规范", "class 1", "class 2", "class 3", "可接受性", "桥连", "焊点", "拒收", "可接受"], "ipc_standard"),
+    # 需求订单Agent触发词（经营决策大脑；置于排程之前，靠需求/订单/未交付/产销协同等专属词截获，不抢交期）
+    (["需求", "订单", "接单", "未交付", "交期风险", "产销协同", "s&op", "备货", "forecast", "backlog", "需求预测"], "demand_order"),
     # 计划排程Agent触发词（经营决策大脑）
     (["排程", "排产", "生产计划", "产能", "交期", "工单", "投料", "调度", "负荷", "aps", "scheduling", "ctp"], "aps_scheduler"),
     # 能源碳ESG Agent触发词（经营决策大脑）

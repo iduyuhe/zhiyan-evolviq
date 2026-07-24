@@ -161,7 +161,7 @@ export default function StrategyTuningTab() {
               <span>🎚️</span> 策略调参 · 按效果放权
             </h2>
             <p className="text-xs text-gray-400 mt-1">
-              14 个 Agent 实时授权旋钮 · 目标自主率
+              16 个 Agent 实时授权旋钮 · 目标自主率
               <span className="ml-1 px-1.5 py-0.5 rounded text-[10px] bg-zhiyan-50 text-zhiyan-600">
                 {pct(TARGET_AUTONOMOUS_RATE)}
               </span>
