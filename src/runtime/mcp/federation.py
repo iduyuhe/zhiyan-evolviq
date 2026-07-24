@@ -16,6 +16,8 @@ from src.agents.bom_selector.tools import BOMSelectorTools
 from src.agents.cost_analysis.tools import CostAnalysisTools
 from src.agents.demand_order.tools import DemandOrderTools
 from src.agents.wms_logistics.tools import WMSLogisticsTools
+from src.agents.compliance_q.tools import ComplianceTools
+from src.agents.executive_cockpit.tools import ExecutiveCockpitTools
 from src.agents.dfm_check.tools import DFMTools
 from src.agents.eco_change.tools import ECOTools
 from src.agents.energy_carbon.tools import EnergyCarbonTools
@@ -47,6 +49,8 @@ _INSTANCES = {
     "cost_analysis": CostAnalysisTools(),
     "demand_order": DemandOrderTools(),
     "wms_logistics": WMSLogisticsTools(),
+    "compliance_q": ComplianceTools(),
+    "executive_cockpit": ExecutiveCockpitTools(),
     "dfm_check": DFMTools(),
     "eco_change": ECOTools(),
     "energy_carbon": EnergyCarbonTools(),
@@ -130,6 +134,14 @@ TOOL_REGISTRY = {
     "wms_logistics__get_inventory": ("wms_logistics", "get_inventory", "库存健康度", {}),
     "wms_logistics__get_logistics": ("wms_logistics", "get_logistics", "物流时效与准时率", {}),
     "wms_logistics__create_replenishment": ("wms_logistics", "create_replenishment", "生成补货任务", {"material": "string", "qty_wan": "number"}),
+    # 质量合规
+    "compliance_q__get_certifications": ("compliance_q", "get_certifications", "认证状态列表", {}),
+    "compliance_q__get_audit_findings": ("compliance_q", "get_audit_findings", "审核发现列表", {}),
+    "compliance_q__create_capa": ("compliance_q", "create_capa", "生成CAPA纠正措施", {"finding_id": "string", "title": "string"}),
+    # 经营驾驶舱
+    "executive_cockpit__get_kpi_dashboard": ("executive_cockpit", "get_kpi_dashboard", "经营KPI看板", {}),
+    "executive_cockpit__get_budget_utilization": ("executive_cockpit", "get_budget_utilization", "预算执行情况", {}),
+    "executive_cockpit__create_action_item": ("executive_cockpit", "create_action_item", "生成改善行动项", {"dept": "string", "issue": "string"}),
 }
 
 

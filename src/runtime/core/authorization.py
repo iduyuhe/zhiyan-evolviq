@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 def _build_default_boundaries() -> list[AuthBoundary]:
-    """构造 16 个 Agent 的默认授权边界（每次调用返回全新实例，供各租户独立持有）。"""
+    """构造 18 个 Agent 的默认授权边界（每次调用返回全新实例，供各租户独立持有）。"""
     defaults: list[AuthBoundary] = []
 
     defaults.append(AuthBoundary(
@@ -244,6 +244,33 @@ def _build_default_boundaries() -> list[AuthBoundary]:
         auto_execute_actions=["create_replenishment"],
         require_approval_actions=["reroute_shipment"],
         max_daily_autonomous=15,
+        enabled=True,
+    ))
+    # 经营决策大脑（P3 企业级）
+    defaults.append(AuthBoundary(
+        id="ab-compliance-default",
+        name="质量合规默认边界",
+        agent="compliance_q",
+        allowed_categories=[],
+        price_tolerance_pct=0.0,
+        max_lock_qty=0,
+        confidence_threshold=0.82,
+        auto_execute_actions=["create_capa"],
+        require_approval_actions=["escalate_compliance"],
+        max_daily_autonomous=15,
+        enabled=True,
+    ))
+    defaults.append(AuthBoundary(
+        id="ab-exec-default",
+        name="经营驾驶舱默认边界",
+        agent="executive_cockpit",
+        allowed_categories=[],
+        price_tolerance_pct=0.0,
+        max_lock_qty=0,
+        confidence_threshold=0.80,
+        auto_execute_actions=["create_action_item"],
+        require_approval_actions=["approve_budget_adjustment"],
+        max_daily_autonomous=20,
         enabled=True,
     ))
     return defaults

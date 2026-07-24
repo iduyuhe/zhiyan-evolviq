@@ -149,6 +149,24 @@ AGENT_REGISTRY = [
         "scenarios": ["库存健康", "安全库存", "物流时效", "呆滞占比", "自动补货"],
         "icon": "🚚",
     },
+    {
+        "id": "compliance_q",
+        "name": "质量合规Agent",
+        "description": "质量体系认证跟踪、审核发现闭环、法规合规(RoHS/REACH)与CAPA管理",
+        "status": "active",
+        "version": "0.1.0",
+        "scenarios": ["认证管理", "审核发现", "法规合规", "CAPA", "体系认证"],
+        "icon": "🛡️",
+    },
+    {
+        "id": "executive_cockpit",
+        "name": "经营驾驶舱Agent",
+        "description": "经营KPI看板、预算执行、产出追踪、现金流与利润分析——全厂决策支持",
+        "status": "active",
+        "version": "0.1.0",
+        "scenarios": ["经营KPI", "预算执行", "产出追踪", "现金流", "利润分析"],
+        "icon": "🏢",
+    },
 ]
 
 

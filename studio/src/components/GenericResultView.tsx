@@ -19,6 +19,8 @@ const AGENT_META: Record<string, { title: string; icon: string }> = {
   cost_analysis: { title: '制造成本分析', icon: '💰' },
   demand_order: { title: '需求订单分析', icon: '📊' },
   wms_logistics: { title: '仓储物流分析', icon: '🚚' },
+  compliance_q: { title: '质量合规分析', icon: '🛡️' },
+  executive_cockpit: { title: '经营驾驶舱', icon: '🏢' },
 };
 
 export default function GenericResultView({ result, onNewGoal }: ResultViewProps) {
@@ -116,6 +118,10 @@ function getTabs(agent: string, result: any): { label: string; content: ReactEle
       return getDemandTabs(result);
     case 'wms_logistics':
       return getWmsTabs(result);
+    case 'compliance_q':
+      return getComplianceTabs(result);
+    case 'executive_cockpit':
+      return getExecutiveTabs(result);
     default:
       return [{ label: '结果', content: <pre className="text-xs text-gray-600 whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre> }];
   }
@@ -766,6 +772,118 @@ function getWmsTabs(result: any) {
               <p className="text-sm text-gray-900">{r.route}</p>
               <div className="text-right">
                 <Badge status={r.status === 'ok' ? 'pass' : r.status === 'delay' ? 'critical' : 'high'}>{r.lead_time}天/{r.on_time_rate}%</Badge>
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+  ];
+}
+
+function getComplianceTabs(result: any) {
+  return [
+    {
+      label: '合规概览',
+      content: (
+        <div className="space-y-3">
+          <div className="grid grid-cols-4 gap-3">
+            <StatCard label="有效认证" value={result.valid_certs || 0} />
+            <StatCard label="进行中" value={result.in_progress_certs || 0} color="text-amber-600" />
+            <StatCard label="未关闭发现" value={result.open_findings || 0} color={(result.open_findings || 0) > 0 ? 'text-red-600' : 'text-green-600'} />
+            <StatCard label="法规合规率" value={`${result.compliant_regs || 0}/${result.total_regulations || 0}`} color={(result.compliant_regs || 0) === (result.total_regulations || 0) ? 'text-green-600' : 'text-amber-600'} />
+          </div>
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-sm text-gray-700">{result.summary}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      label: '认证状态',
+      content: (
+        <div className="space-y-2">
+          {(result.certifications || []).map((c: any, i: number) => (
+            <div key={i} className="p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-gray-900">{c.name} <span className="text-xs text-gray-400">· {c.body}</span></p>
+                <Badge status={c.status === 'valid' ? 'pass' : 'warning'}>{c.status === 'valid' ? `有效至${c.expiry}` : `${c.progress_pct}%`}</Badge>
+              </div>
+              {c.status === 'valid' && <div className="text-xs text-gray-500">最近审核 {c.last_audit}</div>}
+              {c.status !== 'valid' && <div className="text-xs text-gray-500">目标 {c.target_date}，进度 {c.progress_pct}%</div>}
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      label: '审核发现',
+      content: (
+        <div className="space-y-2">
+          {(result.audits || []).map((a: any, i: number) => (
+            <div key={i} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg">
+              <div className="flex-1">
+                <p className="text-sm text-gray-900">{a.finding_id} · {a.title}</p>
+                <p className="text-xs text-gray-500">{a.severity} · {a.owner} · 到期 {a.due}</p>
+              </div>
+              <Badge status={a.status === 'open' ? 'critical' : a.status === 'in_progress' ? 'high' : 'pass'}>{a.status}</Badge>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+  ];
+}
+
+function getExecutiveTabs(result: any) {
+  return [
+    {
+      label: '经营总览',
+      content: (
+        <div className="space-y-3">
+          <div className="grid grid-cols-4 gap-3">
+            <StatCard label="季度营收" value={`${result.revenue_quarter || 0}万`} />
+            <StatCard label="毛利率" value={`${result.gross_margin_pct || 0}%`} color={(result.gross_margin_pct || 0) >= 30 ? 'text-green-600' : 'text-amber-600'} />
+            <StatCard label="净利率" value={`${result.net_margin_pct || 0}%`} />
+            <StatCard label="现金流" value={`${result.cash_position || 0}万`} />
+          </div>
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-sm text-gray-700">{result.summary}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      label: '产出',
+      content: (
+        <div className="space-y-2">
+          <div className="grid grid-cols-4 gap-3 mb-3">
+            <StatCard label="产出完成率" value={`${result.prod_completion_pct || 0}%`} color={(result.prod_completion_pct || 0) >= 95 ? 'text-green-600' : 'text-amber-600'} />
+            <StatCard label="超预算部门" value={result.overspend_depts || 0} color={(result.overspend_depts || 0) > 0 ? 'text-red-600' : 'text-green-600'} />
+            <StatCard label="订单未交付" value={`${result.order_backlog_value || 0}万`} color="text-amber-600" />
+            <StatCard label="现金可支撑" value={`${result.days_of_cash || 0}天`} />
+          </div>
+          {(result.production?.by_product || []).map((p: any, i: number) => (
+            <div key={i} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-900">{p.product}</p>
+              <div className="text-right">
+                <p className={`text-sm font-medium ${(p.actual / p.plan) >= 0.95 ? 'text-green-700' : 'text-amber-700'}`}>{p.actual}/{p.plan}万片</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      label: '预算执行',
+      content: (
+        <div className="space-y-2">
+          {(result.budgets || []).map((b: any, i: number) => (
+            <div key={i} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-900">{b.dept}</p>
+              <div className="text-right">
+                <Badge status={b.status === 'overspend' ? 'critical' : b.status === 'underspend' ? 'pass' : 'low'}>{b.util_pct}%</Badge>
+                <p className="text-xs text-gray-400 mt-0.5">{b.actual}/{b.plan}万 · {b.variance > 0 ? `超${b.variance}` : `省${Math.abs(b.variance)}`}万</p>
               </div>
             </div>
           ))}

@@ -33,7 +33,7 @@ export const SCENARIO_GROUPS: Record<string, { label: string; icon: string; agen
   enterprise: {
     label: '经营决策',
     icon: '🧠',
-    agents: ['aps_scheduler', 'energy_carbon', 'cost_analysis', 'demand_order', 'wms_logistics'],
+    agents: ['aps_scheduler', 'energy_carbon', 'cost_analysis', 'demand_order', 'wms_logistics', 'compliance_q', 'executive_cockpit'],
   },
 };
 
@@ -117,6 +117,16 @@ const DEFAULT_EXAMPLES: Record<string, string[]> = {
     '分析关键物料库存健康度，识别低于安全库存的物料并自动补货',
     '统计各物流路线的时效与准时率，定位慢链路改道建议',
     '核算库存金额、周转次数与呆滞占比，纳入供应链韧性看板',
+  ],
+  compliance_q: [
+    '检查ISO 9001、IATF 16949等质量体系认证状态，识别到期风险和审核发现',
+    '追踪RoHS/REACH等法规合规状态，对高风险发现自动生成CAPA纠正措施',
+    '汇总审核发现与纠正预防措施(CAPA)闭环率，给出管理评审建议',
+  ],
+  executive_cockpit: [
+    '汇总本季经营KPI：营收、毛利率、净利润、现金流，定位超预算部门并生成改善项',
+    '分析各产品产出完成率与预算执行差异，给出经营决策建议',
+    '生成全厂经营驾驶舱看板，识别超预算和欠产环节，自动生成改善行动项',
   ],
 };
 

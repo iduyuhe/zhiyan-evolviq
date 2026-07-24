@@ -17,6 +17,8 @@
 14. 制造成本Agent (cost_analysis) — 单位成本拆解、降本机会、报价支撑
 15. 需求订单Agent (demand_order) — 需求预测、订单履约、产销协同(S&OP)
 16. 仓储物流Agent (wms_logistics) — 库存健康、物流时效、授权内自动补货
+17. 质量合规Agent (compliance_q) — 质量体系认证、审核发现、法规合规、CAPA管理
+18. 经营驾驶舱Agent (executive_cockpit) — 经营KPI看板、预算执行、产出追踪
 """
 
 import importlib
@@ -47,6 +49,9 @@ AGENT_REGISTRY: dict[str, tuple[str, str]] = {
     # 经营决策大脑（P2 企业级）
     "demand_order": ("src.agents.demand_order.agent", "demand_agent"),
     "wms_logistics": ("src.agents.wms_logistics.agent", "wms_agent"),
+    # 经营决策大脑（P3 企业级）
+    "compliance_q": ("src.agents.compliance_q.agent", "compliance_agent"),
+    "executive_cockpit": ("src.agents.executive_cockpit.agent", "executive_agent"),
 }
 
 
@@ -83,6 +88,10 @@ ROUTING_RULES = [
     (["能耗", "能源", "碳", "碳排放", "碳足迹", "esg", "双碳", "节能", "绿电", "排放", "energy", "carbon"], "energy_carbon"),
     # 制造成本Agent触发词（经营决策大脑）
     (["成本", "制造成本", "降本", "报价", "毛利", "费用", "单位成本", "成本核算", "cost"], "cost_analysis"),
+    # 质量合规Agent触发词（经营决策大脑；置于良率之前）
+    (["合规", "认证", "iso", "审核", "audit", "法规", "rohs", "reach", "capa", "质量体系", "纠正措施", "体系认证", "管理体系"], "compliance_q"),
+    # 经营驾驶舱Agent触发词（经营决策大脑；置于良率之前）
+    (["经营", "驾驶舱", "kpi", "看板", "财务报表", "预算", "利润", "营收", "产出完成", "决策支持", "毛利率", "现金流", "损益"], "executive_cockpit"),
     # 良率分析Agent触发词（放最后，作为宽泛兜底）
     (["良率", "yield", "缺陷", "defect", "质量", "quality", "颗粒", "污染", "合格率", "不良"], "yield_analysis"),
 ]
