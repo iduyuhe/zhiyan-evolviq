@@ -180,3 +180,46 @@ async def test_data_sources_api_crud():
         r = await c.get("/data-sources")
         kinds = {d["kind"] for d in r.json()}
         assert "timeseries" not in kinds
+
+
+# ---- 7. 孪生体状态上行（twin_feed / 全息孪生社会）----
+async def test_twin_feed_ingest_and_route():
+    from src.runtime.data_sources.base import HolonKind
+
+    src = MESConnector(base_url="http://mes.x", tenant_id="default")
+    assert src.holon_kind == HolonKind.MACHINE
+    registry.register(src)
+    n = registry.route_event(HolonKind.MACHINE, {"spindle_load": 0.7}, source="gateway")
+    assert n >= 1
+    st = src.get_twin_state()
+    assert st["values"].get("spindle_load") == 0.7
+    assert st["updated_at"] is not None
+
+
+async def test_gateway_read_publishes_to_twin_feed():
+    import time
+    from src.gateways.manager import GatewayManager
+    from src.gateways.base import DataPoint
+
+    mgr = GatewayManager()
+
+    class FakeGW:
+        _mode = "simulated"
+
+        async def connect(self):
+            return True
+
+        async def health_check(self):
+            return {"running": True, "mode": "simulated"}
+
+        async def read(self, address, count=1):
+            return [DataPoint(tag="temp", value=42.0, timestamp=time.time(), holon_kind="machine")]
+
+    mgr._gateways["modbus"] = FakeGW()
+    registry.register(MESConnector(base_url="http://mes.x", tenant_id="default"))
+
+    pts = await mgr.read("modbus", "40001")
+    assert pts[0].value == 42.0
+    states = registry.all_twin_states("default")
+    found = any(s["values"].get("temp") == 42.0 for s in states.values())
+    assert found

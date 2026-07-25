@@ -13,7 +13,7 @@
 import logging
 from typing import Any, Optional
 
-from src.runtime.data_sources.base import DataSource, DataSourceKind
+from src.runtime.data_sources.base import DataSource, DataSourceKind, HolonKind
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +68,7 @@ class RestConnector(DataSource):
 
 class MESConnector(RestConnector):
     """制造执行系统：工单、产线进度、质量缺陷。"""
+    holon_kind = HolonKind.MACHINE
 
     def __init__(self, base_url: str = "", api_key: str = "", tenant_id: str = "default", timeout: float = 5.0):
         super().__init__(DataSourceKind.MES, name="mes", base_url=base_url, api_key=api_key,
@@ -89,6 +90,7 @@ class MESConnector(RestConnector):
 
 class ERPConnector(RestConnector):
     """企业资源计划：采购订单、供应商、财务。"""
+    holon_kind = HolonKind.METHOD
 
     def __init__(self, base_url: str = "", api_key: str = "", tenant_id: str = "default", timeout: float = 5.0):
         super().__init__(DataSourceKind.ERP, name="erp", base_url=base_url, api_key=api_key,
@@ -110,6 +112,7 @@ class ERPConnector(RestConnector):
 
 class PLMConnector(RestConnector):
     """产品生命周期管理：零部件、BOM、文档。"""
+    holon_kind = HolonKind.METHOD
 
     def __init__(self, base_url: str = "", api_key: str = "", tenant_id: str = "default", timeout: float = 5.0):
         super().__init__(DataSourceKind.PLM, name="plm", base_url=base_url, api_key=api_key,
@@ -131,6 +134,7 @@ class PLMConnector(RestConnector):
 
 class WMSConnector(RestConnector):
     """仓储管理系统：库存、库位、出入库。"""
+    holon_kind = HolonKind.MATERIAL
 
     def __init__(self, base_url: str = "", api_key: str = "", tenant_id: str = "default", timeout: float = 5.0):
         super().__init__(DataSourceKind.WMS, name="wms", base_url=base_url, api_key=api_key,

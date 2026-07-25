@@ -79,5 +79,17 @@ class BaseAgent(ABC):
         except Exception:
             return {"insights": [], "entities": []}
 
+    async def twin_context(self, tenant_id: str = "default") -> dict:
+        """孪生体实时状态上下文（全息孪生社会）。
+
+        返回各 holon 孪生体最新状态快照，供 analyze() 内融合实时镜像。
+        安全降级：registry 不可用时返回空，绝不阻断推理。
+        """
+        try:
+            from src.runtime.data_sources import registry as ds_registry
+            return ds_registry.all_twin_states(tenant_id)
+        except Exception:
+            return {}
+
     def __repr__(self) -> str:  # pragma: no cover - 仅调试用
         return f"<{self.__class__.__name__} name={self.name!r}>"

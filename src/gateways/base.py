@@ -18,6 +18,7 @@ class DataPoint:
     value: float | str | bool
     timestamp: float
     quality: str = "good"  # good / bad / uncertain
+    holon_kind: str = "machine"  # 全息孪生社会：数据归属的 holon（默认设备）
 
 
 class BaseGateway(ABC):

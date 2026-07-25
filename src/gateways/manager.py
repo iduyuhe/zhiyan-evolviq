@@ -16,6 +16,7 @@ from src.gateways.ipc_cfx.gateway import IpcCfxGateway
 from src.gateways.modbus.gateway import ModbusGateway
 from src.gateways.mqtt.gateway import MQTTGateway
 from src.gateways.opcua.gateway import OpcUaGateway
+from src.runtime.data_sources import registry as ds_registry
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +152,35 @@ class GatewayManager:
         gw = self._gateways.get(name)
         if not gw:
             raise KeyError(f"Unknown gateway: {name}")
-        return await gw.read(address, count)
+        result = await gw.read(address, count)
+        # 孪生体状态上行：每次读取即更新对应 holon 孪生体（全息孪生社会最小落地）
+        try:
+            await self.publish_to_twin_feed(result, source=name)
+        except Exception:
+            pass
+        return result
+
+    async def publish_to_twin_feed(self, datapoints, source: str | None = None) -> int:
+        """把网关读到的数据点归一为孪生体状态上行，路由到对应 holon 孪生体。
+
+        这是「网关实时流进 agent 推理」的最小落地：每次 read 即刷新孪生体，
+        agent 后续推理可经 BaseAgent.twin_context() 读取这份活镜像。
+        """
+        if not datapoints:
+            return 0
+        from collections import defaultdict
+        grouped: dict[str, dict] = defaultdict(dict)
+        for dp in datapoints:
+            hk = getattr(dp, "holon_kind", "machine") or "machine"
+            grouped[hk][dp.tag] = dp.value
+        n = 0
+        for hk, values in grouped.items():
+            n += ds_registry.route_event(hk, values, source=source or "gateway")
+        return n
+
+    async def ingest_event(self, holon_kind: str, values: dict, source: str | None = None) -> int:
+        """公开入口：外部/测试注入一条实时事件（模拟订阅流），汇入孪生体状态。"""
+        return ds_registry.route_event(holon_kind, values, source=source or "external")
 
     async def disconnect_all(self):
         for gw in self._gateways.values():

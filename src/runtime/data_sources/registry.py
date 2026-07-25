@@ -9,7 +9,7 @@
 import logging
 from typing import Optional
 
-from src.runtime.data_sources.base import DataSource, DataSourceKind
+from src.runtime.data_sources.base import DataSource, DataSourceKind, HolonKind
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +64,51 @@ class DataSourceRegistry:
             return list(self._sources.values())
         view = self.get_for_tenant(tenant_id)
         return list(view.values())
+
+    # ---- 孪生体状态上行路由（twin_feed）----
+    def route_event(
+        self,
+        holon_kind: "str | HolonKind",
+        values: dict,
+        source: str | None = None,
+        tenant_id: str = "default",
+    ) -> int:
+        """把一条实时状态上行路由到该 holon 的所有孪生体（DataSource）。
+
+        这是「网关实时流进 agent 推理」的最小落地：网关/外部事件归一为
+        (holon_kind, values) 后调用本方法，对应孪生体的 twin_state 被刷新。
+        Returns: 成功 ingest 的孪生体数量（韧性：单个失败不影响其他）。
+        """
+        hk = holon_kind.value if isinstance(holon_kind, HolonKind) else str(holon_kind)
+        n = 0
+        for src in self.get_for_tenant(tenant_id).values():
+            h = getattr(src, "holon_kind", None)
+            if h and h.value == hk:
+                try:
+                    src.ingest(values, source=source)
+                    n += 1
+                except Exception:
+                    pass
+        if n:
+            logger.debug(f"twin_feed 路由 {hk} → {n} 个孪生体")
+        return n
+
+    def get_twin_state(self, holon_kind, tenant_id: str = "default") -> dict | None:
+        hk = holon_kind.value if isinstance(holon_kind, HolonKind) else str(holon_kind)
+        for src in self.get_for_tenant(tenant_id).values():
+            h = getattr(src, "holon_kind", None)
+            if h and h.value == hk:
+                return src.get_twin_state()
+        return None
+
+    def all_twin_states(self, tenant_id: str = "default") -> dict:
+        """汇总该租户所有孪生体的最新状态快照（供 agent 推理读取）。"""
+        out: dict = {}
+        for src in self.get_for_tenant(tenant_id).values():
+            h = getattr(src, "holon_kind", None)
+            if h:
+                out[f"{h.value}:{src.name}"] = src.get_twin_state()
+        return out
 
     async def health(self) -> dict:
         out = {}
