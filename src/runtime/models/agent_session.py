@@ -54,3 +54,22 @@ class AuditLog(Base):
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+
+class MetricsRecord(Base):
+    """效果指标记录——支撑「效果报告 / 按效果调参」跨重启累积。
+
+    与审计日志分离：本表存结构化的自主率/介入率信号，重启后回灌内存，
+    使策略调参可基于历史效果而非每重启清零。
+    """
+    __tablename__ = "metrics_records"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tenant_id: Mapped[str] = mapped_column(String(64), default="default", index=True)
+    kind: Mapped[str] = mapped_column(String(32), index=True)  # action / decision
+    agent: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    summary: Mapped[str] = mapped_column(String(256), default="")  # 人类可读短描述
+    payload: Mapped[str] = mapped_column(Text)  # JSON 结构化明细
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )

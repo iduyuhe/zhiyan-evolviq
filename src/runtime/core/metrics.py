@@ -10,19 +10,48 @@
 
 from __future__ import annotations
 
+import asyncio
+import logging
 from datetime import datetime, timezone
+from typing import Awaitable, Callable, Optional
+
+from src.runtime.persistence import load_recent_metrics, save_metric_record
+
+logger = logging.getLogger(__name__)
 
 TIME_SAVED_PER_AUTO_ACTION_MIN = 12.0  # 每次自主执行等效节省的人工分钟数（估算）
 
 
 class MetricsStore:
-    """内存指标存储"""
+    """效果指标存储——内存快读 + 异步落库（重启回灌，效果信号不丢）。
+
+    设计（呼应「韧性降级」铁律）：
+    - 内存 `_records` 为快读主存，查询零延迟。
+    - `_async_sink` 为落库函数（启动时挂载 persistence.save_metric_record），
+      fire-and-forget 派发到事件循环，绝不阻塞、绝不外溢。
+    - `hydrate()` 在应用启动时从库回灌最近 N 条，使效果信号跨重启累积，
+      支撑「按效果调参」基于历史而非每重启清零。
+    """
 
     def __init__(self):
         self._records: list[dict] = []
+        self._async_sink: Optional[Callable[[str, str, str, dict, str], Awaitable[None]]] = None
 
-    def record(self, session_id: str, agent: str, total: int, auto: int, human: int):
-        self._records.append({
+    def attach_sink(self, coro_fn: Callable[[str, str, str, dict, str], Awaitable[None]]) -> None:
+        self._async_sink = coro_fn
+
+    def _persist(self, kind: str, agent: Optional[str], summary: str, payload: dict, tenant: str = "default") -> None:
+        if self._async_sink is None:
+            return
+        try:
+            loop = asyncio.get_running_loop()
+            loop.create_task(self._async_sink(kind, agent, summary, payload, tenant))
+        except RuntimeError:
+            # 无运行中的事件循环——跳过持久化（内存已保留）
+            pass
+
+    def record(self, session_id: str, agent: str, total: int, auto: int, human: int, tenant: str = "default"):
+        rec = {
             "session_id": session_id,
             "agent": agent,
             "total_actions": total,
@@ -30,16 +59,28 @@ class MetricsStore:
             "human_actions": human,
             "time_saved_min": auto * TIME_SAVED_PER_AUTO_ACTION_MIN,
             "timestamp": datetime.now(timezone.utc).isoformat(),
-        })
+        }
+        self._records.append(rec)
+        self._persist("action", agent, f"{agent}: {auto}/{total} 自主", payload=rec, tenant=tenant)
 
-    def record_decision(self, intervention_id: str, approved: bool):
+    def record_decision(self, intervention_id: str, approved: bool, tenant: str = "default"):
         """记录一次人类介入决策，用于计算异常准确率"""
-        self._records.append({
+        rec = {
             "intervention_id": intervention_id,
             "approved": approved,
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "kind": "decision",
-        })
+        }
+        self._records.append(rec)
+        self._persist("decision", None, f"介入决策: {'批准' if approved else '驳回'}", payload=rec, tenant=tenant)
+
+    async def hydrate(self, limit: int = 500) -> int:
+        """从库回灌最近的效果指标记录到内存。返回回灌条数。"""
+        rows = await load_recent_metrics(limit=limit)
+        # 反向（库中最旧在前）→ 内存保持时间序
+        self._records = list(reversed(rows))
+        logger.info(f"📈 效果指标回灌 {len(self._records)} 条（跨重启累积）")
+        return len(self._records)
 
     def effect_report(self) -> dict:
         sessions = [r for r in self._records if "total_actions" in r]

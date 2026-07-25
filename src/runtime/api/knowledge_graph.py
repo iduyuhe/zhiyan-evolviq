@@ -59,3 +59,17 @@ async def rebuild():
     """从种子数据重建跨 Agent 知识图谱。"""
     stats = await kg.rebuild()
     return RebuildResponse(mode=neo.neo_mode, stats=stats)
+
+
+@router.get("/recall")
+async def recall(
+    goal: str = Query(..., description="自然语言目标，用于召回相关历史经验"),
+    tenant: str | None = Query(None, description="按租户隔离"),
+    limit: int = Query(5, description="返回条数上限"),
+):
+    """经验记忆召回：按目标召回相关历史 Insight（跨 Agent 经验记忆闭环读回）。
+
+    供 Agent 推理前读回历史经验，也供前端/调试查看"系统记住了什么"。
+    """
+    from src.runtime.memory import recall as _recall
+    return await _recall(goal, tenant_id=tenant or "default", limit=limit)

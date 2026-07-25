@@ -30,6 +30,12 @@ async def lifespan(app: FastAPI):
     db_ok = await init_db()
     if db_ok:
         audit_logger.attach_sink(log_audit)
+        await audit_logger.hydrate(limit=500)  # 审计历史回灌内存（重启可追溯）
+        # 效果指标：挂载落库 sink + 回灌（重启后效果信号不丢，支撑按效果调参）
+        from src.runtime.core.metrics import metrics
+        from src.runtime.persistence import save_metric_record
+        metrics.attach_sink(save_metric_record)
+        await metrics.hydrate(limit=500)
         st = db_status()
         logger.info(f"📦 数据层已接入 [{st['mode']}] {st['url']}")
     else:

@@ -294,3 +294,190 @@ async def apply_execution_result(tenant_id: str, agent_name: str, session_id: st
 
 async def rebuild() -> dict:
     return await build_from_seeds()
+
+
+# ---------------------------------------------------------------------------
+# 经验记忆写入（P0：把"记忆"真正闭环）
+#
+# 设计原则：
+# - 所有写入均带 tenant 属性 → 多租户隔离，互不可见。
+# - Insight 节点是通用"经验记忆"载体：任何 Agent 的执行结论 / 编排跨域洞察
+#   都落为 Insight，供 BaseAgent.recall(goal) 在后续推理时读回（记忆闭环）。
+# - 事实锚点铁律：仅写实体/关系/经验文本，绝不改写任何业务数字。
+# - 韧性降级：Neo4j 不可达时自动走内存图，写操作不抛异常。
+# ---------------------------------------------------------------------------
+
+def _insight_id() -> str:
+    import uuid as _uuid
+    return f"INSIGHT:{_uuid.uuid4().hex[:12]}"
+
+
+async def apply_execution_result(tenant_id: str, agent_name: str, session_id: str, result: dict) -> None:
+    """Agent 执行后增量写入图谱（仅基于确定性结果，事实锚点铁律）。
+
+    写入的节点/关系均带 tenant 属性，使知识图谱按租户隔离：
+    同租户的执行数据可经 /kg/query?tenant=... 精确查询，互不可见。
+
+    P0 扩展：
+    - 通用 Insight：任何 Agent 的 result["summary"] / result["insights"] 都落为经验记忆。
+    - 结构化增量扩展到更多 Agent（oee / yield / energy / pm 等），保持事实锚点。
+    """
+    try:
+        # ---- 通用经验记忆：summary / insights → Insight 节点 ----
+        await _write_insight_from_result(tenant_id, agent_name, session_id, result)
+
+        # ---- 结构化增量（特定 Agent 的确定性动作 / 指标）----
+        if agent_name == "supply_chain":
+            for act in result.get("actions_taken", []) or []:
+                if act.get("type") == "lock_alternative":
+                    old = act.get("material_code") or act.get("old_material")
+                    alt = act.get("alt_code") or act.get("alternative_code")
+                    if old and alt:
+                        await neo.merge_edge(f"MAT:{old}", f"MAT:{alt}", "锁定替代",
+                                             {"session_id": session_id, "status": act.get("status"), "tenant": tenant_id})
+        elif agent_name == "quality_trace":
+            for act in result.get("actions_taken", []) or []:
+                if act.get("type") == "create_capa":
+                    cid = act.get("case_id")
+                    if cid:
+                        await neo.merge_node("CAPA", f"CAPA:{cid}", {"case_id": cid, "tenant": tenant_id})
+                        await neo.merge_edge(f"CASE:{cid}", f"CAPA:{cid}", "已开CAPA", {"tenant": tenant_id})
+        elif agent_name == "oee_optimizer":
+            # OEE 最新值记忆（覆盖式更新产线 OEE 记录）
+            for line in result.get("lines") or []:
+                lid = line.get("line_id")
+                if lid and "oee" in line:
+                    await neo.merge_node("OEERecord", f"OEE:{lid}",
+                                         {"line_id": lid, "oee": line["oee"], "tenant": tenant_id})
+        elif agent_name == "yield_analysis":
+            if "current_yield" in result:
+                pid = result.get("product_id") or result.get("product")
+                if pid:
+                    await neo.merge_node("YieldRecord", f"YIELD:{pid}",
+                                         {"product_id": pid, "current_yield": result["current_yield"], "tenant": tenant_id})
+        elif agent_name == "energy_carbon":
+            for line in result.get("lines") or []:
+                lid = line.get("line_id")
+                if lid and "energy_kwh" in line:
+                    await neo.merge_node("EnergyRecord", f"NRG:{lid}",
+                                         {"line_id": lid, "energy_kwh": line["energy_kwh"],
+                                          "carbon_t": line.get("carbon_t"), "tenant": tenant_id})
+        elif agent_name == "pm_maintenance":
+            # 设备健康分记忆
+            for eq in result.get("equipment") or result.get("equipments") or []:
+                eid = eq.get("equipment_id")
+                if eid and "health_score" in eq:
+                    await neo.merge_node("Equipment", f"EQP:{eid}",
+                                         {"equipment_id": eid, "health_score": eq["health_score"], "tenant": tenant_id})
+    except Exception as e:
+        logger.warning(f"图谱增量写入失败（不破管）：{e}")
+
+
+async def _write_insight_from_result(tenant_id: str, agent_name: str, session_id: str, result: dict) -> None:
+    """把 Agent 执行结论写入通用 Insight 经验记忆节点。"""
+    texts: list[str] = []
+    if result.get("summary"):
+        texts.append(str(result["summary"]))
+    for ins in (result.get("insights") or []):
+        if isinstance(ins, str):
+            texts.append(ins)
+        elif isinstance(ins, dict) and ins.get("text"):
+            texts.append(str(ins["text"]))
+    for t in texts[:5]:  # 防止过长
+        nid = _insight_id()
+        await neo.merge_node("Insight", nid, {
+            "source": "execution",
+            "agent": agent_name,
+            "text": t[:500],
+            "session_id": session_id,
+            "tenant": tenant_id,
+            "ts": _now_iso(),
+        })
+        await neo.merge_edge(f"INSIGHT:{nid}", f"AGENT:{agent_name}", "由Agent产出",
+                             {"tenant": tenant_id})
+
+
+async def apply_orchestration_result(
+    tenant_id: str,
+    session_id: str,
+    plan: object,
+    report: dict,
+) -> None:
+    """多 Agent 编排结果增量写入图谱（P0 修复：此前 engine 调用但函数缺失→静默丢失）。
+
+    写入：
+    - Orchestration 节点（目标/策略/来源/子任务数/关键指标）
+    - AgentRun 节点（每个被调用 Agent 的执行状态）+ ORCH -[调用]-> RUN
+    - Insight 节点（每条跨域洞察 / 优先级动作）+ ORCH -[产出洞察]-> INSIGHT
+    全部带 tenant 隔离。韧性降级：Neo4j 不可达走内存图，不抛异常。
+    """
+    try:
+        goal = getattr(plan, "goal", "") if hasattr(plan, "goal") else (plan.get("goal", "") if isinstance(plan, dict) else "")
+        strategy = getattr(plan, "strategy", "parallel") if hasattr(plan, "strategy") else (plan.get("strategy", "parallel") if isinstance(plan, dict) else "parallel")
+
+        orch_id = f"ORCH:{session_id}"
+        await neo.merge_node("Orchestration", orch_id, {
+            "goal": str(goal)[:300],
+            "strategy": strategy,
+            "sub_task_count": report.get("sub_task_count"),
+            "success_count": report.get("success_count"),
+            "failed_count": report.get("failed_count"),
+            "key_metrics": _json_safe(report.get("key_metrics", {})),
+            "tenant": tenant_id,
+            "ts": _now_iso(),
+        })
+
+        # AgentRun 节点
+        for ex in report.get("executions", []) or []:
+            ag = ex.get("agent", "unknown")
+            run_id = f"RUN:{session_id}:{ag}"
+            await neo.merge_node("AgentRun", run_id, {
+                "agent": ag,
+                "status": ex.get("status"),
+                "tenant": tenant_id,
+            })
+            await neo.merge_edge(orch_id, run_id, "调用", {"tenant": tenant_id})
+
+        # 跨域洞察 → Insight 节点
+        for finding in report.get("cross_findings", []) or []:
+            nid = _insight_id()
+            await neo.merge_node("Insight", nid, {
+                "source": "orchestration",
+                "agent": "orchestrator",
+                "text": str(finding)[:500],
+                "goal": str(goal)[:300],
+                "tenant": tenant_id,
+                "ts": _now_iso(),
+            })
+            await neo.merge_edge(orch_id, nid, "产出洞察", {"tenant": tenant_id})
+
+        # 优先级动作 → Insight 节点（type=action，保留可追溯）
+        for act in report.get("priority_actions", []) or []:
+            detail = act.get("detail", "")
+            if not detail:
+                continue
+            nid = _insight_id()
+            await neo.merge_node("Insight", nid, {
+                "source": "orchestration_action",
+                "agent": act.get("source_agent", "orchestrator"),
+                "text": str(detail)[:500],
+                "goal": str(goal)[:300],
+                "tenant": tenant_id,
+                "ts": _now_iso(),
+            })
+            await neo.merge_edge(orch_id, nid, "产出动作", {"tenant": tenant_id})
+    except Exception as e:
+        logger.warning(f"编排结果图谱写入失败（不破管）：{e}")
+
+
+def _now_iso() -> str:
+    from datetime import datetime, timezone
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _json_safe(obj) -> str:
+    import json
+    try:
+        return json.dumps(obj, ensure_ascii=False, default=str)
+    except Exception:
+        return "{}"

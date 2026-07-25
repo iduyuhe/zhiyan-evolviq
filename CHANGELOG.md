@@ -1,5 +1,15 @@
 # Changelog
 
+## v20.2 (2026-07-25) — Memory Loop Closed (P0)
+
+- **Experience memory write-back**: `apply_orchestration_result()` now implemented and wired into `engine.execute_multi()` — multi-agent orchestration insights (cross_findings + priority_actions) were previously **silently lost** (function never called). Now persisted as `Insight` nodes in the knowledge graph.
+- **Generic execution memory**: `apply_execution_result()` extended beyond supply_chain/quality_trace to **all 20 Agents** — every agent's `summary` / `insights` now writes back as an `Insight` node (memory loop), plus structured deltas for oee/yield/energy/pm.
+- **Recall hook**: `BaseAgent.recall(goal)` added (zero-intrusion default, safe degradation) + `src/runtime/memory.py` `MemoryStore` with CJK n-gram relevance ranking + new `GET /kg/recall` API. Orchestrator now recalls relevant history before each sub-task — agents reason **with memory**.
+- **Persistent effects & audit**: `metrics` and `audit` now persist to SQLite (resilience fallback) and **reload on startup** — effect signals and audit trail survive restart, so effect-driven tuning builds on real history.
+- **+13 unit tests** in `tests/test_memory_p0.py` (100% pass) + end-to-end verify `scripts/verify_memory_p0.py` (orchestration → Insight nodes → recall).
+- **+1 doc** `docs/MEMORY_AND_LEARNING.md` (memory architecture, P0 closure, P1/P2 roadmap for self-learning/self-evolution).
+- **Full suite: 93 passed** (80 prior + 13 new), zero regressions.
+
 ## v20.1 (2026-07-25) — Multi-Agent Orchestration
 
 - **Multi-Agent Orchestration layer**: a single complex goal automatically fans out to 4-5 Agents that work in parallel and aggregate cross-domain insights

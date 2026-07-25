@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 
 from src.common import db
-from src.runtime.models.agent_session import AgentSession, AuditLog, SessionStatus
+from src.runtime.models.agent_session import AgentSession, AuditLog, MetricsRecord, SessionStatus
 
 logger = logging.getLogger(__name__)
 
@@ -155,6 +155,92 @@ async def get_audit_logs(session_id: str | None = None, limit: int = 200, tenant
                 for o in rows
             ]
     except Exception:
+        return []
+
+
+async def save_metric_record(
+    kind: str,
+    agent: str | None,
+    summary: str,
+    payload: dict | str,
+    tenant_id: str = "default",
+) -> None:
+    """插入一条效果指标记录。db 不可用时静默跳过。"""
+    if not db.db_available or db.async_session is None:
+        return
+    payload_str = json.dumps(payload, ensure_ascii=False) if isinstance(payload, dict) else str(payload)
+    try:
+        async with db.async_session() as s:
+            s.add(
+                MetricsRecord(
+                    tenant_id=tenant_id,
+                    kind=kind,
+                    agent=agent,
+                    summary=summary[:256],
+                    payload=payload_str,
+                )
+            )
+            await s.commit()
+    except Exception as e:
+        logger.warning(f"⚠️ save_metric_record 失败（已忽略）：{type(e).__name__} {e}")
+
+
+async def load_recent_metrics(limit: int = 500) -> list[dict]:
+    """加载最近的效果指标记录（重启回灌内存用）。db 不可用时返回空。"""
+    if not db.db_available or db.async_session is None:
+        return []
+    try:
+        async with db.async_session() as s:
+            q = (
+                select(MetricsRecord)
+                .order_by(MetricsRecord.created_at.desc())
+                .limit(limit)
+            )
+            rows = (await s.execute(q)).scalars().all()
+            out = []
+            for o in rows:
+                try:
+                    pl = json.loads(o.payload) if o.payload else {}
+                except Exception:
+                    pl = {}
+                out.append({
+                    "kind": o.kind,
+                    "agent": o.agent,
+                    "summary": o.summary,
+                    "payload": pl,
+                    "created_at": o.created_at.isoformat() if o.created_at else None,
+                })
+            return out
+    except Exception as e:
+        logger.warning(f"⚠️ load_recent_metrics 失败（已忽略）：{type(e).__name__} {e}")
+        return []
+
+
+async def load_recent_audit(limit: int = 500) -> list[dict]:
+    """加载最近的审计日志（重启回灌内存用）。db 不可用时返回空。"""
+    if not db.db_available or db.async_session is None:
+        return []
+    try:
+        async with db.async_session() as s:
+            q = (
+                select(AuditLog)
+                .order_by(AuditLog.created_at.desc())
+                .limit(limit)
+            )
+            rows = (await s.execute(q)).scalars().all()
+            return [
+                {
+                    "timestamp": o.created_at.isoformat() if o.created_at else None,
+                    "session_id": str(o.session_id),
+                    "event_type": o.event_type,
+                    "actor": o.actor,
+                    "detail": o.detail,
+                    "tenant_id": o.tenant_id,
+                }
+                for o in rows
+            ]
+    except Exception as e:
+        logger.warning(f"⚠️ load_recent_audit 失败（已忽略）：{type(e).__name__} {e}")
         return []
 
 

@@ -58,5 +58,26 @@ class BaseAgent(ABC):
         """
         raise NotImplementedError
 
+    async def recall(self, goal: str, tenant_id: str = "default", limit: int = 5) -> dict:
+        """经验记忆召回（P0 记忆闭环）。
+
+        让 Agent 在 analyze() 内能读回历史经验（跨 Agent 的 Insight 节点），
+        实现"推理带记忆"。默认实现安全降级：图谱不可用时返回空，绝不阻断推理。
+        Agent 可在 analyze() 内主动调用，例如：
+
+            mem = await self.recall(goal)
+            if mem["insights"]:
+                # 把 mem["insights"] 作为上下文融入分析
+                ...
+
+        Returns:
+            {"insights": [str, ...], "entities": [dict, ...]}
+        """
+        try:
+            from src.runtime.memory import recall as _recall
+            return await _recall(goal, tenant_id=tenant_id, limit=limit)
+        except Exception:
+            return {"insights": [], "entities": []}
+
     def __repr__(self) -> str:  # pragma: no cover - 仅调试用
         return f"<{self.__class__.__name__} name={self.name!r}>"

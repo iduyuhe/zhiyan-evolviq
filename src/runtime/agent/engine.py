@@ -671,6 +671,14 @@ class AgentEngine:
             "duration_ms": report.total_duration_ms,
         }, tenant_id=tid)
 
+        # 经验记忆落库（P0 记忆闭环）：编排跨域洞察 + 优先级动作 → 图谱 Insight 节点。
+        # 此前该函数从未被接线（编排洞察静默丢失）；现在 await 确保落库后再返回。
+        try:
+            from src.runtime import knowledge_graph as kg
+            await kg.apply_orchestration_result(tid, session_id, plan, report_dict)
+        except Exception as e:
+            logger.warning(f"编排结果图谱写入失败（不破管）：{e}")
+
         # 事件通知
         from src.runtime.core.events import event_bus
         level = "success" if report.failed_count == 0 else "warning"

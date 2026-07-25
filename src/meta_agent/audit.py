@@ -76,6 +76,16 @@ class AuditLogger:
             logs = [l for l in logs if l["session_id"] == session_id]
         return logs[-limit:]
 
+    async def hydrate(self, limit: int = 500) -> int:
+        """从库回灌最近的审计日志到内存（重启后历史不丢）。返回回灌条数。"""
+        from src.runtime.persistence import load_recent_audit
+
+        rows = await load_recent_audit(limit=limit)
+        # 库中最旧在前 → 反转保持时间序；_logs 作为主存，回灌后与库一致
+        self._logs = list(reversed(rows))
+        logger.info(f"📜 审计日志回灌 {len(self._logs)} 条（跨重启可追溯）")
+        return len(self._logs)
+
     def get_stats(self) -> dict:
         """审计统计"""
         total = len(self._logs)

@@ -173,8 +173,19 @@ class MultiAgentOrchestrator:
         session_id = f"orch-{uuid.uuid4().hex[:8]}"
 
         try:
+            # 0) 记忆召回：推理前读回相关历史经验（记忆闭环，P0）
+            enriched_goal = sub_task.sub_goal
+            try:
+                from src.runtime.memory import recall_for_goal
+                mem = await recall_for_goal(sub_task.sub_goal, self.tenant_id)
+                if mem.get("insights"):
+                    ctx = "；".join(mem["insights"][:3])
+                    enriched_goal = f"【历史经验参考】{ctx}\n{sub_task.sub_goal}"
+            except Exception:
+                pass
+
             # 1) Agent 分析
-            agent_result = await execute_by_agent(sub_task.agent, sub_task.sub_goal)
+            agent_result = await execute_by_agent(sub_task.agent, enriched_goal)
             exec_result.result = agent_result
 
             # 2) 授权边界评估（与单 Agent 流程一致）

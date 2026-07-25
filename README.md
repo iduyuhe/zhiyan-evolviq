@@ -20,6 +20,8 @@
 - **4 Industrial Protocol Gateways**: Modbus, MQTT, OPC-UA, IPC-CFX — real or simulated mode
 - **Multi-Agent Orchestration**: 8 preset collaboration templates (NPI / OEE / Quality / Energy / ECO ...) — automatic goal decomposition, parallel agent execution, and cross-agent insight aggregation
 - **Cross-Agent Knowledge Graph**: Neo4j-backed semantic network with automatic in-memory fallback
+- **Experience Memory & Recall (P0)**: Every agent execution + multi-agent orchestration writes back cross-agent insights (`Insight` nodes); agents recall relevant history before reasoning via `BaseAgent.recall(goal)` / `/kg/recall` — the memory loop is closed
+- **Persistent Effects & Audit**: Metrics (autonomy rate, time saved) and audit logs survive restart via SQLite fallback — effect-driven tuning builds on real history, not a blank slate
 - **Authorization Engine**: Per-agent confidence thresholds, daily autonomy limits, and approval boundaries — real-time AI behavior guardrails
 - **Graceful Degradation**: Every external dependency (PostgreSQL, Neo4j, OPC-UA Server, AMQP Broker) automatically degrades to local alternatives — never blocks startup or execution
 - **Multi-Tenant**: Row-level `tenant_id` isolation with API-Key authentication (`X-Tenant-Key` header)
