@@ -18,6 +18,7 @@
 - **20 Industrial Agents**: Pre-built autonomous agents for supply chain, R&D, manufacturing, quality, and enterprise decision-making
 - **65 MCP Tools**: Standardized tool federation via the Model Context Protocol (HTTP + stdio dual transport)
 - **4 Industrial Protocol Gateways**: Modbus, MQTT, OPC-UA, IPC-CFX — real or simulated mode
+- **Multi-Agent Orchestration**: 8 preset collaboration templates (NPI / OEE / Quality / Energy / ECO ...) — automatic goal decomposition, parallel agent execution, and cross-agent insight aggregation
 - **Cross-Agent Knowledge Graph**: Neo4j-backed semantic network with automatic in-memory fallback
 - **Authorization Engine**: Per-agent confidence thresholds, daily autonomy limits, and approval boundaries — real-time AI behavior guardrails
 - **Graceful Degradation**: Every external dependency (PostgreSQL, Neo4j, OPC-UA Server, AMQP Broker) automatically degrades to local alternatives — never blocks startup or execution
@@ -58,6 +59,45 @@
 | `executive_cockpit` | Executive Dashboard | KPI dashboard, budget execution, production output vs plan |
 | `rd_npi` | R&D NPI | NPI project lifecycle, milestone tracking, risk identification |
 | `procurement_manage` | Procurement | Supplier scorecard (delivery/quality/cost/compliance), contract management |
+
+---
+
+## 🎼 Multi-Agent Orchestration (V1.5)
+
+> **The leap from "20 isolated tools" to "one collaborative team"**: a single goal like *"improve OEE"* automatically triggers 5 agents (OEE + changeover + maintenance + yield + energy) to work in parallel, then aggregates cross-domain insights into one report.
+
+**8 preset collaboration templates** out of the box — just describe your goal, the platform picks the right team:
+
+| Template | Trigger Words | Agents Involved |
+|----------|---------------|-----------------|
+| **NPI Full Evaluation** | npi, 新品导入, 量产放行, 试产 | dfm_check + bom_selector + rd_npi + smt_changeover + cost_analysis |
+| **Kitting & Delivery** | 齐套, 缺料, 交期, 未交付 | supply_chain + demand_order + aps_scheduler + wms_logistics + procurement_manage |
+| **OEE Improvement** | oee, 产线效率, 六大损失 | oee_optimizer + smt_changeover + pm_maintenance + yield_analysis + energy_carbon |
+| **Energy & Carbon** | 能耗, 碳排放, 双碳, 绿电 | energy_carbon + oee_optimizer + cost_analysis + compliance_q |
+| **Quality / Complaint RCA** | 客诉, 投诉, 退货, 不良批次 | quality_trace + yield_analysis + compliance_q + ipc_standard + executive_cockpit |
+| **Executive Cockpit** | 经营, 驾驶舱, kpi, 月报, 利润 | executive_cockpit + cost_analysis + demand_order + aps_scheduler + compliance_q |
+| **ECO Impact Analysis** | eco, ecn, 工程变更, 物料切换 | eco_change + bom_selector + dfm_check + aps_scheduler + compliance_q |
+| **Equipment Failure RCA** | 故障, 停机, 维修, 设备异常 | pm_maintenance + yield_analysis + quality_trace + aoi_judge |
+
+**Three-tier decomposition** (resilient fallback):
+1. **Preset templates** — 8 most common scenarios, zero LLM cost
+2. **LLM-enhanced** — for complex long-form goals, LLM picks the team
+3. **Keyword aggregation** — always-available rule-based fallback
+
+```bash
+# Quick try (Local Python)
+curl -X POST http://localhost:8000/sessions/multi-agent \
+  -H "Content-Type: application/json" \
+  -d '{"goal": "新产品导入评估"}'
+# Returns: { session_id, plan: { sub_tasks: [...], rationale: "..." } }
+
+curl -X POST http://localhost:8000/sessions/{session_id}/approve-multi \
+  -H "Content-Type: application/json" \
+  -d '{"approved": true}'
+# Returns: { report: { summary, cross_findings, key_metrics, priority_actions, ... } }
+```
+
+See [`docs/MULTI_AGENT_ORCHESTRATION.md`](docs/MULTI_AGENT_ORCHESTRATION.md) for the full design.
 
 ---
 

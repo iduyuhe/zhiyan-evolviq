@@ -554,3 +554,131 @@ class AgentEngine:
                 "completeness": s.get("result", {}).get("completeness_pct") if s.get("result") else None,
             })
         return sorted(summaries, key=lambda x: x.get("session_id", ""), reverse=True)
+
+    # ------------------------------------------------------------------
+    # 多 Agent 编排（V1-5 缺口补齐：多 Agent 协同 / 跨视角分析）
+    # ------------------------------------------------------------------
+    async def plan_multi(
+        self,
+        session_id: str,
+        goal: str,
+        auth_boundary_id: str | None = None,
+        tenant_id: str = "default",
+    ) -> dict:
+        """为复合目标生成多 Agent 编排计划（仅 plan，不执行）。
+
+        状态沿用 planning/awaiting_approval（避免触发 SessionStatus coerce fallback），
+        通过 mode="multi" 字段区分。
+
+        Returns:
+            plan dict（含 OrchestratorPlan.to_dict()）
+        """
+        from src.runtime.agent.goal_decomposer import GoalDecomposer
+
+        # 保存上下文
+        self._sessions[session_id] = {
+            "goal": goal,
+            "auth_boundary_id": auth_boundary_id,
+            "tenant_id": tenant_id,
+            "status": "planning",
+            "mode": "multi",
+            "plan": None,
+        }
+        await persistence.save_session(
+            session_id, goal, status="planning", auth_boundary_id=auth_boundary_id,
+            tenant_id=tenant_id,
+        )
+        from src.meta_agent.audit import audit_logger
+        audit_logger.log(session_id, "multi_goal_set", "human",
+                         {"goal": goal[:200]}, tenant_id=tenant_id)
+
+        # 目标分解（LLM 增强 → 模板/规则兜底）
+        decomposer = GoalDecomposer()
+        plan = await decomposer.decompose(goal)
+        plan_dict = plan.to_dict()
+
+        self._sessions[session_id]["plan"] = plan_dict
+        self._sessions[session_id]["status"] = "awaiting_approval"
+        await persistence.save_session(
+            session_id, goal, plan=plan_dict.get("rationale", ""),
+            status="awaiting_approval", auth_boundary_id=auth_boundary_id,
+            tenant_id=tenant_id,
+        )
+        audit_logger.log(session_id, "multi_plan_created", "orchestrator", {
+            "sub_task_count": plan_dict["sub_tasks"].__len__(),
+            "source": plan.source,
+            "strategy": plan.strategy,
+        }, tenant_id=tenant_id)
+        logger.info(
+            f"Session {session_id}: multi-agent plan generated "
+            f"({len(plan.sub_tasks)} sub-tasks, source={plan.source})"
+        )
+        return plan_dict
+
+    async def execute_multi(
+        self,
+        session_id: str,
+        tenant_id: str | None = None,
+    ) -> dict:
+        """执行多 Agent 编排（接 plan_multi 之后由人确认触发）。"""
+        from src.runtime.agent.orchestrator import MultiAgentOrchestrator
+
+        session = self._sessions.get(session_id)
+        if not session or session.get("mode") != "multi":
+            raise ValueError(f"Multi-agent session {session_id} not found")
+        tid = tenant_id or session.get("tenant_id", "default")
+        plan_dict = session.get("plan")
+        if not plan_dict:
+            raise ValueError(f"No plan in session {session_id}")
+
+        # 还原 OrchestratorPlan 对象
+        from src.runtime.agent.goal_decomposer import OrchestratorPlan, SubTask
+        plan = OrchestratorPlan(
+            goal=plan_dict["goal"],
+            strategy=plan_dict.get("strategy", "parallel"),
+            source=plan_dict.get("source", "rule"),
+            rationale=plan_dict.get("rationale", ""),
+            sub_tasks=[SubTask(**t) for t in plan_dict["sub_tasks"]],
+        )
+
+        session["status"] = "executing"
+        await persistence.save_session(
+            session_id, session["goal"], status="executing",
+            plan=plan_dict.get("rationale", ""),
+            auth_boundary_id=session.get("auth_boundary_id"),
+            tenant_id=tid,
+        )
+        from src.meta_agent.audit import audit_logger
+        audit_logger.log(session_id, "multi_approved", "human",
+                         {"sub_task_count": len(plan.sub_tasks)}, tenant_id=tid)
+
+        # 执行
+        orchestrator = MultiAgentOrchestrator(tenant_id=tid)
+        report = await orchestrator.run(plan)
+        report_dict = report.to_dict()
+
+        session["status"] = "completed"
+        session["result"] = report_dict
+        await persistence.save_session(
+            session_id, session["goal"], plan=plan_dict.get("rationale", ""),
+            status="completed", result=report_dict,
+            auth_boundary_id=session.get("auth_boundary_id"),
+            tenant_id=tid,
+        )
+        audit_logger.log(session_id, "multi_executed", "orchestrator", {
+            "success": report.success_count,
+            "failed": report.failed_count,
+            "duration_ms": report.total_duration_ms,
+        }, tenant_id=tid)
+
+        # 事件通知
+        from src.runtime.core.events import event_bus
+        level = "success" if report.failed_count == 0 else "warning"
+        event_bus.publish(
+            "orchestration_complete",
+            f"多 Agent 编排完成（{report.success_count}/{report.sub_task_count}）",
+            report.summary,
+            level=level,
+        )
+
+        return report_dict

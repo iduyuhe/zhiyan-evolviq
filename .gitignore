@@ -49,9 +49,12 @@ Thumbs.db
 # ===================== Internal ops / WeChat publishing (not open-source) =====================
 article_v20.md
 cover_v20.jpg
+cover_risk_gov.jpg
 scripts/wechat_upload.py
 scripts/publish_v20_draft.py
+scripts/publish_risk_gov_draft.py
 scripts/gen_cover_v20.py
+scripts/gen_cover_risk_gov.py
 
 # ===================== Local frontend config =====================
 studio/vite.local.ts

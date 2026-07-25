@@ -90,6 +90,74 @@ async def intervene(session_id: str, req: InterventionRequest, tenant: str = Dep
     raise HTTPException(status_code=400, detail=f"Unknown action: {req.action}")
 
 
+# ---------------------------------------------------------------------------
+# 多 Agent 编排 API（V1-5 缺口补齐：多 Agent 协同 / 跨视角分析）
+# ---------------------------------------------------------------------------
+
+
+@router.post("/multi-agent")
+async def create_multi_agent_session(req: CreateSessionRequest, tenant: str = Depends(get_tenant)):
+    """创建多 Agent 编排会话：自动分解目标 → 多 Agent 并行规划 → 等人确认。
+
+    与单 Agent 流程的差异：
+    - 单 Agent (`/sessions`)：route_goal() → 单一 Agent 生成 plan
+    - 多 Agent (`/sessions/multi-agent`)：GoalDecomposer → OrchestratorPlan → 多 Agent 并行规划
+    """
+    engine = get_engine()
+    session_id = str(uuid.uuid4())
+    plan = await engine.plan_multi(session_id, req.goal, req.auth_boundary_id, tenant_id=tenant)
+    return {
+        "tenant_id": tenant,
+        "session_id": session_id,
+        "status": "multi_awaiting_approval",
+        "plan": plan,
+    }
+
+
+@router.post("/{session_id}/approve-multi")
+async def approve_multi_plan(session_id: str, req: ApprovePlanRequest, tenant: str = Depends(get_tenant)):
+    """确认/驳回多 Agent 编排计划。"""
+    engine = get_engine()
+    if not req.approved:
+        # 多 Agent 流程暂不支持完整 reject，简化处理为丢弃
+        return {"tenant_id": tenant, "session_id": session_id, "status": "rejected", "feedback": req.feedback}
+    report = await engine.execute_multi(session_id, tenant_id=tenant)
+    return {
+        "tenant_id": tenant,
+        "session_id": session_id,
+        "status": "multi_completed",
+        "report": report,
+    }
+
+
+@router.get("/multi-agent/templates")
+async def list_orchestration_templates():
+    """列出所有预设编排模板（供前端展示/选择）。"""
+    from src.runtime.agent.goal_decomposer import SCENARIO_TEMPLATES
+    return {
+        "templates": [
+            {
+                "name": t["name"],
+                "triggers": t["triggers"],
+                "agents": [a for a, _ in t["agents"]],
+                "agent_count": len(t["agents"]),
+                "rationale": t["rationale"],
+            }
+            for t in SCENARIO_TEMPLATES
+        ],
+        "total": len(SCENARIO_TEMPLATES),
+    }
+
+
+@router.get("/multi-agent/decompose-preview")
+async def preview_decomposition(goal: str = Query(..., description="用户目标")):
+    """预览目标分解结果（不执行），供前端实时展示「会调用哪些 Agent」。"""
+    from src.runtime.agent.goal_decomposer import GoalDecomposer
+    decomposer = GoalDecomposer()
+    plan = await decomposer.decompose(goal)
+    return plan.to_dict()
+
+
 @router.get("/db")
 async def list_sessions_db(limit: int = Query(50, le=200), tenant: str = Depends(get_tenant)):
     """列出当前租户已落库会话（来自数据库，重启后仍可追溯）。须置于 /{session_id} 之前。"""

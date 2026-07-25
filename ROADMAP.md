@@ -2,18 +2,19 @@
 
 > EvolvIQ (智衍) is a community-driven open-source project. This roadmap reflects current planning. Directions are discussed via GitHub Discussions / Issues.
 
-## ✅ Done (v20)
+## ✅ Done (v20.1)
 
 - 20 industrial Agents covering R&D → Manufacturing → Enterprise decision
 - 4 industrial protocol gateways (OPC-UA / MQTT / Modbus / IPC-CFX) with graceful degradation
 - 65 MCP federation tools (HTTP + stdio dual transport)
 - Cross-Agent knowledge graph (Neo4j with in-memory fallback)
 - Effect-driven authorization engine + multi-tenant isolation
+- **Multi-Agent Orchestration** (V1-5 closed): 8 preset templates + 3-tier goal decomposition + DAG parallel execution + cross-Agent insight aggregation
 - Bilingual docs + Application/Technical Whitepaper + CI pipeline
 
 ## 🔜 Near-term (P1)
 
-- [ ] Multi-Agent orchestration / collaboration engine (break the 20-agents-silo)
+- [ ] Multi-Agent orchestration / collaboration engine (break the 20-agents-silo) ← **✅ v20.1 done**
 - [ ] Routing precision enhancement (disambiguate semantically-similar goals)
 - [ ] Enable GitHub Discussions + curate "Good First Issue" pool
 - [ ] Agent development tutorial (based on `supply_chain` template)
