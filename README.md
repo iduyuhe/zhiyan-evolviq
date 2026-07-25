@@ -7,8 +7,11 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688)](https://fastapi.tiangolo.com/)
 [![CI](https://github.com/iduyuhe/zhiyan-evolviq/actions/workflows/ci.yml/badge.svg)](https://github.com/iduyuhe/zhiyan-evolviq/actions/workflows/ci.yml)
 [![Agents](https://img.shields.io/badge/Agents-20-blue)](https://github.com/iduyuhe/zhiyan-evolviq)
-[![Version](https://img.shields.io/badge/version-v20-blue)](https://github.com/iduyuhe/zhiyan-evolviq)
+[![Version](https://img.shields.io/badge/version-v20.4-blue)](https://github.com/iduyuhe/zhiyan-evolviq)
+[![Latest Release](https://img.shields.io/badge/release-v20.4%20P2%20Self--Evolution-green)](RELEASE_NOTES.md)
 
+> 🏷 **Latest release: [v20.4 — Self-Evolution (P2)](RELEASE_NOTES.md)** (2026-07-25) · 20 Agents · Memory (P0) + Self-Learning (P1) + Self-Evolution (P2) closed loop
+>
 > 📖 **User Guide**: [docs/GUIDE.md](docs/GUIDE.md) · [中文指南](docs/GUIDE.zh.md)
 
 ---
@@ -150,6 +153,7 @@ docker compose up -d
 - 🗺 Roadmap: [ROADMAP.md](ROADMAP.md)
 - 🔒 Security: [SECURITY.md](SECURITY.md)
 - 📝 Changelog: [CHANGELOG.md](CHANGELOG.md)
+- 🏷 Release Notes: [RELEASE_NOTES.md](RELEASE_NOTES.md)
 - 📖 User Guide: [docs/GUIDE.md](docs/GUIDE.md) · [中文](docs/GUIDE.zh.md)
 - 📘 Application Whitepaper: [docs/WHITEPAPER.md](docs/WHITEPAPER.md)
 - 📗 Technical Whitepaper: [docs/TECHNICAL_WHITEPAPER.md](docs/TECHNICAL_WHITEPAPER.md)
