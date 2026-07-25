@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
 from src.runtime.api import agents_api, auth, audit, events_api, health, mcp_tools, scheduler_api, sessions, supply_chain
-from src.runtime.api import interventions, reports, system, knowledge_graph, gateways, strategy, tenants
+from src.runtime.api import interventions, reports, system, knowledge_graph, gateways, strategy, tenants, experience
 from src.runtime.core.scheduler import scheduler
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -36,6 +36,11 @@ async def lifespan(app: FastAPI):
         from src.runtime.persistence import save_metric_record
         metrics.attach_sink(save_metric_record)
         await metrics.hydrate(limit=500)
+        # 经验反馈（P1）：挂载落库 sink + 回灌（偏好/禁忌记忆跨重启累积）
+        from src.runtime.experience import experience
+        from src.runtime.persistence import save_feedback_record
+        experience.attach_sink(save_feedback_record)
+        await experience.hydrate(limit=500)
         st = db_status()
         logger.info(f"📦 数据层已接入 [{st['mode']}] {st['url']}")
     else:
@@ -115,6 +120,7 @@ app.include_router(system.router)
 app.include_router(knowledge_graph.router)
 app.include_router(gateways.router)
 app.include_router(strategy.router)
+app.include_router(experience.router)
 app.include_router(tenants.router)
 
 

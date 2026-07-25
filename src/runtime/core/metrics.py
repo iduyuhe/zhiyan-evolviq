@@ -77,8 +77,9 @@ class MetricsStore:
     async def hydrate(self, limit: int = 500) -> int:
         """从库回灌最近的效果指标记录到内存。返回回灌条数。"""
         rows = await load_recent_metrics(limit=limit)
-        # 反向（库中最旧在前）→ 内存保持时间序
-        self._records = list(reversed(rows))
+        # 反向（库中最旧在前）→ 内存保持时间序；payload 即 record()/record_decision()
+        # 写入的原始 dict，保证「内存直写」与「库回灌」两种来源下 effect_report 字段假设一致
+        self._records = [r["payload"] for r in reversed(rows) if r.get("payload")]
         logger.info(f"📈 效果指标回灌 {len(self._records)} 条（跨重启累积）")
         return len(self._records)
 

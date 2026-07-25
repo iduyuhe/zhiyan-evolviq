@@ -11,7 +11,8 @@
 | 经验记忆写回（Insight） | ✅ **P0 已闭合** | 每次执行 / 编排的洞察落为 Insight 节点 |
 | 推理时读回记忆（Recall） | ✅ **P0 已闭合** | `BaseAgent.recall(goal)` + `/kg/recall`，agent 带记忆推理 |
 | 效果指标 / 审计持久化 | ✅ **P0 已闭合** | SQLite 落库 + 启动回灌，重启不丢 |
-| 规则自学习闭环 | 🟡 P1（待做） | strategy_tuner 从"建议"升级为"带护栏自动应用" |
+| 人类反馈→偏好/禁忌记忆 | ✅ **P1 已闭合** | 介入中心审批/驳回自动沉淀为 `FeedbackRecord`，供 recall 与策略反哺 |
+| 规则自学习闭环（自动调参） | ✅ **P1 已闭合** | `strategy_tuner.auto_tune()` 带护栏自动应用 + 一键回滚 |
 | 自进化（Prompt/知识自修订） | 🔴 P2（远景） | 反思循环修订 prompt / RAG 自更新 / 偏好学习 |
 
 ## 2. 记忆架构（P0 后）
@@ -55,10 +56,34 @@ BaseAgent.recall(goal)  ──►  /kg/recall API
 | 记忆不回灌 | agent 推理时不读 KG（`src/agents` 零调用） | `recall` 钩子 + 编排器集成 |
 | 信号重启即丢 | metrics/audit 纯内存 | SQLite 落库 + 启动回灌 |
 
-## 4. P1 — 规则自学习闭环（建议下一步）
+## 4. P1 — 规则自学习闭环（2026-07-25 已闭合）
 
-1. `strategy_tuner` 从「建议」升级为「带护栏的自动应用」：达标即微调旋钮，人可一键回滚。
-2. 经验库：将人类「驳回 / 采纳」打标签，沉淀为 agent 的「偏好 / 禁忌」记忆，推理时由 `recall` 读回。
+把「人类反馈」与「自动调参」接成闭环，使平台从「执行机器 + 人工调参面板」升级为「能从人类决策中持续学习、并带护栏自动优化」的系统。
+
+### 4.1 人类反馈 → 偏好/禁忌记忆
+
+- `src/runtime/experience.py` 的 `ExperienceStore`：介入中心每次审批/驳回（`interventions.py` 的 `decide_intervention`）自动调用 `experience.record_feedback(...)`，把 `{agent, action_type, decision(approved/rejected), context, note}` 沉淀为经验。
+- 落 SQLite（`feedback_records` 表，按 `agent` 索引，租户隔离）+ 启动 `hydrate()` 回灌 → 偏好/禁忌记忆跨重启累积。
+- 查询：`experience.agent_feedback_summary(agent)`（采纳/驳回/近 24h 驳回计数）、`get_preferences(agent)`、`get_forbidden(agent)`；API `GET /experience/{agent}`。
+
+### 4.2 带护栏的自动调参（规则自学习）
+
+- `strategy_tuner.auto_tune(tenant)`：复用 `suggest()` 效果规则，对命中的高置信方向**自动应用**旋钮，且受三重护栏：
+  1. **总开关** `auto_tune_enabled`（默认开，env `ZHIYAN_AUTO_TUNE=0` 关）；
+  2. **单次上限** `MAX_AUTO_PER_RUN=3`（一次最多自动调 3 个 Agent，防失控）；
+  3. **冷却期** `AUTO_COOLDOWN_HOURS=24`（同一 Agent 24h 内不重复自动调，防抖动）。
+- **一键回滚**：每次自动调参前拍快照，`rollback_last_auto()` 还原到调整前（`basis="auto_rollback"`，保留审计）。
+- 反馈反哺：规则 2（收紧）新增「经验库近期驳回」信号——即使介入队列无驳回，只要该 Agent 近期被人类否定，也会建议收紧。
+
+### 4.3 新增 API
+
+| 端点 | 作用 |
+|------|------|
+| `POST /strategy/auto-tune/run` | 触发一次带护栏自动调参 |
+| `POST /strategy/auto-tune/rollback` | 一键回滚最近一次自动调参 |
+| `GET /strategy/auto-tune/status` | 护栏状态（开关/冷却/待回滚数） |
+| `POST /strategy/auto-tune/set` | 开关自动调参 |
+| `GET /experience/{agent}` | 查询某 Agent 的偏好/禁忌经验 |
 
 ## 5. P2 — 真·自进化（远景）
 
@@ -68,4 +93,7 @@ BaseAgent.recall(goal)  ──►  /kg/recall API
 
 ---
 
-**验证**：`pytest tests/test_memory_p0.py -v` + `python scripts/verify_memory_p0.py`（需先启动 runtime）。
+**验证**：
+- 记忆闭环：`pytest tests/test_memory_p0.py -v` + `python scripts/verify_memory_p0.py`
+- 自学习闭环：`pytest tests/test_p1_self_learning.py -v` + `python scripts/verify_p1_self_learning.py`
+（e2e 脚本均需先启动 runtime：`ZHIYAN_DEMO_DATA=1 uvicorn src.runtime.main:app --port 8000`）

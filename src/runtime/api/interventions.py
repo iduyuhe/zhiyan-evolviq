@@ -6,12 +6,14 @@
 对应策划方案 模块四「异常介入中心」(MVP必修)
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 
 from src.runtime.core.intervention import intervention_queue
 from src.runtime.core.metrics import metrics
 from src.meta_agent.audit import audit_logger
+from src.runtime.experience import experience
+from src.runtime.api.deps import get_tenant
 
 router = APIRouter(prefix="/interventions", tags=["interventions"])
 
@@ -49,7 +51,7 @@ async def get_intervention(intervention_id: str):
 
 
 @router.post("/{intervention_id}/decide")
-async def decide_intervention(intervention_id: str, req: DecisionRequest):
+async def decide_intervention(intervention_id: str, req: DecisionRequest, tenant: str = Depends(get_tenant)):
     """人类审批/驳回一条介入事项"""
     ivt = intervention_queue.decide(intervention_id, req.approved, req.note)
     if not ivt:
@@ -62,6 +64,16 @@ async def decide_intervention(intervention_id: str, req: DecisionRequest):
         "intervention_decided",
         "human",
         {"intervention_id": intervention_id, "approved": req.approved, "note": req.note},
+    )
+    # P1：把人类决策沉淀为该 Agent 的偏好/禁忌经验记忆（供策略自学习反哺）
+    experience.record_feedback(
+        tenant=tenant,
+        agent=ivt.agent,
+        action_type=ivt.action.type,
+        decision="approved" if req.approved else "rejected",
+        context=ivt.reason,
+        note=req.note,
+        source="intervention",
     )
     return {
         "id": intervention_id,

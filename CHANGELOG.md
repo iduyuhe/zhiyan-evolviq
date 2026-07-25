@@ -1,5 +1,15 @@
 # Changelog
 
+## v20.3 (2026-07-25) — Rule-Based Self-Learning Loop (P1)
+
+- **Experience store (preference/forbidden memory)**: `src/runtime/experience.py` `ExperienceStore` — every human approve/reject in the Intervention Center is auto-recorded as a `FeedbackRecord` (agent + action_type + decision + context), persisted to SQLite + reloaded on startup (tenant-isolated).
+- **Guarded auto-tuning**: `strategy_tuner.auto_tune()` upgrades from "suggestion" to "auto-apply" with three guardrails — global switch (env `ZHIYAN_AUTO_TUNE`), per-run cap (`MAX_AUTO_PER_RUN=3`), and 24h cooldown per agent. `rollback_last_auto()` restores the pre-auto snapshot in one click (audit-trailed).
+- **Feedback back-feeds tuning**: rule 2 (tighten) now also fires on recent human rejections from the experience store, even when the intervention queue shows none.
+- **Wiring**: `decide_intervention` records feedback; new APIs `POST /strategy/auto-tune/run|rollback|set`, `GET /strategy/auto-tune/status`, `GET /experience/{agent}`.
+- **Fixed P0 regression**: `metrics.hydrate()` now restores the original record dict from `payload` (previously wrapped in metadata, which broke `effect_report()` after a restart-with-persistence).
+- **+6 unit tests** `tests/test_p1_self_learning.py` (100% pass) + e2e `scripts/verify_p1_self_learning.py`.
+- **Full suite: 99 passed** (93 prior + 6 new), zero regressions.
+
 ## v20.2 (2026-07-25) — Memory Loop Closed (P0)
 
 - **Experience memory write-back**: `apply_orchestration_result()` now implemented and wired into `engine.execute_multi()` — multi-agent orchestration insights (cross_findings + priority_actions) were previously **silently lost** (function never called). Now persisted as `Insight` nodes in the knowledge graph.

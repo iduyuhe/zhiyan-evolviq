@@ -22,6 +22,10 @@ class TuneRequest(BaseModel):
     reason: str = ""
 
 
+class AutoTuneRequest(BaseModel):
+    enabled: bool
+
+
 @router.get("")
 async def strategy_panel(tenant: str = Depends(get_tenant)):
     """控制台一页视图：当前旋钮 + 效果信号 + 调参建议（当前租户）"""
@@ -55,3 +59,29 @@ async def tune_strategy(req: TuneRequest, tenant: str = Depends(get_tenant)):
 async def strategy_history(tenant: str = Depends(get_tenant)):
     """调参审计轨迹（全局，按租户调参均记录于此）"""
     return {"tenant_id": tenant, "history": tuner.history(), "total": len(tuner.history())}
+
+
+# ---------- P1：带护栏的自动调参（规则自学习闭环） ----------
+
+@router.post("/auto-tune/run")
+async def run_auto_tune(tenant: str = Depends(get_tenant)):
+    """触发一次带护栏的自动调参（达标即微调，人可一键回滚）。"""
+    return tuner.auto_tune(tenant)
+
+
+@router.post("/auto-tune/rollback")
+async def rollback_auto_tune(tenant: str = Depends(get_tenant)):
+    """一键回滚最近一次自动调参。"""
+    return tuner.rollback_last_auto(tenant)
+
+
+@router.get("/auto-tune/status")
+async def auto_tune_status():
+    """自动调参护栏状态（开关 / 冷却 / 待回滚数）。"""
+    return tuner.auto_tune_status()
+
+
+@router.post("/auto-tune/set")
+async def set_auto_tune(req: AutoTuneRequest):
+    """开关自动调参（默认开启，env ZHIYAN_AUTO_TUNE=0 关闭）。"""
+    return tuner.set_auto_tune(req.enabled)

@@ -73,3 +73,25 @@ class MetricsRecord(Base):
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+
+class FeedbackRecord(Base):
+    """人类反馈经验——偏好/禁忌记忆的持久化。
+
+    人类在介入中心审批/驳回 Agent 动作时写入；供策略自学习（反哺 suggest）
+    与未来 P2 Prompt/RAG 自修订使用。租户隔离、按 agent 索引便于按 Agent 召回。
+    """
+
+    __tablename__ = "feedback_records"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tenant_id: Mapped[str] = mapped_column(String(64), default="default", index=True)
+    agent: Mapped[str] = mapped_column(String(64), index=True)  # 被反馈的 Agent
+    action_type: Mapped[str] = mapped_column(String(64), default="")  # 动作类型（如 lock_material）
+    decision: Mapped[str] = mapped_column(String(16), index=True)  # approved / rejected
+    context: Mapped[str] = mapped_column(Text, default="")  # 触发场景/目标摘要
+    note: Mapped[str] = mapped_column(String(512), default="")  # 人类批注
+    source: Mapped[str] = mapped_column(String(32), default="intervention")  # 反馈来源
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )

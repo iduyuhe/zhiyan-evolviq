@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 
 from src.common import db
-from src.runtime.models.agent_session import AgentSession, AuditLog, MetricsRecord, SessionStatus
+from src.runtime.models.agent_session import AgentSession, AuditLog, MetricsRecord, FeedbackRecord, SessionStatus
 
 logger = logging.getLogger(__name__)
 
@@ -241,6 +241,66 @@ async def load_recent_audit(limit: int = 500) -> list[dict]:
             ]
     except Exception as e:
         logger.warning(f"⚠️ load_recent_audit 失败（已忽略）：{type(e).__name__} {e}")
+        return []
+
+
+async def save_feedback_record(
+    tenant_id: str,
+    agent: str,
+    action_type: str,
+    decision: str,
+    context: str = "",
+    note: str = "",
+    source: str = "intervention",
+) -> None:
+    """插入一条人类反馈经验（偏好/禁忌记忆的持久化）。db 不可用时静默跳过。"""
+    if not db.db_available or db.async_session is None:
+        return
+    try:
+        async with db.async_session() as s:
+            s.add(
+                FeedbackRecord(
+                    tenant_id=tenant_id,
+                    agent=agent,
+                    action_type=action_type,
+                    decision=decision,
+                    context=context[:4000],
+                    note=note[:512],
+                    source=source,
+                )
+            )
+            await s.commit()
+    except Exception as e:
+        logger.warning(f"⚠️ save_feedback_record 失败（已忽略）：{type(e).__name__} {e}")
+
+
+async def load_recent_feedback(agent: str | None = None, limit: int = 500) -> list[dict]:
+    """加载最近的人类反馈经验（重启回灌内存用）。db 不可用时返回空。"""
+    if not db.db_available or db.async_session is None:
+        return []
+    try:
+        async with db.async_session() as s:
+            q = select(FeedbackRecord).order_by(FeedbackRecord.created_at.desc())
+            if agent:
+                q = q.where(FeedbackRecord.agent == agent)
+            q = q.limit(limit)
+            rows = (await s.execute(q)).scalars().all()
+            return [
+                {
+                    "id": str(o.id),
+                    "tenant_id": o.tenant_id,
+                    "agent": o.agent,
+                    "action_type": o.action_type,
+                    "decision": o.decision,
+                    "context": o.context,
+                    "note": o.note,
+                    "source": o.source,
+                    "created_at": o.created_at.isoformat() if o.created_at else None,
+                }
+                for o in rows
+            ]
+    except Exception as e:
+        logger.warning(f"⚠️ load_recent_feedback 失败（已忽略）：{type(e).__name__} {e}")
         return []
 
 

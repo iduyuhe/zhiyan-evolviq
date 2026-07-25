@@ -18,16 +18,23 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+import os
+from datetime import datetime, timezone, timedelta
 
 from src.runtime.core.authorization import authorization
 from src.runtime.core.intervention import intervention_queue
 from src.runtime.core.metrics import metrics
+from src.runtime.experience import experience
 
 logger = logging.getLogger(__name__)
 
 TARGET_AUTONOMOUS_RATE = 0.70
 CONF_MIN, CONF_MAX = 0.50, 0.95  # 置信阈值安全夹紧区间
+
+# ---- P1 自动调参护栏 ----
+AUTO_TUNE_DEFAULT = True     # 默认开启带护栏的自动调参（env ZHIYAN_AUTO_TUNE=0 关闭）
+AUTO_COOLDOWN_HOURS = 24     # 同一 Agent 两次自动调参的最小间隔，防抖动
+MAX_AUTO_PER_RUN = 3         # 单次 auto_tune 最多自动调整的 Agent 数
 
 
 class StrategyTuner:
@@ -37,6 +44,10 @@ class StrategyTuner:
         self._history: list[dict] = []
         self._seq = 0
         self._cache: list[dict] = []  # 最近一次 suggest() 产出的建议，供 apply_suggestion 反查
+        # P1 自动调参护栏状态
+        self.auto_tune_enabled = AUTO_TUNE_DEFAULT if os.environ.get("ZHIYAN_AUTO_TUNE", "1") != "0" else False
+        self._last_auto_ts: dict[str, datetime] = {}   # agent -> 上次自动调参时间（冷却用）
+        self._auto_snapshots: list[dict] = []          # 自动调参快照栈（供一键回滚）
 
     # ---------- 读取：当前策略旋钮 ----------
     def current(self, tenant: str = "default") -> list[dict]:
@@ -116,6 +127,7 @@ class StrategyTuner:
             apr = s.get("intervention_approval_rate")
             rej = s.get("interventions_rejected", 0)
             n = s.get("sample_size", 0)
+            fb = self._agent_feedback_stats(a)  # 经验库反馈（偏好/禁忌记忆）
 
             # 规则 1：自主率低于目标，且人类高批准率 → Agent 偏保守，建议下调置信阈值放权
             if ar < TARGET_AUTONOMOUS_RATE and apr is not None and apr >= 0.85 and n >= 3:
@@ -126,8 +138,8 @@ class StrategyTuner:
                         f"自主率 {ar:.0%} 低于目标 {TARGET_AUTONOMOUS_RATE:.0%}，且人工批准率 {apr:.0%} 高→动作偏保守，建议下调置信阈值放权",
                         "预计提升该 Agent 自主执行比例，减少不必要的升级",
                     ))
-            # 规则 2：有驳回或低批准率 → Agent 偏激进，建议上调置信阈值收紧
-            elif (rej > 0 or (apr is not None and apr < 0.60)) and n >= 3:
+            # 规则 2：有驳回（介入队列 or 经验库近期）或低批准率 → Agent 偏激进，建议上调置信阈值收紧
+            elif (rej > 0 or fb["recent_rejections"] > 0 or (apr is not None and apr < 0.60)) and n >= 3:
                 new_th = min(CONF_MAX, round(b.confidence_threshold + 0.05, 2))
                 if new_th > b.confidence_threshold:
                     suggestions.append(self._mk(
@@ -200,6 +212,106 @@ class StrategyTuner:
             sug["agent"], sug["param"], sug["suggested"],
             reason or sug["rationale"], basis="suggestion",
         )
+
+    # ---------- P1：带护栏的自动调参（规则自学习闭环） ----------
+    def _agent_feedback_stats(self, agent: str) -> dict:
+        """从经验库取该 Agent 的反馈统计（偏好/禁忌）。异常时安全降级为零。"""
+        try:
+            return experience.agent_feedback_summary(agent)
+        except Exception:
+            return {"agent": agent, "approvals": 0, "rejections": 0, "recent_rejections": 0}
+
+    def set_auto_tune(self, enabled: bool) -> dict:
+        """控制台开关自动调参。"""
+        self.auto_tune_enabled = bool(enabled)
+        return {"auto_tune_enabled": self.auto_tune_enabled}
+
+    def auto_tune_status(self) -> dict:
+        """暴露自动调参护栏状态。"""
+        now = datetime.now(timezone.utc)
+        return {
+            "auto_tune_enabled": self.auto_tune_enabled,
+            "cooldown_hours": AUTO_COOLDOWN_HOURS,
+            "max_per_run": MAX_AUTO_PER_RUN,
+            "last_auto_at": (
+                max(self._last_auto_ts.values()).isoformat() if self._last_auto_ts else None
+            ),
+            "agents_on_cooldown": [
+                a for a, t in self._last_auto_ts.items()
+                if now - t < timedelta(hours=AUTO_COOLDOWN_HOURS)
+            ],
+            "pending_rollbacks": len(self._auto_snapshots),
+        }
+
+    def auto_tune(self, tenant: str = "default") -> dict:
+        """带护栏的自动调参：达标即微调，人可一键回滚。
+
+        护栏：
+        - 总开关 auto_tune_enabled（env ZHIYAN_AUTO_TUNE=0 关）
+        - 单次最多 MAX_AUTO_PER_RUN 个 Agent
+        - 同一 Agent 冷却 AUTO_COOLDOWN_HOURS 小时，防抖动
+        - 仅在 suggest() 已判定为「高置信方向」时才自动（模糊区仍交人工）
+        自动调整前拍快照，支持 rollback_last_auto() 一键还原。
+        """
+        if not self.auto_tune_enabled:
+            return {"status": "disabled", "adjustments": []}
+        suggestions = self.suggest(tenant).get("suggestions", [])
+        now = datetime.now(timezone.utc)
+        snapshot: list[dict] = []
+        adjustments: list[dict] = []
+        for sug in suggestions:
+            if len(adjustments) >= MAX_AUTO_PER_RUN:
+                break
+            agent = sug["agent"]
+            last = self._last_auto_ts.get(agent)
+            if last and (now - last) < timedelta(hours=AUTO_COOLDOWN_HOURS):
+                continue  # 冷却期内不重复自动调
+            try:
+                res = self.apply(
+                    agent, sug["param"], sug["suggested"],
+                    reason=f"[自动] {sug['rationale']}", basis="auto", tenant=tenant,
+                )
+                snapshot.append({
+                    "agent": agent, "param": sug["param"],
+                    "old": res["old"], "new": res["new"],
+                })
+                self._last_auto_ts[agent] = now
+                adjustments.append({
+                    "agent": agent, "param": sug["param"],
+                    "old": res["old"], "new": res["new"],
+                    "direction": sug["direction"],
+                })
+            except Exception as e:
+                logger.warning(f"⚠️ 自动调参失败 {agent}.{sug['param']}: {e}")
+        if snapshot:
+            self._auto_snapshots.append({"ts": now.isoformat(), "changes": snapshot})
+        logger.info(
+            f"🎚️ 自动调参完成：{len(adjustments)} 项调整"
+            f"（护栏：单次≤{MAX_AUTO_PER_RUN}，冷却{AUTO_COOLDOWN_HOURS}h）"
+        )
+        return {"status": "applied" if adjustments else "no_change", "adjustments": adjustments}
+
+    def rollback_last_auto(self, tenant: str = "default") -> dict:
+        """一键回滚最近一次自动调参（还原到自动调整前的快照）。"""
+        if not self._auto_snapshots:
+            return {"status": "no_snapshot", "rolled_back": []}
+        snap = self._auto_snapshots.pop()
+        rolled: list[dict] = []
+        for ch in snap["changes"]:
+            try:
+                res = self.apply(
+                    ch["agent"], ch["param"], ch["old"],
+                    reason="[回滚] 撤销自动调参", basis="auto_rollback", tenant=tenant,
+                )
+                rolled.append({
+                    "agent": ch["agent"], "param": ch["param"],
+                    "restored_to": res["new"],
+                })
+                self._last_auto_ts.pop(ch["agent"], None)  # 回退冷却，避免立即又被自动调
+            except Exception as e:
+                logger.warning(f"⚠️ 回滚失败 {ch['agent']}.{ch['param']}: {e}")
+        logger.info(f"↩️ 自动调参回滚：{len(rolled)} 项还原")
+        return {"status": "rolled_back", "rolled_back": rolled, "snapshot_ts": snap["ts"]}
 
     def history(self) -> list[dict]:
         """调参审计轨迹（最新在前）"""
