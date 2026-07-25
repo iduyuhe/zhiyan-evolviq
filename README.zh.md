@@ -176,3 +176,4 @@ curl http://localhost:8000/tenants -H "X-Platform-Admin-Key: <admin_key>"
 - ⚡ 实用性评估：[docs/PRACTICALITY_ASSESSMENT.md](docs/PRACTICALITY_ASSESSMENT.md)
 - 🌍 国际化对齐：[docs/GLOBAL_ALIGNMENT_REPORT.md](docs/GLOBAL_ALIGNMENT_REPORT.md)
 - 🏢 企业应用指南（CIO / 实施落地）：[docs/ENTERPRISE_GUIDE.zh.md](docs/ENTERPRISE_GUIDE.zh.md)
+- 🛡 风险与治理白皮书：[docs/RISK_GOVERNANCE_WHITEPAPER.zh.md](docs/RISK_GOVERNANCE_WHITEPAPER.zh.md)

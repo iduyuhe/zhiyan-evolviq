@@ -112,6 +112,7 @@ docker compose up -d
 - ⚡ Practicality Assessment: [docs/PRACTICALITY_ASSESSMENT.md](docs/PRACTICALITY_ASSESSMENT.md)
 - 🌍 Global Alignment: [docs/GLOBAL_ALIGNMENT_REPORT.md](docs/GLOBAL_ALIGNMENT_REPORT.md)
 - 🏢 Enterprise Application Guide (CIO / implementation): [docs/ENTERPRISE_GUIDE.zh.md](docs/ENTERPRISE_GUIDE.zh.md)
+- 🛡 Risk & Governance Whitepaper: [docs/RISK_GOVERNANCE_WHITEPAPER.zh.md](docs/RISK_GOVERNANCE_WHITEPAPER.zh.md)
 - 📊 Datasheet & Competitive Comparison: [docs/DATASHEET.md](docs/DATASHEET.md)
 - 🌐 Custom Domain Setup Guide: [docs/DOMAIN_GUIDE.md](docs/DOMAIN_GUIDE.md)
 - 🖼 Social preview image: `og_image.png` (upload in repo **Settings → Social preview**)
