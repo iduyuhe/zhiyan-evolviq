@@ -1,5 +1,10 @@
 # 智衍 EvolvIQ · AI 原生工业智能体平台
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![CI](https://github.com/iduyuhe/zhiyan-evolviq/actions/workflows/ci.yml/badge.svg)](https://github.com/iduyuhe/zhiyan-evolviq/actions/workflows/ci.yml)
+[![Agents](https://img.shields.io/badge/Agents-20-blue)](https://github.com/iduyuhe/zhiyan-evolviq)
+[![Version](https://img.shields.io/badge/version-v20-blue)](https://github.com/iduyuhe/zhiyan-evolviq)
+
 > 智衍（EvolvIQ）是一个面向电子制造 / 半导体行业的 **AI 原生工业智能体开发与部署平台**：把供应链、设备维护、良率、质量、DFM、BOM 选型、OEE、ECO、换线、AOI、IPC 标准、计划排程、能源碳 ESG、制造成本等 20 类工业场景，封装为可直接调用的自治 Agent，并通过统一网关接入 Modbus / MQTT / OPC-UA / IPC-CFX 等工业协议，配合跨 Agent 知识图谱与按效果调参的授权引擎，实现「感知—规划—执行—复盘」闭环。
 
 ## ✨ 核心特性
@@ -11,6 +16,10 @@
 - **按效果调参的授权引擎**：置信度阈值、每日自主上限、人类介入队列
 - **韧性降级**：PostgreSQL / Neo4j / 各网关不可达时自动回退 SQLite / 内存图 / 模拟模式，绝不阻断启动
 - **多租户隔离**：行级 `tenant_id` 隔离 + API Key 认证（`X-Tenant-Key`），开放自助注册，未带密钥自动归属默认租户 `default`，向后兼容
+
+## 🏗 系统架构
+
+![EvolvIQ 架构](architecture.svg)
 
 ## 🧩 20 个 Agent 一览
 
@@ -155,3 +164,14 @@ curl http://localhost:8000/tenants -H "X-Platform-Admin-Key: <admin_key>"
 ## 🤝 贡献
 
 欢迎 Issue / PR。提交即表示同意以 Apache-2.0 协议贡献。
+
+## 📚 文档与社区
+
+- 🗺 路线图：[ROADMAP.md](ROADMAP.md)
+- 🔒 安全政策：[SECURITY.md](SECURITY.md)
+- 📝 更新日志：[CHANGELOG.md](CHANGELOG.md)
+- 📖 应用指南：[docs/GUIDE.zh.md](docs/GUIDE.zh.md) · [English](docs/GUIDE.md)
+- 📘 应用白皮书：[docs/WHITEPAPER.md](docs/WHITEPAPER.md)
+- 📗 技术白皮书：[docs/TECHNICAL_WHITEPAPER.md](docs/TECHNICAL_WHITEPAPER.md)
+- ⚡ 实用性评估：[docs/PRACTICALITY_ASSESSMENT.md](docs/PRACTICALITY_ASSESSMENT.md)
+- 🌍 国际化对齐：[docs/GLOBAL_ALIGNMENT_REPORT.md](docs/GLOBAL_ALIGNMENT_REPORT.md)

@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 
+# ===================== CI / Dev artifacts =====================
 # ===================== Internal deploy / ops tooling =====================
 # 含内部服务器地址与部署凭据，不对外公开
 scripts/_deploy/
@@ -44,3 +45,13 @@ Thumbs.db
 .vscode/
 .idea/
 .workbuddy/
+
+# ===================== Internal ops / WeChat publishing (not open-source) =====================
+article_v20.md
+cover_v20.jpg
+scripts/wechat_upload.py
+scripts/publish_v20_draft.py
+scripts/gen_cover_v20.py
+
+# ===================== Local frontend config =====================
+studio/vite.local.ts

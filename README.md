@@ -5,6 +5,9 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.13%2B-blue)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688)](https://fastapi.tiangolo.com/)
+[![CI](https://github.com/iduyuhe/zhiyan-evolviq/actions/workflows/ci.yml/badge.svg)](https://github.com/iduyuhe/zhiyan-evolviq/actions/workflows/ci.yml)
+[![Agents](https://img.shields.io/badge/Agents-20-blue)](https://github.com/iduyuhe/zhiyan-evolviq)
+[![Version](https://img.shields.io/badge/version-v20-blue)](https://github.com/iduyuhe/zhiyan-evolviq)
 
 > 📖 **User Guide**: [docs/GUIDE.md](docs/GUIDE.md) · [中文指南](docs/GUIDE.zh.md)
 
@@ -84,29 +87,11 @@ docker compose up -d
 
 ## 🏗 Architecture
 
-```
-┌──────────────────────────────────────────────────────┐
-│                   Studio (React/TS)                   │
-│   Goal Input → Agent Selector → Result View → Console │
-└──────────────────────┬───────────────────────────────┘
-                       │ HTTP (REST API)
-┌──────────────────────▼───────────────────────────────┐
-│                  Runtime (FastAPI)                    │
-│  ┌──────────┐ ┌──────────┐ ┌──────────────────────┐  │
-│  │ Router   │ │ Engine   │ │ Authorization Engine  │  │
-│  │ (20 Ag.) │ │ (plan→   │ │ (confidence/limits/   │  │
-│  │          │ │ execute) │ │  approval boundaries) │  │
-│  └──────────┘ └──────────┘ └──────────────────────┘  │
-│  ┌──────────────────────────────────────────────┐    │
-│  │         MCP Federation (65 tools)            │    │
-│  │  HTTP endpoint · stdio server · dispatch     │    │
-│  └──────────────────────────────────────────────┘    │
-│  ┌──────────┐ ┌──────────┐ ┌────────────────────┐   │
-│  │ 4 Proto- │ │Knowledge │ │ LLM Client          │   │
-│  │ col Gate │ │ Graph    │ │ (DeepSeek + Hunyuan) │   │
-│  └──────────┘ └──────────┘ └────────────────────┘   │
-└──────────────────────────────────────────────────────┘
-```
+![EvolvIQ Architecture](architecture.svg)
+
+### Live Console
+
+![Console - effect-driven tuning](screenshots/console_effect.png)
 
 **Key design principles:**
 - **Deterministic by default**: All agent analysis runs on seed/production data with zero LLM hallucination
@@ -115,6 +100,17 @@ docker compose up -d
 - **MCP-standardized**: All 65 tools exposed via Model Context Protocol (HTTP + stdio)
 
 ---
+
+## 📚 Documentation & Community
+
+- 🗺 Roadmap: [ROADMAP.md](ROADMAP.md)
+- 🔒 Security: [SECURITY.md](SECURITY.md)
+- 📝 Changelog: [CHANGELOG.md](CHANGELOG.md)
+- 📖 User Guide: [docs/GUIDE.md](docs/GUIDE.md) · [中文](docs/GUIDE.zh.md)
+- 📘 Application Whitepaper: [docs/WHITEPAPER.md](docs/WHITEPAPER.md)
+- 📗 Technical Whitepaper: [docs/TECHNICAL_WHITEPAPER.md](docs/TECHNICAL_WHITEPAPER.md)
+- ⚡ Practicality Assessment: [docs/PRACTICALITY_ASSESSMENT.md](docs/PRACTICALITY_ASSESSMENT.md)
+- 🌍 Global Alignment: [docs/GLOBAL_ALIGNMENT_REPORT.md](docs/GLOBAL_ALIGNMENT_REPORT.md)
 
 ## 🛡 License
 

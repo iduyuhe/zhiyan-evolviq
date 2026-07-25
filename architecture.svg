@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 600" font-family="-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="460" y="34" text-anchor="middle" font-size="20" font-weight="800" fill="#0f172a">EvolvIQ (智衍) · Architecture</text>
+
+  <!-- Connectors -->
+  <line x1="495" y1="120" x2="495" y2="136" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="495" y1="198" x2="495" y2="214" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="495" y1="346" x2="495" y2="360" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="495" y1="422" x2="495" y2="438" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Layer 1: Frontend -->
+  <rect x="170" y="60" width="650" height="58" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="105" y="94" text-anchor="middle" font-size="15" font-weight="700" fill="#475569">Frontend</text>
+  <rect x="190" y="72" width="300" height="34" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="340" y="93" text-anchor="middle" font-size="12.5" fill="#1e40af">Studio · React + Vite + Tailwind</text>
+  <rect x="510" y="72" width="300" height="34" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="660" y="93" text-anchor="middle" font-size="12.5" fill="#1e40af">nginx :3006 → /api</text>
+
+  <!-- Layer 2: Governance -->
+  <rect x="170" y="138" width="650" height="58" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="105" y="172" text-anchor="middle" font-size="15" font-weight="700" fill="#475569">Governance</text>
+  <rect x="190" y="150" width="150" height="34" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="265" y="171" text-anchor="middle" font-size="12.5" fill="#1e40af">Auth Engine</text>
+  <rect x="350" y="150" width="150" height="34" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="425" y="171" text-anchor="middle" font-size="12.5" fill="#1e40af">Multi-Tenant</text>
+  <rect x="510" y="150" width="150" height="34" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="585" y="171" text-anchor="middle" font-size="12.5" fill="#1e40af">Audit Log</text>
+  <rect x="670" y="150" width="150" height="34" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="745" y="171" text-anchor="middle" font-size="12.5" fill="#1e40af">StrategyTuner</text>
+
+  <!-- Layer 3: Intelligence -->
+  <rect x="170" y="216" width="650" height="128" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="105" y="282" text-anchor="middle" font-size="15" font-weight="700" fill="#475569">Intelligence</text>
+  <rect x="190" y="228" width="610" height="30" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="495" y="248" text-anchor="middle" font-size="12.5" fill="#1e40af">AgentEngine: plan → confirm → execute → intervene</text>
+  <rect x="190" y="264" width="195" height="46" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="287" y="288" text-anchor="middle" font-size="12.5" fill="#1e40af">R&amp;D · 6 Agents</text>
+  <text x="287" y="303" text-anchor="middle" font-size="10.5" fill="#64748b">DFM/BOM/ECO/AOI/IPC/NPI</text>
+  <rect x="398" y="264" width="195" height="46" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="495" y="288" text-anchor="middle" font-size="12.5" fill="#1e40af">Operations · 7</text>
+  <text x="495" y="303" text-anchor="middle" font-size="10.5" fill="#64748b">Supply/Maint/Yield/...</text>
+  <rect x="606" y="264" width="194" height="46" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="703" y="288" text-anchor="middle" font-size="12.5" fill="#1e40af">Enterprise · 7</text>
+  <text x="703" y="303" text-anchor="middle" font-size="10.5" fill="#64748b">APS/Energy/Cost/...</text>
+  <rect x="190" y="314" width="610" height="24" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="495" y="330" text-anchor="middle" font-size="12" fill="#1e40af">Cross-Agent Knowledge Graph: Neo4j / in-memory fallback</text>
+
+  <!-- Layer 4: Capability -->
+  <rect x="170" y="362" width="650" height="58" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="105" y="396" text-anchor="middle" font-size="15" font-weight="700" fill="#475569">Capability</text>
+  <rect x="190" y="374" width="210" height="34" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="295" y="395" text-anchor="middle" font-size="12.5" fill="#1e40af">MCP Federation · 65</text>
+  <rect x="415" y="374" width="210" height="34" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="520" y="395" text-anchor="middle" font-size="12.5" fill="#1e40af">Router</text>
+  <rect x="640" y="374" width="210" height="34" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="745" y="395" text-anchor="middle" font-size="12.5" fill="#1e40af">Auth Eval</text>
+
+  <!-- Layer 5: Access -->
+  <rect x="170" y="440" width="650" height="92" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="105" y="492" text-anchor="middle" font-size="15" font-weight="700" fill="#475569">Access</text>
+  <rect x="190" y="452" width="610" height="34" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="495" y="473" text-anchor="middle" font-size="12.5" fill="#1e40af">Gateways: OPC-UA · MQTT · Modbus · IPC-CFX</text>
+  <rect x="190" y="492" width="610" height="34" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="495" y="513" text-anchor="middle" font-size="12.5" fill="#1e40af">Persistence: PostgreSQL / SQLite · Graceful Degradation</text>
+
+  <!-- Footer -->
+  <text x="460" y="566" text-anchor="middle" font-size="11.5" fill="#64748b">Graceful degradation — every dependency fails independently, the platform stays up.</text>
+</svg>
