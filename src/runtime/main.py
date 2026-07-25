@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
 from src.runtime.api import agents_api, auth, audit, events_api, health, mcp_tools, scheduler_api, sessions, supply_chain
-from src.runtime.api import interventions, reports, system, knowledge_graph, gateways, strategy, tenants, experience
+from src.runtime.api import interventions, reports, system, knowledge_graph, gateways, strategy, tenants, experience, evolution
 from src.runtime.core.scheduler import scheduler
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -41,6 +41,13 @@ async def lifespan(app: FastAPI):
         from src.runtime.persistence import save_feedback_record
         experience.attach_sink(save_feedback_record)
         await experience.hydrate(limit=500)
+        # 自进化（P2）：Prompt 版本库 + KG 事实提议 挂载落库 sink + 回灌
+        from src.runtime.evolution import prompt_versions, kg_facts
+        from src.runtime.persistence import save_prompt_version, save_kg_fact_proposal
+        prompt_versions.attach_sink(save_prompt_version)
+        await prompt_versions.hydrate(limit=500)
+        kg_facts.attach_sink(save_kg_fact_proposal)
+        await kg_facts.hydrate(limit=500)
         st = db_status()
         logger.info(f"📦 数据层已接入 [{st['mode']}] {st['url']}")
     else:
@@ -121,6 +128,7 @@ app.include_router(knowledge_graph.router)
 app.include_router(gateways.router)
 app.include_router(strategy.router)
 app.include_router(experience.router)
+app.include_router(evolution.router)
 app.include_router(tenants.router)
 
 

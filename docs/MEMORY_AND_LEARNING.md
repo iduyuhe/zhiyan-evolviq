@@ -85,15 +85,44 @@ BaseAgent.recall(goal)  ──►  /kg/recall API
 | `POST /strategy/auto-tune/set` | 开关自动调参 |
 | `GET /experience/{agent}` | 查询某 Agent 的偏好/禁忌经验 |
 
-## 5. P2 — 真·自进化（远景）
+## 5. P2 — 真·自进化（2026-07-25 已落地，v20.4）
 
-1. **Prompt 自反思**：LLM 复盘失败案例 → 自动修订 agent `system prompt`（版本化 + 人工审批）。
-2. **RAG 知识自更新**：把验证过的结论自动写入知识库，下次检索即用。
-3. **在线学习信号**：人类纠正转为训练信号（偏好学习 / RLHF-lite）。
+把"记忆闭环(P0) + 规则自学习(P1)"再向前推一步：平台能**基于失败案例自我修订 prompt、把验证过的事实写入知识库、并从人类纠正中产出偏好信号**——且所有"变更类"动作都设**人工审批门**，绝不自动应用（安全铁律），只调整指令/约束/阈值，绝不改写业务数字（事实锚点）。
+
+### 5.1 Prompt 自反思 + 版本化 + 人工审批门
+
+- `src/runtime/evolution/reflection.py` 的 `LLMReflectionService.reflect(...)`：把某 Agent 近期被人类驳回的案例（`failure_store.collect_failure_cases` 从经验库派生）喂给 LLM，产出修订后的完整 `system prompt` + 变更理由；**LLM 不可用（无 Key / 调用失败）回退启发式**——在原文后追加「失败模式警示」附录。
+- `src/runtime/evolution/prompt_versions.py` 的 `PromptVersionStore`：候选 prompt 进 `prompt_versions` 表（每 Agent 版本号自增），状态机 `proposed → approved → active`；**proposed 绝不自动应用**，必须人工 `approve` 再 `apply`。
+- `apply` **热替换** live Agent 单例的 `system_prompt` 属性，并记录上一版内容；`rollback` 一键还原。租户隔离、启动 `hydrate()` 回灌，跨重启累积。
+
+### 5.2 RAG 知识自更新
+
+- `src/runtime/evolution/kg_facts.py` 的 `KgFactStore`：事实提议（`subject - predicate - object`，`draft`）经人工 `approve` 后 upsert 进 Neo4j 知识图谱（Entity 节点 + 关系边 + Insight），提升后续 RAG 召回质量。
+- 事实锚点铁律：仅写实体/关系，绝不改写业务数字；Neo4j 不可达走内存图，不抛异常。
+
+### 5.3 在线偏好学习 lite
+
+- `src/runtime/evolution/preference_learning.py` 的 `preference_calibration(agent)`：基于经验库滚动批准率，产出信任度信号（trusted / needs_review / balanced）+ 被驳回最多的动作类型。该信号**仅供驱动其它模块**（如触发 Prompt 复盘、辅助策略自学习放宽阈值），绝不直接改业务数字。
+
+### 5.4 新增 API
+
+| 端点 | 作用 |
+|------|------|
+| `POST /evolution/reflect` | 复盘失败案例 → 生成候选 prompt（LLM/启发式）→ proposed |
+| `GET /evolution/failure-cases/{agent}` | 查看该 Agent 的失败案例 |
+| `GET /evolution/prompt-versions/{agent}` | 列出 Prompt 版本 + 当前 active |
+| `POST /evolution/prompt-versions/{id}/approve` | 审批通过候选 prompt |
+| `POST /evolution/prompt-versions/{id}/apply` | 应用（热替换 live 单例） |
+| `POST /evolution/prompt-versions/{agent}/rollback` | 一键回滚 |
+| `POST /evolution/kg-facts/propose` | 提议知识图谱事实 |
+| `GET /evolution/kg-facts` | 列出事实提议 |
+| `POST /evolution/kg-facts/{id}/approve` | 审批 → upsert 图谱 |
+| `GET /evolution/preference/{agent}` | 在线偏好校准信号 |
 
 ---
 
 **验证**：
 - 记忆闭环：`pytest tests/test_memory_p0.py -v` + `python scripts/verify_memory_p0.py`
 - 自学习闭环：`pytest tests/test_p1_self_learning.py -v` + `python scripts/verify_p1_self_learning.py`
-（e2e 脚本均需先启动 runtime：`ZHIYAN_DEMO_DATA=1 uvicorn src.runtime.main:app --port 8000`）
+- 自进化：`pytest tests/test_p2_evolution.py -v` + `python scripts/verify_p2_evolution.py`
+（verify 脚本用 ASGITransport 直打 app，无需先启动 runtime）

@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 
 from src.common import db
-from src.runtime.models.agent_session import AgentSession, AuditLog, MetricsRecord, FeedbackRecord, SessionStatus
+from src.runtime.models.agent_session import AgentSession, AuditLog, MetricsRecord, FeedbackRecord, SessionStatus, PromptVersion, KgFactProposal
 
 logger = logging.getLogger(__name__)
 
@@ -318,3 +318,135 @@ def _session_to_dict(o: AgentSession) -> dict:
         "created_at": o.created_at.isoformat() if o.created_at else None,
         "completed_at": o.completed_at.isoformat() if o.completed_at else None,
     }
+
+
+# ---------------------------------------------------------------------------
+# P2 自进化：Prompt 版本库 + 知识图谱事实提议 的持久化（韧性降级，db 不可用静默）
+# ---------------------------------------------------------------------------
+
+async def save_prompt_version(
+    tenant_id: str,
+    agent: str,
+    version: int,
+    content: str,
+    parent_version: int | None = None,
+    status: str = "proposed",
+    proposer: str = "llm",
+    note: str = "",
+) -> None:
+    """插入一条 Prompt 版本记录。db 不可用时静默跳过。"""
+    if not db.db_available or db.async_session is None:
+        return
+    try:
+        async with db.async_session() as s:
+            s.add(
+                PromptVersion(
+                    tenant_id=tenant_id,
+                    agent=agent,
+                    version=version,
+                    content=content,
+                    parent_version=parent_version,
+                    status=status,
+                    proposer=proposer,
+                    note=note[:2000],
+                )
+            )
+            await s.commit()
+    except Exception as e:
+        logger.warning(f"⚠️ save_prompt_version 失败（已忽略）：{type(e).__name__} {e}")
+
+
+async def load_prompt_versions(agent: str | None = None, limit: int = 500) -> list[dict]:
+    """加载 Prompt 版本记录（重启回灌内存用）。db 不可用时返回空。"""
+    if not db.db_available or db.async_session is None:
+        return []
+    try:
+        async with db.async_session() as s:
+            q = select(PromptVersion).order_by(PromptVersion.version.desc())
+            if agent:
+                q = q.where(PromptVersion.agent == agent)
+            q = q.limit(limit)
+            rows = (await s.execute(q)).scalars().all()
+            return [
+                {
+                    "id": str(o.id),
+                    "tenant_id": o.tenant_id,
+                    "agent": o.agent,
+                    "version": o.version,
+                    "content": o.content,
+                    "parent_version": o.parent_version,
+                    "status": o.status,
+                    "proposer": o.proposer,
+                    "note": o.note,
+                    "created_at": o.created_at.isoformat() if o.created_at else None,
+                    "applied_at": o.applied_at.isoformat() if o.applied_at else None,
+                }
+                for o in rows
+            ]
+    except Exception as e:
+        logger.warning(f"⚠️ load_prompt_versions 失败（已忽略）：{type(e).__name__} {e}")
+        return []
+
+
+async def save_kg_fact_proposal(
+    tenant_id: str,
+    agent: str,
+    subject: str,
+    predicate: str,
+    object_val: str,
+    source: str = "",
+    confidence: float = 0.8,
+    note: str = "",
+) -> None:
+    """插入一条知识图谱事实提议。db 不可用时静默跳过。"""
+    if not db.db_available or db.async_session is None:
+        return
+    try:
+        async with db.async_session() as s:
+            s.add(
+                KgFactProposal(
+                    tenant_id=tenant_id,
+                    agent=agent,
+                    subject=subject,
+                    predicate=predicate,
+                    object_val=object_val,
+                    source=source[:256],
+                    confidence=float(confidence),
+                    note=note[:2000],
+                )
+            )
+            await s.commit()
+    except Exception as e:
+        logger.warning(f"⚠️ save_kg_fact_proposal 失败（已忽略）：{type(e).__name__} {e}")
+
+
+async def load_kg_fact_proposals(agent: str | None = None, limit: int = 500) -> list[dict]:
+    """加载知识图谱事实提议（重启回灌内存用）。db 不可用时返回空。"""
+    if not db.db_available or db.async_session is None:
+        return []
+    try:
+        async with db.async_session() as s:
+            q = select(KgFactProposal).order_by(KgFactProposal.created_at.desc())
+            if agent:
+                q = q.where(KgFactProposal.agent == agent)
+            q = q.limit(limit)
+            rows = (await s.execute(q)).scalars().all()
+            return [
+                {
+                    "id": str(o.id),
+                    "tenant_id": o.tenant_id,
+                    "agent": o.agent,
+                    "subject": o.subject,
+                    "predicate": o.predicate,
+                    "object_val": o.object_val,
+                    "source": o.source,
+                    "confidence": o.confidence,
+                    "status": o.status,
+                    "note": o.note,
+                    "created_at": o.created_at.isoformat() if o.created_at else None,
+                }
+                for o in rows
+            ]
+    except Exception as e:
+        logger.warning(f"⚠️ load_kg_fact_proposals 失败（已忽略）：{type(e).__name__} {e}")
+        return []

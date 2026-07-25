@@ -1,5 +1,15 @@
 # Changelog
 
+## v20.4 (2026-07-25) — Self-Evolution (P2)
+
+- **Prompt self-reflection + versioning**: `src/runtime/evolution/reflection.py` `LLMReflectionService` replays an agent's recent human-rejected cases (collected by `failure_store`) through the LLM to propose a revised `system prompt`; when the LLM is unavailable it falls back to a heuristic appendix. Every candidate is versioned (`prompt_versions` table, per-agent counter) and **never auto-applied** — it lands in `proposed` and requires human `approve` → `apply`.
+- **Hot-swap + one-click rollback**: `apply` hot-swaps the live agent singleton's `system_prompt` and records the prior content; `rollback` restores it. Fully audit-trailed, tenant-isolated, survives restart via SQLite + `hydrate()`.
+- **RAG knowledge self-update**: `src/runtime/evolution/kg_facts.py` `KgFactStore` lets verified facts be proposed (`draft`) and, on human approval, upserted into the Neo4j knowledge graph (Entity nodes + edges + Insight), improving future RAG recall. Facts-only, never rewrites business numbers (fact-anchor rule).
+- **Online preference learning (lite)**: `preference_learning.preference_calibration(agent)` derives a rolling approval-rate signal (trusted / needs_review / balanced) + most-rejected action type — a signal that drives other modules, never directly edits business numbers.
+- **New API**: `POST /evolution/reflect`, `GET /evolution/failure-cases/{agent}`, `GET /evolution/prompt-versions/{agent}`, `POST /evolution/prompt-versions/{id}/approve|apply`, `POST /evolution/prompt-versions/{agent}/rollback`, `POST /evolution/kg-facts/propose`, `GET /evolution/kg-facts`, `POST /evolution/kg-facts/{id}/approve`, `GET /evolution/preference/{agent}`.
+- **+11 unit tests** `tests/test_p2_evolution.py` (100% pass) + e2e `scripts/verify_p2_evolution.py`.
+- **Full suite: 110 passed** (99 prior + 11 new), zero regressions.
+
 ## v20.3 (2026-07-25) — Rule-Based Self-Learning Loop (P1)
 
 - **Experience store (preference/forbidden memory)**: `src/runtime/experience.py` `ExperienceStore` — every human approve/reject in the Intervention Center is auto-recorded as a `FeedbackRecord` (agent + action_type + decision + context), persisted to SQLite + reloaded on startup (tenant-isolated).

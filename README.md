@@ -27,6 +27,7 @@
 - **Multi-Tenant**: Row-level `tenant_id` isolation with API-Key authentication (`X-Tenant-Key` header)
 - **Effect-Driven Strategy Tuning**: Live knob adjustment (confidence thresholds, daily limits) with audit trail
 - **Self-Learning Loop (P1)**: Human approve/reject in the Intervention Center auto-feeds an agent's preference/forbidden memory; the strategy tuner auto-adjusts guardrails (with one-click rollback) — the system learns from experience, it does not just execute
+- **Self-Evolution Loop (P2)**: LLM replays human-rejected cases to propose a revised agent system prompt — versioned, human-approved (never auto-applied), with hot-swap + one-click rollback; plus RAG knowledge self-update (verified facts upserted into the knowledge graph) and online preference learning (rolling approval-rate signal)
 - **Apache-2.0 Licensed**: Fully open-source, no vendor lock-in
 
 ---

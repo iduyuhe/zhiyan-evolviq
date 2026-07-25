@@ -95,3 +95,54 @@ class FeedbackRecord(Base):
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+
+class PromptVersion(Base):
+    """Prompt 版本库——P2 自进化：LLM/启发式复盘失败案例生成的候选 system prompt。
+
+    版本化 + 人工审批门（绝不直接应用）：proposed → approved → active，
+    active 版本可热替换 live Agent 单例的 system_prompt，并支持一键回滚。
+    租户隔离、按 agent 索引。
+    """
+
+    __tablename__ = "prompt_versions"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tenant_id: Mapped[str] = mapped_column(String(64), default="default", index=True)
+    agent: Mapped[str] = mapped_column(String(64), index=True)
+    version: Mapped[int] = mapped_column(default=1)
+    content: Mapped[str] = mapped_column(Text)  # 候选/生效的完整 system prompt
+    parent_version: Mapped[int | None] = mapped_column(default=None)
+    status: Mapped[str] = mapped_column(String(16), default="proposed", index=True)  # proposed/approved/active/rejected
+    proposer: Mapped[str] = mapped_column(String(16), default="llm")  # llm/heuristic/human
+    note: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    applied_at: Mapped[datetime.datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+
+class KgFactProposal(Base):
+    """知识图谱事实提议——P2 自进化 RAG 自更新：从结构化产出抽取的事实候选。
+
+    经人工审批后 upsert 进 Neo4j 知识图谱（Entity 节点 + 关系边），提升后续 RAG 检索质量。
+    事实锚点铁律：仅写实体/关系，绝不改写业务数字。
+    """
+
+    __tablename__ = "kg_fact_proposals"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tenant_id: Mapped[str] = mapped_column(String(64), default="default", index=True)
+    agent: Mapped[str] = mapped_column(String(64), index=True)
+    subject: Mapped[str] = mapped_column(String(256))   # 头实体节点 id（如 MAT:XYZ）
+    predicate: Mapped[str] = mapped_column(String(128))  # 关系（如 可替代/导致/依赖）
+    object_val: Mapped[str] = mapped_column(String(256))  # 尾实体节点 id
+    source: Mapped[str] = mapped_column(String(256), default="")  # 事实来源描述
+    confidence: Mapped[float] = mapped_column(Float, default=0.8)
+    status: Mapped[str] = mapped_column(String(16), default="draft", index=True)  # draft/approved
+    note: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
