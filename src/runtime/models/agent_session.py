@@ -146,3 +146,23 @@ class KgFactProposal(Base):
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+
+class TenantDataSource(Base, TimestampMixin):
+    """多租户数据源配置（P2-2）：每租户可配置自己的 MES/ERP/PLM/WMS/时序库连接。
+
+    连接参数（base_url / api_key / token 等）以 JSON 落库；注册进 DataSourceRegistry 后 agent 即可取数。
+    韧性：db 不可用时仅内存态，重启即失（与 tenant_store 同策略）。
+    """
+
+    __tablename__ = "tenant_data_sources"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tenant_id: Mapped[str] = mapped_column(String(64), default="default", index=True)
+    kind: Mapped[str] = mapped_column(String(16), index=True)  # mes/erp/plm/wms/timeseries
+    name: Mapped[str] = mapped_column(String(64), default="")   # 可选实例名
+    config_json: Mapped[Text] = mapped_column(Text, default="{}")  # 连接参数（不含明文密钥落库需评估）
+    is_active: Mapped[bool] = mapped_column(default=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )

@@ -7,10 +7,10 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688)](https://fastapi.tiangolo.com/)
 [![CI](https://github.com/iduyuhe/zhiyan-evolviq/actions/workflows/ci.yml/badge.svg)](https://github.com/iduyuhe/zhiyan-evolviq/actions/workflows/ci.yml)
 [![Agents](https://img.shields.io/badge/Agents-20-blue)](https://github.com/iduyuhe/zhiyan-evolviq)
-[![Version](https://img.shields.io/badge/version-v20.4-blue)](https://github.com/iduyuhe/zhiyan-evolviq)
-[![Latest Release](https://img.shields.io/badge/release-v20.4%20P2%20Self--Evolution-green)](RELEASE_NOTES.md)
+[![Version](https://img.shields.io/badge/version-v20.5-blue)](https://github.com/iduyuhe/zhiyan-evolviq)
+[![Latest Release](https://img.shields.io/badge/release-v20.5%20Data%20Layer-green)](RELEASE_NOTES.md)
 
-> 🏷 **Latest release: [v20.4 — Self-Evolution (P2)](RELEASE_NOTES.md)** (2026-07-25) · 20 Agents · Memory (P0) + Self-Learning (P1) + Self-Evolution (P2) closed loop
+> 🏷 **Latest release: [v20.5 — Production Data Layer (P1) + Multi-Tenant & Live Graph (P2)](RELEASE_NOTES.md)** (2026-07-25) · 20 Agents · Memory (P0) + Self-Learning (P1) + Self-Evolution (P2) + Production Data Layer closed loop
 >
 > 📖 **User Guide**: [docs/GUIDE.md](docs/GUIDE.md) · [中文指南](docs/GUIDE.zh.md)
 
@@ -31,6 +31,8 @@
 - **Effect-Driven Strategy Tuning**: Live knob adjustment (confidence thresholds, daily limits) with audit trail
 - **Self-Learning Loop (P1)**: Human approve/reject in the Intervention Center auto-feeds an agent's preference/forbidden memory; the strategy tuner auto-adjusts guardrails (with one-click rollback) — the system learns from experience, it does not just execute
 - **Self-Evolution Loop (P2)**: LLM replays human-rejected cases to propose a revised agent system prompt — versioned, human-approved (never auto-applied), with hot-swap + one-click rollback; plus RAG knowledge self-update (verified facts upserted into the knowledge graph) and online preference learning (rolling approval-rate signal)
+- **Production Data Layer (P1)**: A unified `DataSource` bus connects MES / ERP / PLM / WMS (config-driven REST connectors, env-injected) and a time-series store (in-memory ring buffer + optional InfluxDB) — agents auto-switch seed→live, closing the previous gateway/seed disconnect. Every connector degrades gracefully (no source = safe fallback to seed)
+- **Live Knowledge Graph & Multi-Tenant Data (P2)**: The knowledge graph ingests live data from the `DataSource` bus (periodic sync, never rewrites business numbers); each tenant can configure its own MES/ERP/WMS/time-series connections via `GET/POST/DELETE /data-sources` (persisted, rehydrated on restart)
 - **Apache-2.0 Licensed**: Fully open-source, no vendor lock-in
 
 ---

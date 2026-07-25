@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
 from src.runtime.api import agents_api, auth, audit, events_api, health, mcp_tools, scheduler_api, sessions, supply_chain
-from src.runtime.api import interventions, reports, system, knowledge_graph, gateways, strategy, tenants, experience, evolution
+from src.runtime.api import interventions, reports, system, knowledge_graph, gateways, strategy, tenants, experience, evolution, data_sources
 from src.runtime.core.scheduler import scheduler
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -58,6 +58,24 @@ async def lifespan(app: FastAPI):
     await tenant_store.init()
     logger.info("🏢 租户存储已初始化")
 
+    # 数据接入层（P1）：从环境变量装载数据源（MES/ERP/PLM/WMS/时序库）。
+    # 未配置项不注册，agent 自动回退 seed；真实系统不可达时连接器韧性降级。
+    from src.runtime.data_sources import config as ds_config
+    from src.runtime.data_sources import registry as ds_registry
+
+    ds_config.load_default_sources()
+    for t in tenant_store.list():
+        if t.id != "default":
+            ds_config.load_sources_for_tenant(t.id)
+    # 从库回灌多租户数据源配置（P2-2）：API 注入且持久化的配置，重启后自动重新注册
+    try:
+        from src.runtime.persistence import load_tenant_data_sources
+        for cfg in await load_tenant_data_sources():
+            ds_config.register_from_config(cfg["tenant_id"], cfg["kind"], cfg["config"])
+    except Exception as e:
+        logger.warning(f"⚠️ 多租户数据源回灌失败（已忽略）：{e}")
+    logger.info(f"📡 数据接入层已初始化：{[s._key() for s in ds_registry.list()]}")
+
     # 知识图谱（V1-1）：Neo4j 不可达自动回退内存图；从种子构建跨 Agent 语义网
     from src.common import neo4j_client as neo
     from src.runtime import knowledge_graph as kg
@@ -66,6 +84,13 @@ async def lifespan(app: FastAPI):
     if neo_ok:
         stats = await kg.build_from_seeds()
         logger.info(f"🕸️ 知识图谱已构建 [{neo.neo_mode}] 节点={stats['total_nodes']} 边={stats['total_edges']}")
+        # 实时闭环（P2-1）：后台周期从数据源同步 live 数据进图谱
+        try:
+            import asyncio as _asyncio
+            _asyncio.create_task(kg.graph_sync_loop(interval=300))
+            logger.info("🔄 图谱实时同步循环已启动（每 300s）")
+        except Exception:
+            pass
     else:
         logger.warning("⚠️ 知识图谱不可用，降级为 no-op")
 
@@ -130,6 +155,7 @@ app.include_router(strategy.router)
 app.include_router(experience.router)
 app.include_router(evolution.router)
 app.include_router(tenants.router)
+app.include_router(data_sources.router)
 
 
 if __name__ == "__main__":

@@ -297,6 +297,67 @@ async def rebuild() -> dict:
 
 
 # ---------------------------------------------------------------------------
+# 实时图谱闭环（P2-1）：从 DataSourceRegistry 拉取 live 数据 upsert 进图谱
+#
+# 设计原则：
+# - 图谱不再仅由 seed 静态构建；可经 sync_from_sources() 吸收真实 MES/WMS 等数据，
+#   随生产演进（启动后也可后台周期同步）。
+# - 事实锚点铁律：仅写实体/关系，绝不改写任何业务数字。
+# - 韧性降级：数据源不可达 / 图谱不可写 → 仅记日志，不破管。
+# ---------------------------------------------------------------------------
+
+async def sync_from_sources(tenant_id: str = "default") -> dict:
+    """从 DataSourceRegistry 拉取 live 数据 upsert 进图谱（Neo4j 或内存图，try/except 不破管）。"""
+    from src.runtime.data_sources import registry
+
+    stats = {"merged": 0, "errors": 0, "sources": {}}
+    try:
+        sources = registry.get_for_tenant(tenant_id)
+        # WMS 库存 → Material 库存属性
+        wms = sources.get("wms")
+        if wms is not None and await wms.is_available():
+            inv = await wms.get_inventory() or {}
+            for code, v in inv.items():
+                if isinstance(v, dict):
+                    await neo.merge_node("Material", f"MAT:{code}", {
+                        "code": code, "stock_on_hand": v.get("on_hand"),
+                        "stock_reserved": v.get("reserved"), "tenant": tenant_id,
+                    })
+                    stats["merged"] += 1
+            stats["sources"]["wms"] = "ok"
+        # MES 工单 → WorkOrder 节点
+        mes = sources.get("mes")
+        if mes is not None and await mes.is_available():
+            orders = await mes.get_work_orders() or []
+            for o in orders:
+                oid = o.get("id") or o.get("work_order_id")
+                if not oid:
+                    continue
+                await neo.merge_node("WorkOrder", f"WO:{oid}", {
+                    "work_order_id": oid, "status": o.get("status"),
+                    "product": o.get("product"), "qty": o.get("qty"), "tenant": tenant_id,
+                })
+                stats["merged"] += 1
+            stats["sources"]["mes"] = "ok"
+    except Exception as e:
+        logger.warning(f"图谱 live 同步失败（不破管）：{e}")
+        stats["errors"] += 1
+    return stats
+
+
+async def graph_sync_loop(interval: float = 300.0, tenant_id: str = "default") -> None:
+    """后台周期同步：让图谱跟随真实数据源演进。lifespan 内 asyncio.create_task 启动。"""
+    import asyncio as _asyncio
+
+    while True:
+        await _asyncio.sleep(interval)
+        try:
+            await sync_from_sources(tenant_id)
+        except Exception:
+            pass
+
+
+# ---------------------------------------------------------------------------
 # 经验记忆写入（P0：把"记忆"真正闭环）
 #
 # 设计原则：

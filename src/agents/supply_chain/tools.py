@@ -8,6 +8,9 @@ import random
 from dataclasses import dataclass
 from pathlib import Path
 
+# 数据接入层（P1）：优先读 live 数据源，不可达自动回退 seed（断链修复）
+from src.runtime.data_sources import registry, DataSourceKind
+
 
 
 @dataclass
@@ -89,11 +92,41 @@ class SupplyChainTools:
         return self._mock_bom(bom_id)
 
     async def get_inventory(self, material_codes: list[str]) -> dict:
-        """获取物料库存"""
+        """获取物料库存（优先 WMS live，回退 seed）"""
+        src = registry.get(DataSourceKind.WMS)
+        if src is not None:
+            try:
+                if await src.is_available():
+                    live = await src.get_inventory(material_codes)
+                    if live:
+                        return live
+            except Exception:
+                pass
         return self._mock_inventory(material_codes)
 
     async def get_po_data(self, material_codes: list[str]) -> dict:
-        """获取采购订单数据"""
+        """获取采购订单数据（优先 MES/ERP live，回退 seed）"""
+        for kind in (DataSourceKind.MES, DataSourceKind.ERP):
+            src = registry.get(kind)
+            if src is not None:
+                try:
+                    if await src.is_available():
+                        if kind == DataSourceKind.MES:
+                            orders = await src.get_work_orders()
+                            mapped = {}
+                            for o in orders:
+                                for c in (material_codes or []):
+                                    if c in str(o):
+                                        mapped.setdefault(c, []).append(o)
+                            if mapped:
+                                return mapped
+                        else:
+                            pos = await src.get_purchase_orders()
+                            mapped = {p.get("material_code"): [p] for p in pos if p.get("material_code") in (material_codes or [])}
+                            if mapped:
+                                return mapped
+                except Exception:
+                    pass
         return self._mock_po(material_codes)
 
     async def find_alternatives(self, material_code: str, max_price_variation_pct: float = 5.0) -> list[dict]:

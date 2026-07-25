@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 
 from src.common import db
-from src.runtime.models.agent_session import AgentSession, AuditLog, MetricsRecord, FeedbackRecord, SessionStatus, PromptVersion, KgFactProposal
+from src.runtime.models.agent_session import AgentSession, AuditLog, MetricsRecord, FeedbackRecord, SessionStatus, PromptVersion, KgFactProposal, TenantDataSource
 
 logger = logging.getLogger(__name__)
 
@@ -450,3 +450,94 @@ async def load_kg_fact_proposals(agent: str | None = None, limit: int = 500) -> 
     except Exception as e:
         logger.warning(f"⚠️ load_kg_fact_proposals 失败（已忽略）：{type(e).__name__} {e}")
         return []
+
+
+
+# ---------------------------------------------------------------------------
+# 多租户数据源配置持久化（P2-2）
+# ---------------------------------------------------------------------------
+
+async def save_tenant_data_source(tenant_id: str, kind: str, config: dict, name: str = "", is_active: bool = True) -> str:
+    """保存/更新某租户的数据源配置（同 tenant+kind 幂等 upsert）。返回记录 id。"""
+    if not db.db_available or db.async_session is None:
+        return ""
+    try:
+        async with db.async_session() as s:
+            existing = (await s.execute(
+                select(TenantDataSource).where(
+                    TenantDataSource.tenant_id == tenant_id, TenantDataSource.kind == kind
+                )
+            )).scalars().first()
+            cfg_json = json.dumps(config, ensure_ascii=False)
+            if existing:
+                existing.config_json = cfg_json
+                existing.is_active = is_active
+                if name:
+                    existing.name = name
+                rid = existing.id
+            else:
+                obj = TenantDataSource(
+                    tenant_id=tenant_id, kind=kind, name=name,
+                    config_json=cfg_json, is_active=is_active,
+                )
+                s.add(obj)
+                await s.flush()
+                rid = obj.id
+            await s.commit()
+            return str(rid)
+    except Exception as e:
+        logger.warning(f"⚠️ save_tenant_data_source 失败（已忽略）：{type(e).__name__} {e}")
+        return ""
+
+
+async def load_tenant_data_sources(tenant_id: str | None = None) -> list[dict]:
+    """加载租户数据源配置（重启回灌 registry 用）。db 不可用时返回空。"""
+    if not db.db_available or db.async_session is None:
+        return []
+    try:
+        async with db.async_session() as s:
+            q = select(TenantDataSource).where(TenantDataSource.is_active == True)  # noqa: E712
+            if tenant_id:
+                q = q.where(TenantDataSource.tenant_id == tenant_id)
+            rows = (await s.execute(q)).scalars().all()
+            return [
+                {
+                    "id": str(o.id),
+                    "tenant_id": o.tenant_id,
+                    "kind": o.kind,
+                    "name": o.name,
+                    "config": json.loads(o.config_json or "{}"),
+                    "is_active": o.is_active,
+                }
+                for o in rows
+            ]
+    except Exception as e:
+        logger.warning(f"⚠️ load_tenant_data_sources 失败（已忽略）：{type(e).__name__} {e}")
+        return []
+
+
+async def delete_tenant_data_source(tenant_id: str, kind: str) -> bool:
+    """删除某租户的数据源配置（同时移出 registry）。返回是否成功。"""
+    registry_unregistered = False
+    try:
+        from src.runtime.data_sources.registry import registry
+        registry.unregister(kind, tenant_id)
+        registry_unregistered = True
+    except Exception:
+        pass
+    if not db.db_available or db.async_session is None:
+        return registry_unregistered
+    try:
+        async with db.async_session() as s:
+            row = (await s.execute(
+                select(TenantDataSource).where(
+                    TenantDataSource.tenant_id == tenant_id, TenantDataSource.kind == kind
+                )
+            )).scalars().first()
+            if row:
+                await s.delete(row)
+                await s.commit()
+                return True
+    except Exception as e:
+        logger.warning(f"⚠️ delete_tenant_data_source 失败（已忽略）：{type(e).__name__} {e}")
+    return registry_unregistered

@@ -1,5 +1,19 @@
 # Changelog
 
+## v20.5 (2026-07-25) — Production Data Layer (P1) + Multi-Tenant & Live Graph (P2)
+
+把平台从「演示级数据」推向「生产级数据底座」——打通此前网关/seed 的断链。
+
+- **DataSource 抽象与注册表** `src/runtime/data_sources/`：`DataSource` 契约 + `registry` 单例，是所有数据入口（seed/网关/MES/ERP/PLM/WMS/时序库）的统一总线；agent tools 只依赖 `registry.get(kind)`，自动 seed→live 切换。
+- **MES/ERP/PLM/WMS 连接器** `connectors/domain.py`：配置驱动（base_url + api_key，环境变量注入），语义化取数（如 `mes.get_work_orders`、`wms.get_inventory`）；未配置→`is_available=False`（agent 回退 seed），调用失败→空值，**绝不抛异常阻断管道**。
+- **时序数据库** `timeseries/tsdb.py`：内存环形缓冲为**始终可用的查询层**（OEE/良率/设备健康历史趋势可查）；真实后端（influxdb 等）为 best-effort 持久化适配层，不可达自动降级内存。
+- **断链修复** `src/agents/supply_chain/tools.py`：供应链工具优先读 WMS/ MES/ERP live 数据，回退 seed——此前网关流/外部系统「建好但不被消费」的断链已闭合。
+- **实时图谱闭环（P2）** `knowledge_graph.sync_from_sources()` + `graph_sync_loop()`：从 registry 拉 live 数据 upsert 进图谱（Neo4j/内存图，try/except 不破管），后台每 300s 周期同步，图谱随真实数据演进。事实锚点铁律：仅写实体/关系。
+- **多租户数据源配置（P2）** `TenantDataSource` ORM + `persistence` + `api/data_sources.py`：`GET/POST/DELETE /data-sources` 注入/列出/删除某租户数据源并落库（重启回灌 registry）；注册表按租户隔离、未知租户回退 default。
+- **lifespan 接线** `main.py`：装载默认+各租户数据源、回灌库配置、启动图谱同步循环。
+- **+9 单测** `tests/test_data_sources.py` + e2e `scripts/verify_data_sources.py`（7 步）。
+- **全量 119 passed（110+9），零回归**。
+
 ## v20.4 (2026-07-25) — Self-Evolution (P2)
 
 - **Prompt self-reflection + versioning**: `src/runtime/evolution/reflection.py` `LLMReflectionService` replays an agent's recent human-rejected cases (collected by `failure_store`) through the LLM to propose a revised `system prompt`; when the LLM is unavailable it falls back to a heuristic appendix. Every candidate is versioned (`prompt_versions` table, per-agent counter) and **never auto-applied** — it lands in `proposed` and requires human `approve` → `apply`.
