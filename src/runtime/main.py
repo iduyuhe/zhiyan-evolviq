@@ -16,6 +16,8 @@ from src.runtime.api import writeback as writeback_api
 from src.runtime.api import monitoring as monitoring_api
 from src.runtime.api import tacit_capture as tacit_capture_api
 from src.runtime.api import blue_arc as blue_arc_api
+from src.runtime.api import connectors as connectors_api  # 社交通道接入（v29.9）
+from src.runtime.api import connectivity as connectivity_api  # 配置 UI 连通性验证（§4.4）
 from src.runtime.core.scheduler import scheduler
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -217,6 +219,9 @@ app.include_router(monitoring_api.router, dependencies=_AUTH_DEPS)  # 监控告�
 app.include_router(tacit_capture_api.router, dependencies=_AUTH_DEPS)  # 隐性信号捕获摄入（v21.5）
 app.include_router(blue_arc_api.router, dependencies=_AUTH_DEPS)  # 蓝弧闭环驱动（v22）
 app.include_router(authn_api.router)  # 公开：登录/后端发现/OAuth 回调
+app.include_router(connectors_api.admin_router)            # 社交连接器管理（需 JWT）
+app.include_router(connectors_api.callback_router)         # 企微/钉钉回调（免 JWT，靠签名鉴权）
+app.include_router(connectivity_api.router, dependencies=_AUTH_DEPS)  # 配置 UI 连通性验证（§4.4）
 
 
 if __name__ == "__main__":

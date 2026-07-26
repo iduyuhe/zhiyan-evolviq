@@ -98,10 +98,29 @@
 
 ## 6. 验收（本轮生态启动是否算"转起来"）
 
-- [ ] GitHub Discussions 开张，≥3 个种子议题发出
-- [ ] Good First Issue 池 ≥10 条进 GitHub Issues 并打 label
+- [x] GitHub Discussions 开张，5 个种子议题发出（v29.9 已建，位于 General 分类）
+- [x] Good First Issue 池 10 条进 GitHub Issues 并打 label（8×good-first-issue + 2×help-wanted）
 - [ ] `CONTRIBUTING.md` 增补"贡献 Agent / 本体"两节
 - [ ] 至少 1 篇开放标准叙事对外发布（公众号 / Discussions）
 - [ ] 30 天内产生 ≥1 个外部贡献者 PR（飞轮自转的硬指标）
+
+> **v29.9 执行记录**：生态飞轮启动（#1）已实际完成——脚本 `scripts/_deploy/create_github_community.py`
+> （用 GitHub API 批量建，因环境无 `gh` CLI；token 走 env，脚本在 gitignore 区不进库）一次性建出
+> 10 Issues + 5 Discussions，并自动开启仓库 Discussions、把议题落到 General 分类。
+> 社交通道真接入（#3）与配置 UI 连通性验证（#4）同版本落地（见下）。
+
+## 7. v29.9 同轮落地（#3 社交通道真接入 / #4 配置 UI 连通性）
+
+- **#3 社交通道真接入**（隐性捕获从演示态→生产态）：
+  - `src/runtime/connectors/`：企微（SHA1 签名校验 + AES 解密 lazy）、钉钉（HmacSHA256 加签）、
+    邮件（IMAP 轮询 + 敏感内容走审批门 `_needs_review`）；`manager.py` 聚合；`api/connectors.py`
+    暴露管理端点 + 企微/钉钉回调（免 JWT、靠签名鉴权）。
+  - 信号经 UNS `social` 路由 → `tacit_capture` 抽取即锚定（复用现有管线）。
+  - 单测覆盖 token/签名拒绝（`tests/test_social_connectors.py`，9 passed）。
+- **#4 配置 UI 连通性验证**（路线图 §4.4 铁律）：
+  - 后端：`POST /data-sources/{kind}/test`、`POST /connectivity/datasource`、`POST /connectivity/gateway`、
+    `GET /connectivity` 聚合；网关 `test_protocol` 带 8s 超时。
+  - 前端：`studio/src/components/ConnectivityPanel.tsx`（新增「连接」tab）——系统连通性概览、
+    网关单协议测试、数据源「先测试后保存」闸门、社交通道状态/测试/回调 URL。
 
 *本方案是"启动"，不是"做完"。飞轮一旦有外部 PR 自转，N 开始爬升，CCI 天花板才有意义。*

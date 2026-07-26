@@ -9,6 +9,7 @@
 """
 
 import logging
+import time
 
 from src.common.config import settings
 from src.gateways.base import DataPoint
@@ -125,6 +126,55 @@ class GatewayManager:
             "modes": modes,
             "gateways": per,
         }
+
+    async def test_protocol(
+        self, protocol: str, endpoint: str | None = None, port: int | None = None
+    ) -> dict:
+        """单协议连通性测试（配置 UI 连通性验证 · 路线图 §4.4 铁律）。
+
+        构造一个临时网关实例（不进 registry、不影响生产网关），尝试 connect 并带超时，
+        返回 {ok, mode, latency_ms, detail}。
+        """
+        import asyncio
+
+        protocol = (protocol or "").lower()
+        builders = {
+            "modbus": lambda: ModbusGateway(
+                host=endpoint or self._cfg["modbus_host"],
+                port=port or self._cfg["modbus_port"],
+            ),
+            "mqtt": lambda: MQTTGateway(
+                broker=endpoint or self._cfg["mqtt_broker"],
+                port=port or self._cfg["mqtt_port"],
+            ),
+            "opcua": lambda: OpcUaGateway(endpoint=endpoint or self._cfg["opcua_endpoint"]),
+            "ipc_cfx": lambda: IpcCfxGateway(broker=endpoint or self._cfg["ipc_cfx_broker"]),
+        }
+        builder = builders.get(protocol)
+        if builder is None:
+            return {"ok": False, "detail": f"未知协议: {protocol}"}
+        t0 = time.monotonic()
+        try:
+            gw = builder()
+            # 临时实例连接，最多 8s 超时，避免 UI 卡死
+            ok = await asyncio.wait_for(gw.connect(), timeout=8.0)
+            mode = getattr(gw, "_mode", "unknown")
+            detail = "连接成功" if ok else f"连接失败（{mode}）"
+            return {
+                "ok": bool(ok),
+                "mode": mode,
+                "latency_ms": round((time.monotonic() - t0) * 1000, 2),
+                "detail": detail,
+            }
+        except asyncio.TimeoutError:
+            return {"ok": False, "mode": "timeout", "latency_ms": 8000.0, "detail": "连接超时（>8s）"}
+        except Exception as e:
+            return {
+                "ok": False,
+                "mode": "error",
+                "latency_ms": round((time.monotonic() - t0) * 1000, 2),
+                "detail": f"{type(e).__name__}: {e}",
+            }
 
     def get(self, name: str):
         return self._gateways.get(name)

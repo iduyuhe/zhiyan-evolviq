@@ -835,3 +835,110 @@ export async function getBlueArcStatus(): Promise<BlueArcStatus> {
   return res.json();
 }
 
+// ---------------- 社交通道接入（v29.9） ----------------
+
+export interface SocialConnector {
+  name: string;
+  kind: string;
+  enabled: boolean;
+  error: string | null;
+}
+
+export interface ConnectivityTestResult {
+  ok: boolean;
+  mode?: string;
+  latency_ms?: number;
+  detail?: string;
+  protocol?: string;
+  kind?: string;
+}
+
+export async function getConnectors(): Promise<{ connectors: SocialConnector[] }> {
+  const res = await fetch(`${API_BASE}/connectors`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function testConnector(name: string): Promise<ConnectivityTestResult> {
+  const res = await fetch(`${API_BASE}/connectors/${name}/test`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function pullEmail(): Promise<{ pulled: number; published: number; sensitive: number }> {
+  const res = await fetch(`${API_BASE}/connectors/email/pull`, {
+    method: 'POST', headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+// ---------------- 配置 UI 连通性验证（路线图 §4.4） ----------------
+
+export interface ConnectivityOverview {
+  timestamp: number;
+  db: { available: boolean; mode?: string; url?: string | null };
+  knowledge_graph: { available?: boolean; mode?: string };
+  gateways: { total: number; ready: number; initialized: boolean; modes?: Record<string, number>; gateways?: Record<string, any> };
+  data_sources: { kind: string; name: string; available: boolean }[] | { error: string };
+  connectors: SocialConnector[] | { error: string };
+}
+
+export async function getConnectivity(): Promise<ConnectivityOverview> {
+  const res = await fetch(`${API_BASE}/connectivity`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function testGateway(
+  protocol: string, endpoint?: string, port?: number,
+): Promise<ConnectivityTestResult> {
+  const res = await fetch(`${API_BASE}/connectivity/gateway`, {
+    method: 'POST', headers: authHeaders(),
+    body: JSON.stringify({ protocol, endpoint, port }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function testDataSource(
+  kind: string, config: Record<string, any> = {},
+): Promise<ConnectivityTestResult> {
+  const res = await fetch(`${API_BASE}/connectivity/datasource`, {
+    method: 'POST', headers: authHeaders(),
+    body: JSON.stringify({ kind, config }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function testRegisteredDataSource(kind: string): Promise<ConnectivityTestResult> {
+  const res = await fetch(`${API_BASE}/data-sources/${kind}/test`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export interface DataSourceEntry {
+  kind: string;
+  name: string;
+  tenant: string;
+  available: boolean;
+}
+
+export async function listDataSources(): Promise<DataSourceEntry[]> {
+  const res = await fetch(`${API_BASE}/data-sources`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function addDataSource(
+  kind: string, config: Record<string, any>, persist = true,
+): Promise<{ status: string; kind: string; tenant: string }> {
+  const res = await fetch(`${API_BASE}/data-sources?persist=${persist}`, {
+    method: 'POST', headers: authHeaders(),
+    body: JSON.stringify({ kind, config, persist }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+

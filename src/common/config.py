@@ -43,6 +43,22 @@ class Settings(BaseSettings):
     auth_enabled: bool = False  # MVP阶段暂不开启
     jwt_secret: str = "zhiyan-mvp-secret"
 
+    # 社交通道接入（隐性捕获 → 经验库 + 知识图谱，v29.9）
+    # 企业微信（自建应用回调）：Token 用于 URL/消息签名校验；EncodingAESKey + CorpId 用于消息体 AES 解密
+    wecom_token: str = ""
+    wecom_aes_key: str = ""
+    wecom_corp_id: str = ""
+    # 钉钉（群机器人/连接平台回调）：机器人「加签」secret 用于 HmacSHA256 校验
+    dingtalk_secret: str = ""
+    dingtalk_app_key: str = ""
+    dingtalk_app_secret: str = ""
+    # 邮件渠道（IMAP 轮询拉取）
+    email_imap_host: str = ""
+    email_imap_user: str = ""
+    email_imap_password: str = ""
+    email_imap_mailbox: str = "INBOX"
+    email_poll_interval: int = 300
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

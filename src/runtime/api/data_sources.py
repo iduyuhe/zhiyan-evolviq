@@ -62,3 +62,41 @@ async def remove_data_source(kind: str, tenant: str = "default") -> dict:
     """移除某租户数据源（同时移出 registry 与库）。"""
     ok = await delete_tenant_data_source(tenant, kind)
     return {"status": "removed" if ok else "not_found", "kind": kind, "tenant": tenant}
+
+
+@router.post("/{kind}/test")
+async def test_data_source(kind: str, body: dict | None = None, tenant: str = "default") -> dict:
+    """配置 UI 连通性验证（路线图 §4.4 铁律）：在保存前先实测能否连通。
+
+    不落库、不改动 registry：用 build_connector 构造临时实例，调用 is_available() 探测。
+    body 可带 {config: {...}} 用待保存配置先行验证；缺省则用当前已注册实例验证。
+    """
+    from src.runtime.data_sources.config import build_connector
+
+    cfg = (body or {}).get("config") or {}
+    src = None
+    # 优先用待保存配置构造临时实例
+    if cfg:
+        src = build_connector(kind, cfg, tenant)
+    # 否则验证已注册实例
+    if src is None:
+        src = registry.get(kind, tenant_id=tenant)
+    if src is None:
+        raise HTTPException(status_code=404, detail=f"未知或未配置的数据源类型: {kind}")
+    import time
+    t0 = time.monotonic()
+    try:
+        ok = await src.is_available()
+    except Exception as e:
+        return {
+            "ok": False,
+            "kind": kind,
+            "latency_ms": round((time.monotonic() - t0) * 1000, 2),
+            "detail": f"{type(e).__name__}: {e}",
+        }
+    return {
+        "ok": bool(ok),
+        "kind": kind,
+        "latency_ms": round((time.monotonic() - t0) * 1000, 2),
+        "detail": "连接成功" if ok else "不可达（将回退 seed）",
+    }
