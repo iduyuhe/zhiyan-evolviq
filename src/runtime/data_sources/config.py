@@ -6,6 +6,8 @@
     ZHIYAN_DS_PLM_URL / ZHIYAN_DS_PLM_KEY
     ZHIYAN_DS_WMS_URL / ZHIYAN_DS_WMS_KEY
     ZHIYAN_DS_TSDB_BACKEND / ZHIYAN_DS_TSDB_URL / ZHIYAN_DS_TSDB_TOKEN
+    回写审计 schema 适配（v28.3，仅 mes/erp）：
+    ZHIYAN_DS_MES_WB_MAP='{"decision_id":"DecisionNo"}' / ZHIYAN_DS_MES_WB_PATH='api/v2/audit-trail'
 
 某租户 T（多租户覆写，P2-2）：
     ZHIYAN_DS_<T>_MES_URL  （T 大写）
@@ -50,7 +52,12 @@ def load_sources_for_tenant(tenant_id: str = "default") -> None:
         url = _env(pfx, f"{kind.upper()}_URL")
         key = _env(pfx, f"{kind.upper()}_KEY")
         if url:
-            registry.register(cls(base_url=url, api_key=key, tenant_id=tenant_id))
+            kwargs: dict = {"base_url": url, "api_key": key, "tenant_id": tenant_id}
+            if kind in ("mes", "erp"):
+                # v28.3 回写字段映射/端点覆写（不同 ERP/MES 的审计 schema 适配）
+                kwargs["wb_field_map"] = _env(pfx, f"{kind.upper()}_WB_MAP")
+                kwargs["wb_audit_path"] = _env(pfx, f"{kind.upper()}_WB_PATH")
+            registry.register(cls(**kwargs))
 
     ts_backend = _env(pfx, "TSDB_BACKEND", "memory")
     ts_url = _env(pfx, "TSDB_URL")
@@ -75,11 +82,16 @@ def build_connector(kind: str, config: dict, tenant_id: str = "default") -> obje
     """从配置字典构建一个连接器实例（API 注入用）。"""
     kind = (kind or "").lower()
     if kind in _DOMAIN:
-        return _DOMAIN[kind](
-            base_url=config.get("base_url", ""),
-            api_key=config.get("api_key", ""),
-            tenant_id=tenant_id,
-        )
+        kwargs: dict = {
+            "base_url": config.get("base_url", ""),
+            "api_key": config.get("api_key", ""),
+            "tenant_id": tenant_id,
+        }
+        if kind in ("mes", "erp"):
+            # v28.3 回写字段映射/端点覆写（API 注入通道）
+            kwargs["wb_field_map"] = config.get("wb_field_map")
+            kwargs["wb_audit_path"] = config.get("wb_audit_path", "")
+        return _DOMAIN[kind](**kwargs)
     if kind == "timeseries":
         return TimeSeriesDB(
             backend=config.get("backend", "memory"),

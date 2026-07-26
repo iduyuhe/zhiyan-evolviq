@@ -14,6 +14,11 @@ import logging
 from typing import Any, Optional
 
 from src.runtime.data_sources.base import DataSource, DataSourceKind, HolonKind
+from src.runtime.data_sources.field_mapping import (
+    DEFAULT_AUDIT_PATH,
+    apply_field_map,
+    parse_field_map,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -29,12 +34,20 @@ class RestConnector(DataSource):
         api_key: str = "",
         tenant_id: str = "default",
         timeout: float = 5.0,
+        wb_field_map: dict | str | None = None,
+        wb_audit_path: str = "",
     ):
         super().__init__(name=name, tenant_id=tenant_id)
         self.kind = kind
         self.base_url = (base_url or "").rstrip("/")
         self.api_key = api_key
         self.timeout = timeout
+        # 回写审计字段映射（v28.3）：{标准字段: 目标系统字段}，默认恒等映射
+        self.wb_field_map: dict[str, str] = parse_field_map(
+            wb_field_map, source=f"{tenant_id}:{name or kind}"
+        )
+        # 审计端点路径覆写（默认 audit/records）
+        self.wb_audit_path: str = (wb_audit_path or "").strip().lstrip("/") or DEFAULT_AUDIT_PATH
 
     async def is_available(self) -> bool:
         # 配置驱动：有 base_url 即视为可达（真实失败在调用时韧性降级）
@@ -93,9 +106,11 @@ class MESConnector(RestConnector):
     """制造执行系统：工单、产线进度、质量缺陷。"""
     holon_kind = HolonKind.MACHINE
 
-    def __init__(self, base_url: str = "", api_key: str = "", tenant_id: str = "default", timeout: float = 5.0):
+    def __init__(self, base_url: str = "", api_key: str = "", tenant_id: str = "default", timeout: float = 5.0,
+                 wb_field_map: dict | str | None = None, wb_audit_path: str = ""):
         super().__init__(DataSourceKind.MES, name="mes", base_url=base_url, api_key=api_key,
-                         tenant_id=tenant_id, timeout=timeout)
+                         tenant_id=tenant_id, timeout=timeout,
+                         wb_field_map=wb_field_map, wb_audit_path=wb_audit_path)
 
     async def get_work_orders(self, status: str | None = None) -> list[dict]:
         params = {"status": status} if status else None
@@ -111,17 +126,23 @@ class MESConnector(RestConnector):
         return data.get("items", []) if isinstance(data, dict) else (data or [])
 
     async def post_audit_record(self, record: dict) -> Any:
-        """回写审计记录（智衍决策/审批结论落 ERP/MES 作为审计，不推倒账本）。"""
-        return await self._post("audit/records", record)
+        """回写审计记录（智衍决策/审批结论落 ERP/MES 作为审计，不推倒账本）。
+
+        v28.3：POST 前按租户级字段映射把标准字段改名为目标 MES 的 schema；
+        端点路径可覆写（默认 audit/records）。
+        """
+        return await self._post(self.wb_audit_path, apply_field_map(record, self.wb_field_map))
 
 
 class ERPConnector(RestConnector):
     """企业资源计划：采购订单、供应商、财务。"""
     holon_kind = HolonKind.METHOD
 
-    def __init__(self, base_url: str = "", api_key: str = "", tenant_id: str = "default", timeout: float = 5.0):
+    def __init__(self, base_url: str = "", api_key: str = "", tenant_id: str = "default", timeout: float = 5.0,
+                 wb_field_map: dict | str | None = None, wb_audit_path: str = ""):
         super().__init__(DataSourceKind.ERP, name="erp", base_url=base_url, api_key=api_key,
-                         tenant_id=tenant_id, timeout=timeout)
+                         tenant_id=tenant_id, timeout=timeout,
+                         wb_field_map=wb_field_map, wb_audit_path=wb_audit_path)
 
     async def get_purchase_orders(self, status: str | None = None) -> list[dict]:
         params = {"status": status} if status else None
@@ -137,8 +158,12 @@ class ERPConnector(RestConnector):
         return await self._get("finance/summary", {"period": period} if period else None)
 
     async def post_audit_record(self, record: dict) -> Any:
-        """回写审计记录（智衍决策/审批结论落 ERP 作为审计轨迹）。"""
-        return await self._post("audit/records", record)
+        """回写审计记录（智衍决策/审批结论落 ERP 作为审计轨迹）。
+
+        v28.3：POST 前按租户级字段映射把标准字段改名为目标 ERP 的 schema；
+        端点路径可覆写（默认 audit/records）。
+        """
+        return await self._post(self.wb_audit_path, apply_field_map(record, self.wb_field_map))
 
 
 class PLMConnector(RestConnector):

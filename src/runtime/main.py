@@ -13,6 +13,7 @@ from src.runtime.api import interventions, reports, system, knowledge_graph, gat
 from src.runtime.federation import api as federation_api
 from src.runtime.authn import api as authn_api
 from src.runtime.api import writeback as writeback_api
+from src.runtime.api import monitoring as monitoring_api
 from src.runtime.core.scheduler import scheduler
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -118,6 +119,15 @@ async def lifespan(app: FastAPI):
     gw_summary = await gw_manager.initialize()
     logger.info(f"🛰️ 网关管理器已初始化：{gw_summary}")
 
+    # 监控告警（v28.3）：后台周期检测回写积压 + 网关断流（登录异常由 authn 实时上报）
+    try:
+        import asyncio as _asyncio
+        from src.runtime.monitoring import alert_check_loop
+        _asyncio.create_task(alert_check_loop(interval=60))
+        logger.info("🚨 监控告警循环已启动（每 60s）")
+    except Exception:
+        pass
+
     # 演示效果信号种子（可选）：仅当 ZHIYAN_DEMO_DATA=1 时注入，
     # 让「按效果调参」在无真实流量时也能跑出可信的效果信号与建议（不污染测试/生产）。
     if os.environ.get("ZHIYAN_DEMO_DATA") == "1":
@@ -185,6 +195,7 @@ app.include_router(twin.router, dependencies=_AUTH_DEPS)
 app.include_router(governance.router, dependencies=_AUTH_DEPS)
 app.include_router(federation_api.router, dependencies=_AUTH_DEPS)
 app.include_router(writeback_api.router, dependencies=_AUTH_DEPS)  # ERP/MES 回写审计桥
+app.include_router(monitoring_api.router, dependencies=_AUTH_DEPS)  # 监控告警（v28.3）
 app.include_router(authn_api.router)  # 公开：登录/后端发现/OAuth 回调
 
 

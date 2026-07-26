@@ -619,3 +619,79 @@ export async function putTenantGatewayConfig(cfg: GatewayConfig): Promise<{ tena
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
+
+// ============ ERP/MES 回写审计桥 ============
+
+export interface WritebackSubmitRequest {
+  system: string;          // mes / erp
+  agent: string;
+  decision_type: string;
+  payload: Record<string, unknown>;
+  tenant_id?: string;
+  decision_id?: string | null;
+}
+
+export interface WritebackSubmitResult {
+  status: 'sent' | 'pending' | 'rejected';
+  record_id?: string;
+  detail?: string;
+}
+
+export interface WritebackRecord {
+  id: string;
+  system: string;
+  tenant_id: string;
+  agent: string;
+  decision_type: string;
+  decision_id: string;
+  status: string;          // pending | sent | failed
+  created_at: number;      // unix 秒
+  sent_at: number | null;
+  error: string | null;
+}
+
+export interface WritebackStats {
+  pending: number;
+  sent_total: number;
+  systems: string[];
+}
+
+export interface WritebackRetryResult {
+  sent: number;
+  pending_remaining: number;
+}
+
+/** 提交一条决策回写（agent 决策 → 业务系统审计记录）。 */
+export async function submitWriteback(req: WritebackSubmitRequest): Promise<WritebackSubmitResult> {
+  const res = await fetch(`${API_BASE}/writeback`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+/** 查看回写 pending 队列。 */
+export async function getWritebackPending(): Promise<{ pending: WritebackRecord[] }> {
+  const res = await fetch(`${API_BASE}/writeback/pending`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+/** 触发 pending 队列重试。 */
+export async function retryWriteback(): Promise<WritebackRetryResult> {
+  const res = await fetch(`${API_BASE}/writeback/retry`, {
+    method: 'POST',
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+/** 回写桥状态统计。 */
+export async function getWritebackStats(): Promise<WritebackStats> {
+  const res = await fetch(`${API_BASE}/writeback/stats`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}

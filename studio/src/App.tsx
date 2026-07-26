@@ -24,13 +24,14 @@ import { DEFAULT_EXAMPLES } from './components/AgentSelector';
 import AgentSidebar from './components/AgentSidebar';
 import TenantSwitcher from './components/TenantSwitcher';
 import TenantManagement from './components/TenantManagement';
+import WritebackPanel from './components/WritebackPanel';
 import { createSession, approveSession, quickCheck } from './api/client';
 import type { Session, ExecutionResult } from './api/client';
 import Login from './components/Login';
 import { getToken, fetchMe, logout, type AuthUser } from './api/client';
 
 type Stage = 'input' | 'planning' | 'approving' | 'executing' | 'result' | 'error';
-type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'twin' | 'governance' | 'federation' | 'supplychain' | 'tenant';
+type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'twin' | 'governance' | 'federation' | 'supplychain' | 'writeback' | 'tenant';
 
 const STEPS = [
   { key: 'input', label: '目标设定', icon: '🎯' },
@@ -217,6 +218,7 @@ export default function App() {
                 { key: 'supplychain' as Tab, label: '产业链', icon: '🔗' },
                 { key: 'gateway' as Tab, label: '网关', icon: '🛰️' },
                 { key: 'twin' as Tab, label: '孪生大屏', icon: '🌐' },
+                { key: 'writeback' as Tab, label: '回写', icon: '🔁' },
                 { key: 'tenant' as Tab, label: '租户', icon: '🏢' },
               ].map(t => (
                 <button
@@ -440,6 +442,7 @@ export default function App() {
           {tab === 'supplychain' && <SupplyChainFederation />}
           {tab === 'gateway' && <GatewayTab />}
           {tab === 'twin' && <TwinDashboard />}
+          {tab === 'writeback' && <WritebackPanel />}
           {tab === 'tenant' && <TenantManagement />}
         </main>
       )}

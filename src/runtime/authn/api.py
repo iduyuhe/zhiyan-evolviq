@@ -37,11 +37,25 @@ class SetRoleRequest(BaseModel):
 
 
 @router.post("/login")
-async def login(req: LoginRequest):
-    """用户名 + 密码登录（本地优先，自动回退 LDAP）。成功返回 JWT。"""
+async def login(req: LoginRequest, request: Request):
+    """用户名 + 密码登录（本地优先，自动回退 LDAP）。成功返回 JWT。
+
+    v28.3：登录失败上报监控器（滑动窗口内超阈值 → 暴力破解告警进 UNS system 路）。
+    """
     result = await authn_service.authenticate(req.username, req.password)
     if not result:
+        try:  # 韧性：监控上报失败绝不影响登录主流程
+            from src.runtime.monitoring import alert_monitor
+            client_ip = request.client.host if request.client else ""
+            alert_monitor.record_login_failure(req.username, ip=client_ip)
+        except Exception:
+            pass
         raise HTTPException(status_code=401, detail="用户名或密码错误（本地与目录均拒绝）")
+    try:
+        from src.runtime.monitoring import alert_monitor
+        alert_monitor.record_login_success(req.username)
+    except Exception:
+        pass
     return result
 
 
