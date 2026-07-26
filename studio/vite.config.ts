@@ -1,6 +1,11 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { execSync } from 'node:child_process'
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+// ESM 兼容：取当前配置文件所在目录
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 // 构建时注入短 commit hash 作为版本号，水印渲染用（便于用户判断自己拿到的是不是最新版）
 function shortSha(): string {
