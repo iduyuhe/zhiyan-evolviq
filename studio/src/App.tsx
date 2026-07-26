@@ -106,7 +106,10 @@ export default function App() {
   };
 
   useEffect(() => {
-    // v28.2+ 全局鉴权：必须带 Bearer JWT；缺 token 静默兜底（登录页不会触发此 effect）
+    // 🔴 必须在登录后（me 就绪、token 已持久化）才拉取。
+    // 挂载时若未登录不拉取——否则 effect 只在挂载跑一次、token 尚未就绪 → 401 静默失败，
+    // 登录后永不重拉 → agents 永远为空 → 侧边栏无可点项（"点击没反应"）。
+    if (!me) return;
     fetch('/api/agents', { headers: authHeaders() })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((d) => {
@@ -117,7 +120,7 @@ export default function App() {
       .catch((e) => {
         console.warn('[App] /api/agents 加载失败:', e?.message || e);
       });
-  }, []);
+  }, [me]);
 
   const handleQuickCheck = useCallback(async (goal: string) => {
     setStage('executing');

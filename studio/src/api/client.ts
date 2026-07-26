@@ -55,7 +55,11 @@ export async function login(username: string, password: string): Promise<{ acces
     const msg = await res.text().catch(() => '');
     throw new Error(msg || `登录失败 (${res.status})`);
   }
-  return res.json();
+  const data = await res.json();
+  // 🔴 关键：登录成功后必须持久化 token，否则 authHeaders() 永远读不到，
+  // 所有受 JWT 保护的接口都会 401（此前"点击没反应"的真正根因）。
+  setToken(data.access_token);
+  return data;
 }
 
 export async function fetchMe(): Promise<AuthUser> {
