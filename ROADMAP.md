@@ -2,36 +2,41 @@
 
 > EvolvIQ (智衍) is a community-driven open-source project. This roadmap reflects current planning. Directions are discussed via GitHub Discussions / Issues.
 
-## ✅ Done (v20.1)
+## ✅ Done (v29.8)
 
-- 20 industrial Agents covering R&D → Manufacturing → Enterprise decision
-- 4 industrial protocol gateways (OPC-UA / MQTT / Modbus / IPC-CFX) with graceful degradation
-- 65 MCP federation tools (HTTP + stdio dual transport)
-- Cross-Agent knowledge graph (Neo4j with in-memory fallback)
-- Effect-driven authorization engine + multi-tenant isolation
-- **Multi-Agent Orchestration** (V1-5 closed): 8 preset templates + 3-tier goal decomposition + DAG parallel execution + cross-Agent insight aggregation
-- Bilingual docs + Application/Technical Whitepaper + CI pipeline
+- 20 industrial Agents (R&D → Manufacturing → Enterprise) + 65 MCP federation tools
+- 4 protocol gateways (OPC-UA / MQTT / Modbus / IPC-CFX) with graceful degradation
+- Cross-Agent knowledge graph (Neo4j + in-memory fallback) + multi-tenant isolation + global JWT gate
+- Multi-Agent Orchestration (8 templates + 3-tier decomposition + DAG parallel)
+- Five-channel perception + lightweight UNS (gateway / system / human / social / meeting / collab)
+- Tacit capture (human / social / meeting / collab → experience store + KG draft, extract-and-anchor)
+- Blue-arc closed loop (execution consequences flow back to cognition layer)
+- Self-evolution P2 + holon governance panel + five-channel full self-evolution
+- Cross-enterprise federated learning + supply-chain agent federation + industrial ontology self-growth
+- Production-ready: enterprise auth / one-click deploy / industry knowledge base / ERP-MES writeback audit bridge / monitoring & alerting
+- **207 passed, zero regression**; live at demo host; Apache-2.0 fully open source
 
-## 🔜 Near-term (P1)
+## 🔜 Near-term (the real gaps — ecosystem & first customer)
 
-- [ ] Multi-Agent orchestration / collaboration engine (break the 20-agents-silo) ← **✅ v20.1 done**
-- [ ] Routing precision enhancement (disambiguate semantically-similar goals)
-- [ ] Enable GitHub Discussions + curate "Good First Issue" pool
-- [ ] Agent development tutorial (based on `supply_chain` template)
+- [ ] 🔴 **Launch ecosystem flywheel**: GitHub Discussions + curate "Good First Issue" pool + contribution entry (bring your own Agent / Ontology) + open-standard narrative — *strategic #1 moat lever, currently N=0*
+- [ ] 🔴 **First-customer pilot**: lock the scene (recommend equipment-health / energy-twin) + 1 site on real OPC-UA / MQTT + instrument the north-star "real-time decision rate"
+- [ ] 🟠 **Real social ingestion**: WeCom / DingTalk / email token auth feeding tacit capture (today only API-injected)
+- [ ] 🟠 **Config UI with connectivity validation** for data sources (roadmap §4.4 iron rule, not yet built)
+- [ ] 🟠 **External materials**: one-pager / competitive comparison card / demo video
 
 ## 🔧 Mid-term (P2)
 
 - [ ] English frontend UI (i18n)
 - [ ] Demo walkthrough video / GIF
 - [ ] Stable public domain (replace bare IP)
-- [ ] One-page Datasheet / competitive comparison
+- [ ] Managed cloud service (differentiation, not closed-source agents)
+- [ ] Industry template marketplace (semiconductor / SMT / precision assembly presets)
 
 ## 🌟 Long-term (Vision)
 
 - [ ] Multi-model routing planner (stronger LLM / local small models)
-- [ ] Industry template marketplace (semiconductor / SMT / precision assembly presets)
-- [ ] Managed cloud service (differentiation, not closed-source agents)
 - [ ] Community plugin mechanism (3rd-party Agents into the federation)
+- [ ] **Lead an open standard for industrial agents** (our moat: open-network gravity)
 
 ## How to participate
 
