@@ -1,0 +1,32 @@
+#!/bin/sh
+# post-commit hook (managed by scripts/hooks/install_hooks.py)
+# 每次本地 commit 自动经生产服务器中转推送 GitHub（绕过本地 443 被 GFW 阻断）。
+# 跳过 rebase / merge / cherry-pick / bisect 等批量操作，避免重复 SSH 推送。
+# 路径在运行时由 git 动态解析，仓库移动后依然有效。
+# 注意：本模板不含任何密钥；真正的中转推送脚本 scripts/_deploy/_push_sync.py 含服务器凭据，
+# 被 .gitignore 排除，仅存于本地。
+
+GITDIR="$(git rev-parse --git-dir 2>/dev/null)"
+if [ -z "$GITDIR" ]; then exit 0; fi
+
+if [ -d "$GITDIR/rebase-merge" ] || [ -d "$GITDIR/rebase-apply" ] || \
+   [ -f "$GITDIR/MERGE_HEAD" ] || [ -f "$GITDIR/CHERRY_PICK_HEAD" ] || \
+   [ -f "$GITDIR/BISECT_LOG" ]; then
+  exit 0
+fi
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null)"
+PY="$ROOT/.venv/Scripts/python.exe"
+SCRIPT="$ROOT/scripts/_deploy/_push_sync.py"
+LOG="$ROOT/.git/push_sync.log"
+
+if [ ! -x "$PY" ] || [ ! -f "$SCRIPT" ]; then exit 0; fi
+
+"$PY" "$SCRIPT" >> "$LOG" 2>&1
+RC=$?
+if [ $RC -eq 0 ]; then
+  echo "[post-commit] sync push -> GitHub OK"
+else
+  echo "[post-commit] sync push FAILED (commit kept); see $LOG"
+fi
+exit 0
