@@ -14,6 +14,7 @@ import KnowledgeGraphTab from './components/KnowledgeGraphTab';
 import StrategyTuningTab from './components/StrategyTuningTab';
 import GatewayTab from './components/GatewayTab';
 import TwinDashboard from './components/TwinDashboard';
+import HolonGovernance from './components/HolonGovernance';
 import AiInsightPanel from './components/AiInsightPanel';
 import NotificationBell from './components/NotificationBell';
 import type { AgentInfo } from './components/AgentSelector';
@@ -25,7 +26,7 @@ import { createSession, approveSession, quickCheck } from './api/client';
 import type { Session, ExecutionResult } from './api/client';
 
 type Stage = 'input' | 'planning' | 'approving' | 'executing' | 'result' | 'error';
-type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'twin' | 'tenant';
+type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'twin' | 'governance' | 'tenant';
 
 const STEPS = [
   { key: 'input', label: '目标设定', icon: '🎯' },
@@ -164,6 +165,7 @@ export default function App() {
                 { key: 'audit' as Tab, label: '审计', icon: '📜' },
                 { key: 'knowledge' as Tab, label: '知识图谱', icon: '🕸️' },
                 { key: 'strategy' as Tab, label: '策略调参', icon: '🎚️' },
+                { key: 'governance' as Tab, label: '治理', icon: '🏛️' },
                 { key: 'gateway' as Tab, label: '网关', icon: '🛰️' },
                 { key: 'twin' as Tab, label: '孪生大屏', icon: '🌐' },
                 { key: 'tenant' as Tab, label: '租户', icon: '🏢' },
@@ -366,6 +368,7 @@ export default function App() {
           {tab === 'console' && <ConsoleTab />}
           {tab === 'knowledge' && <KnowledgeGraphTab />}
           {tab === 'strategy' && <StrategyTuningTab />}
+          {tab === 'governance' && <HolonGovernance />}
           {tab === 'gateway' && <GatewayTab />}
           {tab === 'twin' && <TwinDashboard />}
           {tab === 'tenant' && <TenantManagement />}

@@ -56,6 +56,58 @@ async def reflect(req: ReflectRequest, tenant: str = Depends(get_tenant)):
     }
 
 
+# ---------- v23.0 广样本反思 ----------
+
+@router.post("/reflect-broad")
+async def reflect_broad(req: ReflectRequest, tenant: str = Depends(get_tenant)):
+    """广样本反思：融合失败/成功/后果校验/KG 验证四个维度 → 生成候选 prompt。"""
+    try:
+        from src.runtime.agent.router import AGENT_REGISTRY
+        if req.agent not in AGENT_REGISTRY:
+            raise HTTPException(status_code=404, detail=f"未知 Agent: {req.agent}")
+    except ImportError:
+        pass
+
+    # 采集四个维度的样本
+    failure_cases = failure_store.collect_failure_cases(req.agent)
+    from src.runtime.experience import experience
+    success_cases = experience.get_preferences(req.agent)
+    from src.runtime.consequence import consequence
+    con_cases = consequence.query(agent=req.agent)
+    kg_validated = [p for p in kg_facts.list_proposals(agent=f"tacit:{req.agent}" if req.agent else None)
+                    if p.get("status") in ("validated", "approved")]
+
+    current = prompt_versions.current_prompt(req.agent)
+    res = await reflection.reflect_broad(
+        agent=req.agent, current_prompt=current,
+        failure_cases=failure_cases,
+        success_cases=success_cases,
+        consequence_cases=con_cases,
+        kg_validated=kg_validated,
+    )
+    parent = prompt_versions.active_version(req.agent, tenant=tenant)
+    rec = prompt_versions.propose(
+        tenant_id=tenant, agent=req.agent, content=res.proposed_prompt,
+        parent_version=parent["version"] if parent else None,
+        proposer=res.source, note=req.note or res.rationale,
+    )
+    return {
+        "agent": req.agent,
+        "samples": {
+            "failure_cases": len(failure_cases),
+            "success_cases": len(success_cases),
+            "consequence_cases": len(con_cases),
+            "kg_validated": len(kg_validated),
+        },
+        "source": res.source,
+        "version_id": rec["id"],
+        "version": rec["version"],
+        "status": rec["status"],
+        "rationale": res.rationale,
+        "proposed_prompt": res.proposed_prompt,
+    }
+
+
 @router.get("/failure-cases/{agent}")
 async def failure_cases(agent: str, limit: int = 12):
     """查看某 Agent 的失败案例（透明化自进化的养料）。"""
