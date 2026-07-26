@@ -41,11 +41,14 @@ class EnergyCarbonAgent(BaseAgent):
 - 数据驱动：排放因子采用区域电网公开均值，可审计可追溯
 """
 
-    async def analyze(self, goal: str) -> dict:
+    async def analyze(self, goal: str, tenant_id: str = "default") -> dict:
         logger.info(f"[EnergyCarbon Agent] Analyzing: {goal[:60]}...")
 
         lines = await self.tools.get_energy_list()
-        summary = await self.tools.get_carbon_summary()
+        # ---- 阶段1下半场：消费 twin_context 实时孪生镜像（韧性降级）----
+        twin = await self._merge_twin_context(lines, tenant_id)
+        # 合并后重算汇总（事实锚点：仅读镜像覆盖种子，不改写种子源）
+        summary = self.tools.compute_summary(lines)
 
         opportunities = []
         for op in self.tools.OPPORTUNITIES:
@@ -71,15 +74,22 @@ class EnergyCarbonAgent(BaseAgent):
                     "status": "auto_executed",
                 })
 
-        recommendations = self._generate_recommendations(lines, summary, opportunities)
+        recommendations = self._generate_recommendations(lines, summary, opportunities, twin)
+
+        # ---- 结论文案：标注是否实时孪生驱动 ----
+        if twin["enabled"]:
+            rt_note = "（实时孪生驱动" + ("" if twin["fresh"] else "，数据偏旧") + f"，来源 {twin['source']}）"
+        else:
+            rt_note = "（无实时孪生流，使用种子基线）"
+        summary_text = (
+            f"能源碳分析完成{rt_note}：周能耗 {summary['total_energy_kwh']:,} kWh，"
+            f"碳排放 {summary['total_carbon_t']} tCO2，绿电比例 {summary['green_ratio']}%；"
+            f"识别节能降碳机会 {len(opportunities)} 项，潜在降碳 {total_saving_co2} tCO2"
+        )
 
         return {
             "status": "completed",
-            "summary": (
-                f"能源碳分析完成：周能耗 {summary['total_energy_kwh']:,} kWh，"
-                f"碳排放 {summary['total_carbon_t']} tCO2，绿电比例 {summary['green_ratio']}%；"
-                f"识别节能降碳机会 {len(opportunities)} 项，潜在降碳 {total_saving_co2} tCO2"
-            ),
+            "summary": summary_text,
             "total_energy_kwh": summary["total_energy_kwh"],
             "total_carbon_t": summary["total_carbon_t"],
             "green_ratio": summary["green_ratio"],
@@ -92,10 +102,89 @@ class EnergyCarbonAgent(BaseAgent):
             "opportunities": opportunities,
             "recommendations": recommendations,
             "actions_taken": actions_taken,
+            # 阶段1下半场：实时孪生融合块（含 real_time_* 字段，供前端/决策读取）
+            "twin_context": twin,
         }
 
-    def _generate_recommendations(self, lines, summary, opportunities) -> list:
+    async def _merge_twin_context(self, seed_lines: list[dict], tenant_id: str) -> dict:
+        """扫描 MACHINE holon 孪生体，将实时能耗值覆盖种子基线，返回融合块。
+
+        韧性：twin_context 为空 / 解析异常 → 返回 enabled=False（调用方回退种子）。
+        契约（扁平 tag）：energy_kwh__<line_id> / power_kw__<line_id> / green_ratio__<line_id>
+        """
+        merged = {
+            "enabled": False,
+            "fresh": False,
+            "source": None,
+            "updated_at": None,
+            "lines": {},
+            "real_time_fields": [],
+        }
+        try:
+            import time
+            ctx = await self.twin_context(tenant_id) or {}
+            realtime_by_line: dict[str, dict] = {}
+            src = None
+            ts = None
+            for _key, state in ctx.items():
+                if not isinstance(state, dict):
+                    continue
+                vals = state.get("values") or {}
+                if not isinstance(vals, dict):
+                    continue
+                src = src or state.get("source")
+                ts = ts or state.get("updated_at")
+                for vk, vv in vals.items():
+                    if not isinstance(vk, str):
+                        continue
+                    for prefix, field in (
+                        ("energy_kwh__", "energy_kwh"),
+                        ("power_kw__", "power_kw"),
+                        ("green_ratio__", "green_ratio"),
+                    ):
+                        if vk.startswith(prefix) and isinstance(vv, (int, float)):
+                            lid = vk.split("__", 1)[1]
+                            realtime_by_line.setdefault(lid, {})[field] = vv
+            if not realtime_by_line:
+                return merged
+            merged["enabled"] = True
+            merged["source"] = src
+            merged["updated_at"] = ts
+            merged["fresh"] = bool(ts and (time.time() - ts) < 300)
+            by_id = {ln["line_id"]: ln for ln in seed_lines}
+            for lid, rt in realtime_by_line.items():
+                ln = by_id.get(lid)
+                if ln is None:
+                    continue
+                if "energy_kwh" in rt:
+                    ln["energy_kwh"] = rt["energy_kwh"]
+                if "green_ratio" in rt:
+                    ln["green_ratio"] = rt["green_ratio"]
+                if "power_kw" in rt:
+                    ln["power_kw"] = rt["power_kw"]
+                # 重算碳排（事实锚点：依公式，非凭空改写）
+                ln["carbon_t"] = round(
+                    ln["energy_kwh"] / 1000 * self.tools.GRID_FACTOR * (1 - ln["green_ratio"] / 100), 1
+                )
+                ln["real_time"] = True
+                ln["twin_source"] = src
+                merged["lines"][lid] = rt
+                for f in rt:
+                    if f not in merged["real_time_fields"]:
+                        merged["real_time_fields"].append(f)
+        except Exception:
+            # 任何异常都静默回退种子（韧性降级铁律）
+            return {"enabled": False, "fresh": False, "source": None,
+                    "updated_at": None, "lines": {}, "real_time_fields": []}
+        return merged
+
+    def _generate_recommendations(self, lines, summary, opportunities, twin=None) -> list:
         recs = []
+        if twin and twin.get("enabled"):
+            tag = "实时孪生" if twin.get("fresh") else "孪生(偏旧)"
+            recs.append(f"🛰️ 结论由{tag}驱动（来源 {twin.get('source')}），实时字段：{', '.join(twin.get('real_time_fields', [])) or '无'}")
+        else:
+            recs.append("📡 当前无实时孪生流，结论基于种子基线；接入网关后可升级为实时孪生驱动")
         recs.append(f"🌿 当前绿电比例 {summary['green_ratio']}%，目标建议 ≥ 30%")
         low_green = [l for l in lines if l["green_ratio"] < 15]
         if low_green:

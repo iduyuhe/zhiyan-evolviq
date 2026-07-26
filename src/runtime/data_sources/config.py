@@ -25,6 +25,7 @@ from src.runtime.data_sources.connectors.domain import (
     PLMConnector,
     WMSConnector,
 )
+from src.runtime.data_sources.connectors.energy_twin import EnergyTwinDataSource
 from src.runtime.data_sources.timeseries.tsdb import TimeSeriesDB
 
 logger = logging.getLogger(__name__)
@@ -59,6 +60,10 @@ def load_sources_for_tenant(tenant_id: str = "default") -> None:
     else:
         # 默认注册一个内存 TSDB：始终可用，供演示/历史缓冲（断链前也有序列可查）
         registry.register(TimeSeriesDB(backend="memory", tenant_id=tenant_id))
+
+    # 能耗实时孪生体（TIMESERIES / MACHINE）：网关实时流经 twin_feed 汇入，
+    # energy_carbon agent 消费其镜像。始终注册（默认内存态），与 TSDB 同理用于演示/链路贯通。
+    registry.register(EnergyTwinDataSource(tenant_id=tenant_id))
 
 
 def load_default_sources() -> None:

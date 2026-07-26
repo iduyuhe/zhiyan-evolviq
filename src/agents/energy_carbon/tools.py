@@ -45,14 +45,22 @@ class EnergyCarbonTools:
 
     async def get_carbon_summary(self) -> dict:
         lines = await self.get_energy_list()
+        return self.compute_summary(lines)
+
+    def compute_summary(self, lines: list[dict]) -> dict:
+        """由给定产线列表（可能已被实时孪生覆盖）重算碳汇总。
+
+        拆分自 get_carbon_summary，使 energy_carbon.analyze() 在融合 twin_context
+        实时值后能用合并后的 lines 重算，结论带实时字段（事实锚点：仅读镜像、不改写种子）。
+        """
         total_kwh = sum(l["energy_kwh"] for l in lines)
         total_carbon = round(sum(l["carbon_t"] for l in lines), 1)
         total_green = sum(l["energy_kwh"] * l["green_ratio"] / 100 for l in lines)
-        green_ratio = round(total_green / total_kwh * 100, 1)
+        green_ratio = round(total_green / total_kwh * 100, 1) if total_kwh else 0.0
         # 碳强度：以总产值（万元）近似=各线产出/1000 估算，简化用总能耗折算
         # 这里用"吨CO2 / 万片产出"作为可对标强度指标
         total_output = sum(l["output_units"] for l in self.LINES)
-        intensity_per_10k = round(total_carbon / (total_output / 10000), 3)
+        intensity_per_10k = round(total_carbon / (total_output / 10000), 3) if total_output else 0.0
         return {
             "total_energy_kwh": total_kwh,
             "total_carbon_t": total_carbon,
