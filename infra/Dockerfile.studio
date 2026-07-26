@@ -4,6 +4,9 @@
 
 FROM node:22-alpine AS build
 WORKDIR /app
+# 注入构建版本（git short sha），前端版本水印用。容器内无 .git，回退到 dev。
+ARG GIT_SHA=dev
+ENV VITE_APP_VERSION=$GIT_SHA
 COPY studio/package.json studio/package-lock.json ./
 # 可选 npm 镜像源，默认官方源；部署时经 build arg 覆盖为国内镜像
 ARG NPM_REGISTRY=https://registry.npmjs.org

@@ -8,7 +8,10 @@ import { fileURLToPath } from 'node:url'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 // 构建时注入短 commit hash 作为版本号，水印渲染用（便于用户判断自己拿到的是不是最新版）
-function shortSha(): string {
+// 优先级：Docker build arg 注入的 VITE_APP_VERSION > 本地 git rev-parse > dev
+function resolveVersion(): string {
+  const fromEnv = process.env.VITE_APP_VERSION
+  if (fromEnv && fromEnv !== 'dev') return fromEnv
   try {
     return execSync('git rev-parse --short HEAD', { cwd: __dirname })
       .toString()
@@ -17,7 +20,7 @@ function shortSha(): string {
     return 'dev'
   }
 }
-const APP_VERSION = shortSha()
+const APP_VERSION = resolveVersion()
 
 export default defineConfig({
   define: {
