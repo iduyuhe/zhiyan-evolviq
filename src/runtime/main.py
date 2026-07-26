@@ -12,6 +12,7 @@ from src.runtime.api import agents_api, auth, audit, events_api, health, mcp_too
 from src.runtime.api import interventions, reports, system, knowledge_graph, gateways, strategy, tenants, experience, evolution, data_sources, twin, governance
 from src.runtime.federation import api as federation_api
 from src.runtime.authn import api as authn_api
+from src.runtime.api import writeback as writeback_api
 from src.runtime.core.scheduler import scheduler
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -63,6 +64,7 @@ async def lifespan(app: FastAPI):
     # 企业认证：确保超级管理员账号存在（DB 不可用时降级内存态；测试可直接调用）
     from src.runtime.authn.service import authn_service
     await authn_service.ensure_admin()
+    await authn_service.sync_admin_password()  # 按 ZHIYAN_ADMIN_PASSWORD 同步（仅启动期）
     logger.info("🔐 企业认证模块已就绪（本地/LDAP/OAuth2 + JWT/RBAC）")
 
     # 行业知识库模板：按 ZHIYAN_INDUSTRY 注入对应种子（船舶/铁路/电子…）
@@ -152,29 +154,38 @@ app.add_middleware(
 )
 
 # 注册路由
-app.include_router(health.router)
-app.include_router(sessions.router)
-app.include_router(supply_chain.router)
-app.include_router(auth.router)
-app.include_router(audit.router)
-app.include_router(mcp_tools.router)
-app.include_router(scheduler_api.router)
-app.include_router(events_api.router)
-app.include_router(agents_api.router)
-app.include_router(interventions.router)
-app.include_router(reports.router)
-app.include_router(system.router)
-app.include_router(knowledge_graph.router)
-app.include_router(gateways.router)
-app.include_router(strategy.router)
-app.include_router(experience.router)
-app.include_router(evolution.router)
-app.include_router(tenants.router)
-app.include_router(data_sources.router)
-app.include_router(twin.router)
-app.include_router(governance.router)
-app.include_router(federation_api.router)
-app.include_router(authn_api.router)
+# 全局鉴权门禁：除健康探针(/health)与认证端点(/authn/*，含登录)外，
+# 所有路由挂 require_auth 依赖——ZHIYAN_AUTH_REQUIRE=1 时强制 Bearer JWT，
+# 否则放行并返回匿名上下文（兼容 150+ 既有测试与不带 token 的 e2e 脚本）。
+from fastapi import Depends
+from src.runtime.authn.deps import require_auth
+
+_AUTH_DEPS = [Depends(require_auth)]
+
+app.include_router(health.router)  # 公开：探针
+app.include_router(sessions.router, dependencies=_AUTH_DEPS)
+app.include_router(supply_chain.router, dependencies=_AUTH_DEPS)
+app.include_router(auth.router, dependencies=_AUTH_DEPS)  # /auth/boundaries 授权边界
+app.include_router(audit.router, dependencies=_AUTH_DEPS)
+app.include_router(mcp_tools.router, dependencies=_AUTH_DEPS)
+app.include_router(scheduler_api.router, dependencies=_AUTH_DEPS)
+app.include_router(events_api.router, dependencies=_AUTH_DEPS)
+app.include_router(agents_api.router, dependencies=_AUTH_DEPS)
+app.include_router(interventions.router, dependencies=_AUTH_DEPS)
+app.include_router(reports.router, dependencies=_AUTH_DEPS)
+app.include_router(system.router, dependencies=_AUTH_DEPS)
+app.include_router(knowledge_graph.router, dependencies=_AUTH_DEPS)
+app.include_router(gateways.router, dependencies=_AUTH_DEPS)
+app.include_router(strategy.router, dependencies=_AUTH_DEPS)
+app.include_router(experience.router, dependencies=_AUTH_DEPS)
+app.include_router(evolution.router, dependencies=_AUTH_DEPS)
+app.include_router(tenants.router, dependencies=_AUTH_DEPS)
+app.include_router(data_sources.router, dependencies=_AUTH_DEPS)
+app.include_router(twin.router, dependencies=_AUTH_DEPS)
+app.include_router(governance.router, dependencies=_AUTH_DEPS)
+app.include_router(federation_api.router, dependencies=_AUTH_DEPS)
+app.include_router(writeback_api.router, dependencies=_AUTH_DEPS)  # ERP/MES 回写审计桥
+app.include_router(authn_api.router)  # 公开：登录/后端发现/OAuth 回调
 
 
 if __name__ == "__main__":

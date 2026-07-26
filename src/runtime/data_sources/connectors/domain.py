@@ -65,6 +65,29 @@ class RestConnector(DataSource):
         # 通用兜底：把 query 当作 REST 路径
         return await self._get(query, params)
 
+    async def _post(self, path: str, json_body: dict) -> Any:
+        """通用写方法（回写审计桥用）。失败韧性降级：返回 None，不抛异常。"""
+        if not self.base_url:
+            return None
+        try:
+            import httpx
+        except Exception:
+            logger.debug(f"{self.name}: httpx 未安装，写回降级")
+            return None
+        url = f"{self.base_url}/{path.lstrip('/')}"
+        headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
+        headers["Content-Type"] = "application/json"
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as c:
+                r = await c.post(url, json=json_body, headers=headers)
+                if r.status_code >= 400:
+                    logger.warning(f"⚠️ {self.name} POST {url} -> {r.status_code}")
+                    return None
+                return r.json() if r.content else {"ok": True}
+        except Exception as e:
+            logger.warning(f"⚠️ {self.name} 写回失败（韧性降级）：{e}")
+            return None
+
 
 class MESConnector(RestConnector):
     """制造执行系统：工单、产线进度、质量缺陷。"""
@@ -87,6 +110,10 @@ class MESConnector(RestConnector):
         data = await self._get("quality/defects", params)
         return data.get("items", []) if isinstance(data, dict) else (data or [])
 
+    async def post_audit_record(self, record: dict) -> Any:
+        """回写审计记录（智衍决策/审批结论落 ERP/MES 作为审计，不推倒账本）。"""
+        return await self._post("audit/records", record)
+
 
 class ERPConnector(RestConnector):
     """企业资源计划：采购订单、供应商、财务。"""
@@ -108,6 +135,10 @@ class ERPConnector(RestConnector):
 
     async def get_finance(self, period: str | None = None) -> dict | None:
         return await self._get("finance/summary", {"period": period} if period else None)
+
+    async def post_audit_record(self, record: dict) -> Any:
+        """回写审计记录（智衍决策/审批结论落 ERP 作为审计轨迹）。"""
+        return await self._post("audit/records", record)
 
 
 class PLMConnector(RestConnector):

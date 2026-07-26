@@ -16,6 +16,8 @@ import logging
 import secrets
 import uuid
 
+from sqlalchemy import select
+
 from src.common import db
 from src.runtime.authn import backends
 from src.runtime.authn.config import config
@@ -109,7 +111,7 @@ class AuthnService:
             "is_active": True,
             "external_id": None,
         }
-        # 已存在则跳过（保留既有密码）
+        # 已存在则跳过（保留既有密码）——幂等；环境密码同步见 sync_admin_password()
         existing = await self._load(config.ADMIN_USERNAME)
         if existing:
             self._seeded = True
@@ -122,6 +124,24 @@ class AuthnService:
         else:
             logger.info(f"✅ 管理员账号就绪：{config.ADMIN_USERNAME}（角色 SUPERADMIN）")
         return rec
+
+    async def sync_admin_password(self) -> None:
+        """启动期专用：当配置了 ZHIYAN_ADMIN_PASSWORD 时，确保管理员密码与之同步。
+
+        与 ensure_admin 分离，避免 authenticate() 每次登录都触发密码覆盖
+        （否则会破坏测试 fixture 用显式密码播种的场景）。
+        """
+        if not config.ADMIN_PASSWORD:
+            return
+        existing = await self._load(config.ADMIN_USERNAME)
+        pw_hash = hash_password(config.ADMIN_PASSWORD)
+        if existing and existing.get("password_hash") == pw_hash:
+            return
+        if existing:
+            await self._update_password(config.ADMIN_USERNAME, pw_hash)
+            logger.info("🔑 管理员密码已按 ZHIYAN_ADMIN_PASSWORD 同步")
+        else:
+            await self.ensure_admin()
 
     # ---------------- 本地校验（供 LocalBackend 回调）----------------
 
@@ -140,6 +160,22 @@ class AuthnService:
         if verify_password(password, rec.get("password_hash") or ""):
             return rec
         return None
+
+    async def _update_password(self, username: str, password_hash: str) -> None:
+        """更新指定用户的密码哈希（内存 + DB 双写）。"""
+        if username in self._mem:
+            self._mem[username]["password_hash"] = password_hash
+        if db.db_available and db.async_session:
+            try:
+                async with db.async_session() as s:
+                    row = (
+                        await s.execute(select(User).where(User.username == username))
+                    ).scalars().first()
+                    if row:
+                        row.password_hash = password_hash
+                        await s.commit()
+            except Exception as e:
+                logger.warning(f"更新密码落库失败：{e}")
 
     async def _preload_local(self, username: str) -> None:
         """把 DB 中的本地用户预载进内存，使同步 _local_check 能命中。"""

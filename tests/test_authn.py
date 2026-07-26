@@ -106,3 +106,31 @@ async def test_backends_status(client):
     body = r.json()
     assert body["local"]["enabled"] is True
     assert "ldap" in body and "oauth2" in body and "saml" in body
+
+
+@pytest.mark.asyncio
+async def test_global_gate_dev_mode_allows_anonymous(client):
+    """开发/测试模式（ZHIYAN_AUTH_REQUIRE 未开）：受保护端点无 token 也应 200。"""
+    from src.runtime.authn.config import config
+
+    config.REQUIRE_AUTH = False
+    # /auth/boundaries 受 require_auth 门禁保护
+    r = await client.get("/auth/boundaries")
+    assert r.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_global_gate_prod_mode_enforces(client):
+    """生产模式（ZHIYAN_AUTH_REQUIRE=1）：无 token → 401；有效 token → 200。"""
+    from src.runtime.authn.config import config
+
+    config.REQUIRE_AUTH = True
+    try:
+        r401 = await client.get("/auth/boundaries")
+        assert r401.status_code == 401
+        # 有效 token 放行
+        tok = (await client.post("/authn/login", json={"username": "admin", "password": TEST_ADMIN_PW})).json()["access_token"]
+        r200 = await client.get("/auth/boundaries", headers=_auth_header(tok))
+        assert r200.status_code == 200
+    finally:
+        config.REQUIRE_AUTH = False

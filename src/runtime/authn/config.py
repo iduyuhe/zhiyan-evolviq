@@ -62,6 +62,11 @@ class AuthnConfig:
     # 默认新用户角色（目录同步来的用户默认操作员）
     DEFAULT_DIR_ROLE = os.getenv("ZHIYAN_DEFAULT_DIR_ROLE", "operator")
 
+    # ---- 全局鉴权强制开关 ----
+    # 生产设 ZHIYAN_AUTH_REQUIRE=1 强制所有受保护路由须持 Bearer JWT；
+    # 开发/测试默认关闭，避免破坏 150+ 既有测试与不带 token 的 e2e 脚本。
+    REQUIRE_AUTH = _flag("ZHIYAN_AUTH_REQUIRE")
+
     @classmethod
     def ldap_mock_users(cls) -> dict[str, str]:
         out = {}

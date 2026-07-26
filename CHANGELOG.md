@@ -1,5 +1,21 @@
 # Changelog
 
+## v28.2 (2026-07-27) — 投产加固：认证持久化修复 + 全局鉴权门禁 + ERP/MES 回写审计桥
+
+### 1. 认证持久化修复（生产 bug）
+- 修复 `AuthnService._upsert_db` 漏导入 `select` 导致每次落库抛 `name 'select' is not defined` 被吞、**users 表恒空、管理员仅走内存态**的真实 bug（生产重启即丢账号）。
+- `ensure_admin` 拆分为幂等播种 + 启动期专用 `sync_admin_password()`：仅 lifespan 按 `ZHIYAN_ADMIN_PASSWORD` 同步密码，不再经 `authenticate()` 触发，避免覆盖测试 fixture 密码。
+
+### 2. 全局 JWT 鉴权门禁（可配置强制）
+- 新增 `require_auth` 依赖：`ZHIYAN_AUTH_REQUIRE=1` 时强制所有受保护路由须持 Bearer JWT（缺失/无效 → 401/403）；未开启时返回匿名上下文，**兼容 150+ 既有测试与不带 token 的 e2e 脚本**。
+- main.py 除 `/health` 与 `/authn/*`（登录）外，全部路由挂 `dependencies=[Depends(require_auth)]`。
+- 生产 `install.sh`/部署脚本注入 `ZHIYAN_AUTH_REQUIRE=1`。
+
+### 3. ERP/MES 回写审计桥（原生赋能者定位）
+- `src/runtime/data_sources/connectors/domain.py`：`RestConnector` 加 `_post` 写方法；MES/ERP 加 `post_audit_record()`。
+- `src/runtime/data_sources/writeback.py`：`WritebackBridge` —— agent 决策/审批结论作为**审计记录**回写业务系统（不推倒账本）；连接器不可用/写失败 → 进本地 pending 队列，`retry_pending()` 周期重试；全失败不阻断主流程。
+- API：`POST /api/writeback`、`GET /api/writeback/pending`、`POST /api/writeback/retry`、`GET /api/writeback/stats`（均受门禁保护）。
+
 ## v28.0 (2026-07-27) — 投产就绪三件套（企业认证 / 一键部署 / 行业知识库）
 
 补齐客户说"我们要用"时最卡脖子的三项（DEPLOYMENT_GAP_ACTION.md P0 + 行业模板）：
