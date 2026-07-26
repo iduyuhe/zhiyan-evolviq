@@ -13,6 +13,29 @@ from src.runtime.api.deps import get_tenant
 router = APIRouter(prefix="/experience", tags=["experience"])
 
 
+@router.get("/tacit")
+async def tacit_captures(tenant: str = "default", channel: str | None = None, limit: int = 50):
+    """隐性捕获查询：人/社交/会议/协作四路经验记忆 + 待审批 KG 事实（抽取即锚定）。"""
+    from src.runtime.evolution.kg_facts import kg_facts
+
+    return {
+        "tenant_id": tenant,
+        "tacit_captures": experience.tacit_captures(tenant=tenant, channel=channel, limit=limit),
+        "pending_kg_facts": kg_facts.list_proposals(),
+    }
+
+
+@router.get("/consequence")
+async def list_consequences(agent: str | None = None, limit: int = 50):
+    """蓝弧闭环：执行后果追踪查询（后果校验记录 + 统计）。"""
+    from src.runtime.consequence import consequence as cq
+
+    return {
+        "records": cq.query(agent=agent, limit=limit),
+        "stats": cq.stats(),
+    }
+
+
 @router.get("/{agent}")
 async def agent_experience(agent: str, tenant: str = Depends(get_tenant)):
     """查询某 Agent 的偏好/禁忌经验记忆。"""
@@ -29,15 +52,3 @@ async def agent_experience(agent: str, tenant: str = Depends(get_tenant)):
 async def all_experience(limit: int = 100):
     """查询全部经验反馈（最近 limit 条）。"""
     return {"total": len(experience._records), "records": experience.all(limit)}
-
-
-@router.get("/tacit")
-async def tacit_captures(tenant: str = "default", channel: str | None = None, limit: int = 50):
-    """隐性捕获查询：人/社交/会议/协作四路经验记忆 + 待审批 KG 事实（抽取即锚定）。"""
-    from src.runtime.evolution.kg_facts import kg_facts
-
-    return {
-        "tenant_id": tenant,
-        "tacit_captures": experience.tacit_captures(tenant=tenant, channel=channel, limit=limit),
-        "pending_kg_facts": kg_facts.list_proposals(),
-    }

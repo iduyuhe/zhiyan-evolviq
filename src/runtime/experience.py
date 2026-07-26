@@ -177,6 +177,53 @@ class ExperienceStore:
         ]
         return list(reversed(out))[:limit]
 
+    # ---------- v22 蓝弧：执行后果回流（行为主义校验 → 强化信号） ----------
+
+    def capture_outcome(
+        self,
+        agent: str,
+        action_id: str,
+        decision: str,
+        match_detail: dict | None = None,
+        predicted: dict | None = None,
+        actual: dict | None = None,
+    ) -> dict:
+        """记录执行后果反馈（强化信号）——蓝弧行为主义回流认知层。
+
+        decision 取值：
+        - validated   : 预期后果匹配（正强化）
+        - contradicted: 预期后果不匹配（负强化）
+        """
+        rec = {
+            "tenant_id": "default",
+            "kind": "outcome",
+            "decision": decision,
+            "channel": "consequence",
+            "source": f"action:{action_id}",
+            "agent": agent,
+            "action_type": "",
+            "context": json.dumps(
+                {
+                    "match_detail": (match_detail or {}).get("details", {}),
+                    "predicted": {k: v for k, v in (predicted or {}).items() if not k.startswith("_")},
+                    "actual": actual or {},
+                },
+                ensure_ascii=False,
+            )[:2000],
+            "note": f"consequence.{decision}",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        self._records.append(rec)
+        logger.info(f"🧠 后果反馈 [{decision}] action={action_id} | agent={agent}")
+        return rec
+
+    def outcome_records(self, agent: str | None = None, limit: int = 50) -> list[dict]:
+        """查询执行后果反馈记录（可选按 agent 过滤）。"""
+        out = [r for r in self._records if r.get("kind") == "outcome"]
+        if agent:
+            out = [r for r in out if r.get("agent") == agent]
+        return list(reversed(out))[:limit]
+
 
 # 全局单例
 experience = ExperienceStore()

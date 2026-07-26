@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import uuid
 from datetime import datetime, timezone
@@ -113,6 +114,64 @@ class KgFactStore:
         self._proposals = rows
         logger.info(f"🧬 KG 事实提议回灌 {len(self._proposals)} 条（跨重启累积）")
         return len(self._proposals)
+
+    # ---------- v22 蓝弧：后果校验 → 置信度调整 + 自动纠错（自进化燃料） ----------
+
+    def validate_fact(self, kid: str, ok: bool, evidence: dict | None = None) -> dict | None:
+        """事实后果校验：基于执行后果回流，修正符号置信度。
+
+        - ok=True: 提升置信度(+0.10)，标记 validated
+        - ok=False: 降低置信度(-0.15)；若低于阈值则提议纠错 draft（自进化燃料）
+        返回修正后的事实 dict，或 None（kid 不存在）。
+        """
+        p = self.get(kid)
+        if p is None:
+            logger.warning(f"⚠️ 事实校验跳过：kid={kid} 不存在")
+            return None
+
+        if ok:
+            p["confidence"] = min(0.99, float(p.get("confidence", 0.8)) + 0.10)
+            p["status"] = "validated"
+        else:
+            p["confidence"] = max(0.01, float(p.get("confidence", 0.8)) - 0.15)
+            p["status"] = "needs_review"
+            # 低于阈值 → 提议纠错 draft（自进化燃料）
+            if p["confidence"] < 0.30:
+                corrected = self._propose_correction(p, evidence)
+                logger.info(
+                    f"🕸️ 自动纠错已提议：{p['subject']} ~{p['predicate']}→ {p['object_val']}"
+                    f"（修正原事实 {p['id']}）"
+                )
+                return corrected
+
+        p["validate_evidence"] = json.dumps(evidence or {}, ensure_ascii=False)[:500]
+        logger.info(f"🔄 事实后果校验 [{'✓' if ok else '✗'}] {p['subject']} {p['predicate']} {p['object_val']}")
+        return p
+
+    def _propose_correction(self, original: dict, evidence: dict | None) -> dict:
+        """基于被后果否定的旧事实，提议一条纠错新事实（自进化燃料）。
+
+        使用否定谓词（~原谓词）标记为修正关系，带有 corrects 字段指向原事实。
+        待人类审批门 approve 后进入图谱。
+        """
+        corrected = {
+            "id": f"kf-{uuid.uuid4().hex[:12]}",
+            "tenant_id": original.get("tenant_id", "default"),
+            "agent": f"consequence:{original.get('agent', 'unknown')}",
+            "subject": original["subject"],
+            "predicate": f"~{original['predicate']}",
+            "object_val": original["object_val"],
+            "source": f"auto_correction:{original.get('id', '')}",
+            "confidence": 0.5,
+            "status": "draft",
+            "note": f"自动纠错提议：基于后果校验校验（原事实 {original.get('id', '')}）",
+            "note_evidence": json.dumps(evidence or {}, ensure_ascii=False)[:500],
+            "corrects": original["id"],
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        self._proposals.append(corrected)
+        self._persist(corrected)
+        return corrected
 
 
 # 全局单例
