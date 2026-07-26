@@ -13,6 +13,7 @@ import ConsoleTab from './components/ConsoleTab';
 import KnowledgeGraphTab from './components/KnowledgeGraphTab';
 import StrategyTuningTab from './components/StrategyTuningTab';
 import GatewayTab from './components/GatewayTab';
+import TwinDashboard from './components/TwinDashboard';
 import AiInsightPanel from './components/AiInsightPanel';
 import NotificationBell from './components/NotificationBell';
 import type { AgentInfo } from './components/AgentSelector';
@@ -24,7 +25,7 @@ import { createSession, approveSession, quickCheck } from './api/client';
 import type { Session, ExecutionResult } from './api/client';
 
 type Stage = 'input' | 'planning' | 'approving' | 'executing' | 'result' | 'error';
-type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'tenant';
+type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'twin' | 'tenant';
 
 const STEPS = [
   { key: 'input', label: '目标设定', icon: '🎯' },
@@ -164,6 +165,7 @@ export default function App() {
                 { key: 'knowledge' as Tab, label: '知识图谱', icon: '🕸️' },
                 { key: 'strategy' as Tab, label: '策略调参', icon: '🎚️' },
                 { key: 'gateway' as Tab, label: '网关', icon: '🛰️' },
+                { key: 'twin' as Tab, label: '孪生大屏', icon: '🌐' },
                 { key: 'tenant' as Tab, label: '租户', icon: '🏢' },
               ].map(t => (
                 <button
@@ -365,6 +367,7 @@ export default function App() {
           {tab === 'knowledge' && <KnowledgeGraphTab />}
           {tab === 'strategy' && <StrategyTuningTab />}
           {tab === 'gateway' && <GatewayTab />}
+          {tab === 'twin' && <TwinDashboard />}
           {tab === 'tenant' && <TenantManagement />}
         </main>
       )}
