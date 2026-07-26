@@ -1,6 +1,94 @@
 # Changelog
 
-## v20.5 (2026-07-25) — Production Data Layer (P1) + Multi-Tenant & Live Graph (P2)
+## v27.0 (2026-07-26) — Supply Chain Agent Federation
+
+Cross-enterprise supply chain collaboration: share goals, aggregate risks, joint planning across enterprises.
+
+- **Supply chain federation** `src/runtime/federation/supply_chain_federation.py`: `FederatedSupplyChain` — share goals (anonymized), join goals, report/aggregate supply chain risks across tenants, create joint plans.
+- **Anonymization**: enterprise IDs masked (企业XXX**), materials de-identified, no prices/contracts exposed.
+- **8 new API endpoints**: `POST /federation/supply-chain/goal|risk|plan`, `GET .../goals|risks|plans|fed-status`, `POST .../goal/{id}/join`.
+- **SupplyChainFederation.tsx**: 4-tab UI panel (goals/risks/plans/status).
+- **Full suite: 150 passed**, zero regressions. Deployed to production.
+
+## v26.0 (2026-07-26) — All-Channel Self-Evolution
+
+Close the self-evolution loop for tacit channels (human/social/meeting/collab) — all 5 UNS channels now participate in the full cycle.
+
+- **`kg_facts.reject()`**: new method to reject KG proposals (with reason), auto-triggers virtual consequence (match=False) → confidence adjustment → possible correction draft.
+- **`consequence.virtual_consequence()`**: record a consequence without UNS event (used for human approval/rejection of tacit facts).
+- **`tacit_capture` register expectation**: after proposing a KG draft, register pending consequence with tracker → when human approves/rejects, virtual consequence fires automatically.
+- **`POST /evolution/kg-facts/{kid}/reject`**: API endpoint for rejecting KG proposals.
+- **5 file changes, 6-step e2e verification all pass**.
+- **Full suite: 150 passed**, zero regressions.
+
+## v25.0 (2026-07-26) — Ontology Self-Growth
+
+Automatically discover new entity/relationship types from KG proposals and propose ontology extensions through an approval gate.
+
+- **`src/runtime/evolution/ontology.py`**: `OntologyStore` — seed ontology (16 entity types + 10 relationship types), `discover()` scans proposals for new patterns, `propose_extension()` → `proposed`, `approve_extension()` → `active`.
+- **4 new API endpoints**: `GET /evolution/ontology/schema|discover`, `POST .../extensions|/extensions/{id}/approve`.
+- **Knowledge graph now self-extends**: new entity types auto-discovered from tacit capture patterns.
+- **Full suite: 150 passed**, zero regressions.
+
+## v24.0 (2026-07-26) — Cross-Enterprise Federated Learning
+
+Anonymized cross-tenant knowledge pattern aggregation and strategy signal sharing.
+
+- **`src/runtime/federation/`** package: `federated_kg.py` (pattern aggregation, de-identified), `federated_strategy.py` (strategy signal anonymization), `api.py` (4 endpoints).
+- **FederatedKG**: aggregates (predicate, object_type) patterns across tenants, computes federal trust score (validated ratio × 0.7 + cross-tenant coeff × 0.3).
+- **FederationPanel.tsx**: UI for patterns/high-trust/strategy signals with privacy disclosure.
+- **Full suite: 150 passed**, zero regressions. GitHub `9fefc85`.
+
+## v23.0 (2026-07-26) — Self-Evolution Maturity
+
+Broad-sample reflection across 4 dimensions + thin/thick Holon governance panel.
+
+- **`reflection.reflect_broad()`**: fusion of failure cases + success cases + consequence records + KG validated facts.
+- **`POST /evolution/reflect-broad`**: API endpoint that gathers 4-dimensional samples → LLM/heuristic reflection → proposed prompt version.
+- **`GET /governance/panel`**: 20-agent autonomy level (thin/medium/thick), auth boundary, experience stats, consequence stats.
+- **HolonGovernance.tsx**: governance panel with agent list, expandable detail cards (boundary/experience/consequence), strategy suggestions.
+- **Full suite: 150 passed**, zero regressions. GitHub `01ca5ce`.
+
+## v22.5 (2026-07-26) — Twin Dashboard
+
+Visualization of the three-doctrine living cycle: connectionism → symbolism → behaviorism loop.
+
+- **`GET /twin/dashboard`**: aggregated endpoint (UNS events, KG proposals, consequence stats, experience, gateway health).
+- **TwinDashboard.tsx**: living cycle cards, UNS channel distribution bar chart, UNS live event feed (color-coded by channel), KG fact pipeline, blue arc stats, gateway status.
+- **App.tsx**: "孪生大屏" navigation tab, 5s auto-refresh.
+- **Full suite: 150 passed**, zero regressions. Vite build passed (52 modules).
+
+## v22.0 (2026-07-26) — Blue Arc Closed Loop
+
+Execution consequences explicitly flow back to the cognitive layer — the last arc of the three-doctrine living cycle.
+
+- **`src/runtime/consequence.py`**: `ConsequenceTracker` — `expect_outcome()` / `record()` / `virtual_consequence()` / `_check_match()` (5% tolerance, directional validation — `_expect_decrease`/`_expect_increase`).
+- **`kg_facts.validate_fact()`**: consequence match → confidence +0.10 → `validated`; mismatch → -0.15 → `needs_review`; below 0.30 → auto-propose correction draft (negated predicate ~original) → human approval gate.
+- **`experience.capture_outcome()`**: consequence feedback as reinforcement signal.
+- **UNS auto-capture**: gateway/system events with `action_id` auto-trigger consequence recording.
+- **White paper `docs/WHITEPAPER.md`**: 11-chapter strategic whitepaper (CCI table, maturity model, federation, ontology).
+- **14 unit tests, 7-step e2e verification all pass**.
+- **Full suite: 150 passed** (136 → 150), zero regressions. GitHub `d6117bf`.
+
+## v21.5 (2026-07-26) — Tacit Capture
+
+UNS four-channel tacit signal extraction → anchored to KG as draft + experience store capture.
+
+- **`src/runtime/tacit_capture.py`**: deterministic heuristic `extract_tacit_fact()`, UNS four-channel subscriber (human/social/meeting/collab), idempotent registration, resilient degradation.
+- **`experience.capture_tacit()`**: record tacit signal as working memory.
+- **`GET /experience/tacit`**: query endpoint (tacit captures + pending KG facts).
+- **Extract-then-anchor pipeline**: tacit signal → `kg_facts.propose(draft)` → human approval gate.
+- **5 unit tests, e2e verification all pass**.
+- **Full suite: 136 passed** (131 → 136), zero regressions. GitHub `48de863`.
+
+## v21.0 (2026-07-26) — Real-time Twin Engine (Stage 1 Phase 2)
+
+Agent consumes real-time twin context and UNS 5-channel unification.
+
+- **EnergyTwinDataSource**: energy-consumption twin with resilient degradation.
+- **energy_carbon agent**: `analyze()` consumes `twin_context()` produces `real_time_*` conclusions.
+- **UNS 5-channel normalization**: gateway/system/human/social/meeting/collab unified schema.
+- **Full suite: 131 passed**, zero regressions.
 
 把平台从「演示级数据」推向「生产级数据底座」——打通此前网关/seed 的断链。
 
