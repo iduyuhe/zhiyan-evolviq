@@ -64,7 +64,7 @@ class RestConnector(DataSource):
         url = f"{self.base_url}/{path.lstrip('/')}" if path else self.base_url
         headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
         try:
-            async with httpx.AsyncClient(timeout=self.timeout) as c:
+            async with httpx.AsyncClient(timeout=self.timeout, trust_env=False) as c:
                 r = await c.get(url, params=params, headers=headers)
                 if r.status_code >= 400:
                     logger.warning(f"⚠️ {self.name} GET {url} -> {r.status_code}")
@@ -91,7 +91,7 @@ class RestConnector(DataSource):
         headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
         headers["Content-Type"] = "application/json"
         try:
-            async with httpx.AsyncClient(timeout=self.timeout) as c:
+            async with httpx.AsyncClient(timeout=self.timeout, trust_env=False) as c:
                 r = await c.post(url, json=json_body, headers=headers)
                 if r.status_code >= 400:
                     logger.warning(f"⚠️ {self.name} POST {url} -> {r.status_code}")

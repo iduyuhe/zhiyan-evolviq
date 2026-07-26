@@ -59,3 +59,14 @@ async def retry_pending():
 @router.get("/stats")
 async def stats():
     return writeback_bridge.stats()
+
+
+@router.get("/demo-records")
+async def demo_records():
+    """查看演示审计接收端实际收到的记录（验证回写实执行闭环）。"""
+    try:
+        from src.runtime.data_sources.demo_audit_sink import received
+        recs = received()
+    except Exception:
+        recs = []
+    return {"count": len(recs), "records": recs}

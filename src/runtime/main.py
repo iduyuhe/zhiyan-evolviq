@@ -128,6 +128,22 @@ async def lifespan(app: FastAPI):
     except Exception:
         pass
 
+    # 演示审计接收端（v29.2）：ZHIYAN_DS_DEMO_AUDIT=1 时，启动线程内 HTTP 接收端
+    # 并把 MES/ERP 连接器指向它，使回写实执行路径（真实 HTTP POST→200）闭环，
+    # 不依赖外部 ERP/MES；生产改用真实 ZHIYAN_DS_MES_URL/ERP_URL 同样生效。
+    if os.environ.get("ZHIYAN_DS_DEMO_AUDIT") == "1":
+        try:
+            from src.runtime.data_sources.demo_audit_sink import start
+            from src.runtime.data_sources.connectors.domain import MesConnector, ErpConnector
+            sink_port = int(os.environ.get("ZHIYAN_DS_DEMO_AUDIT_PORT", "8800"))
+            start(sink_port)
+            sink_base = f"http://127.0.0.1:{sink_port}"
+            ds_registry.register(MesConnector(base_url=sink_base, api_key="demo", tenant_id="default"))
+            ds_registry.register(ErpConnector(base_url=sink_base, api_key="demo", tenant_id="default"))
+            logger.info(f"🧪 演示审计：MES/ERP 连接器已指向 {sink_base}（回写实执行闭环）")
+        except Exception as e:
+            logger.warning(f"⚠️ 演示审计接收端启动失败（已忽略）：{e}")
+
     # 演示效果信号种子（可选）：仅当 ZHIYAN_DEMO_DATA=1 时注入，
     # 让「按效果调参」在无真实流量时也能跑出可信的效果信号与建议（不污染测试/生产）。
     if os.environ.get("ZHIYAN_DEMO_DATA") == "1":
