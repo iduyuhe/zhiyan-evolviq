@@ -787,3 +787,47 @@ export async function getTacitCaptures(channel?: string, limit = 50): Promise<{
   return res.json();
 }
 
+// ---------------- 蓝弧闭环（v22） ----------------
+
+export interface BlueArcStatus {
+  total_consequences: number;
+  validated: number;
+  contradicted: number;
+  pending_outcomes: number;
+  match_rate: number;
+}
+
+export async function declareBlueArcAction(
+  agent: string,
+  predicted: Record<string, any>,
+  linked_fact_id?: string,
+): Promise<{ action_id: string; status: string; agent: string }> {
+  const res = await fetch(`${API_BASE}/blue-arc/act`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ agent, predicted, linked_fact_id }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function reportBlueArcActual(
+  action_id: string,
+  actual: Record<string, any>,
+  source = 'api',
+): Promise<{ action_id: string; match: boolean; validated: boolean; match_detail: any }> {
+  const res = await fetch(`${API_BASE}/blue-arc/observe`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ action_id, actual, source }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function getBlueArcStatus(): Promise<BlueArcStatus> {
+  const res = await fetch(`${API_BASE}/blue-arc/status`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
