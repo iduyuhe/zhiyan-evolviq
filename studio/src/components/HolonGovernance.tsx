@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { authHeaders } from '../api/client';
 
 interface AgentGovernance {
   agent: string;
@@ -39,7 +40,7 @@ export default function HolonGovernance() {
 
   const fetchData = useCallback(async () => {
     try {
-      const r = await fetch('/api/governance/panel');
+      const r = await fetch('/api/governance/panel', { headers: authHeaders() });
       if (r.ok) {
         setData(await r.json());
       }

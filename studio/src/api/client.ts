@@ -32,7 +32,7 @@ export interface AuthUser {
   auth_source: string;
 }
 
-function authHeaders(extra?: Record<string, string>, key?: string | null): Record<string, string> {
+export function authHeaders(extra?: Record<string, string>, key?: string | null): Record<string, string> {
   // key 为 undefined → 使用全局激活租户 _tenantKey；为 null → 显式匿名（default）；为字符串 → 临时指定某个租户 Key
   const effectiveKey = key === undefined ? _tenantKey : key;
   const token = getToken();

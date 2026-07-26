@@ -28,7 +28,7 @@ import AgentSidebar from './components/AgentSidebar';
 import TenantSwitcher from './components/TenantSwitcher';
 import TenantManagement from './components/TenantManagement';
 import WritebackPanel from './components/WritebackPanel';
-import { createSession, approveSession, quickCheck } from './api/client';
+import { createSession, approveSession, quickCheck, authHeaders } from './api/client';
 import type { Session, ExecutionResult } from './api/client';
 import Login from './components/Login';
 import { getToken, fetchMe, logout, type AuthUser } from './api/client';
@@ -106,14 +106,17 @@ export default function App() {
   };
 
   useEffect(() => {
-    fetch('/api/agents')
-      .then((r) => r.json())
+    // v28.2+ 全局鉴权：必须带 Bearer JWT；缺 token 静默兜底（登录页不会触发此 effect）
+    fetch('/api/agents', { headers: authHeaders() })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((d) => {
         const list = (d.agents || []) as AgentInfo[];
         setAgents(list);
         if (list.length > 0) handleAgentChange(list[0]);
       })
-      .catch(() => {});
+      .catch((e) => {
+        console.warn('[App] /api/agents 加载失败:', e?.message || e);
+      });
   }, []);
 
   const handleQuickCheck = useCallback(async (goal: string) => {

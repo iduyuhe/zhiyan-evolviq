@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { authHeaders } from '../api/client';
 
 interface AuditEntry {
   timestamp: string;
@@ -22,7 +23,8 @@ export default function AuditLogView() {
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/audit/logs');
+      const res = await fetch('/api/audit/logs', { headers: authHeaders() });
+      if (!res.ok) return;
       const data = await res.json();
       setLogs(data.logs || []);
       setStats(data.stats || null);

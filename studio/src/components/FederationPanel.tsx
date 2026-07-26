@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { authHeaders } from '../api/client';
 
 export default function FederationPanel() {
   const [data, setData] = useState<any>(null);
@@ -8,10 +9,10 @@ export default function FederationPanel() {
   const fetchAll = useCallback(async () => {
     try {
       const [statusR, patternsR, highR, strategyR] = await Promise.all([
-        fetch('/api/federation/status'),
-        fetch('/api/federation/patterns'),
-        fetch(`/api/federation/patterns/high?min_trust=${minTrust}`),
-        fetch('/api/federation/strategy'),
+        fetch('/api/federation/status', { headers: authHeaders() }),
+        fetch('/api/federation/patterns', { headers: authHeaders() }),
+        fetch(`/api/federation/patterns/high?min_trust=${minTrust}`, { headers: authHeaders() }),
+        fetch('/api/federation/strategy', { headers: authHeaders() }),
       ]);
       if (statusR.ok && patternsR.ok && highR.ok && strategyR.ok) {
         setData({

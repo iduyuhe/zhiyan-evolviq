@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { authHeaders } from '../api/client';
 
 const RISK_COLORS: Record<string, string> = {
   low: 'bg-yellow-50 border-yellow-200 text-yellow-700',
@@ -22,10 +23,10 @@ export default function SupplyChainFederation() {
   const fetchAll = useCallback(async () => {
     try {
       const [goalsR, risksR, plansR, statusR] = await Promise.all([
-        fetch('/api/federation/supply-chain/goals'),
-        fetch('/api/federation/supply-chain/risks'),
-        fetch('/api/federation/supply-chain/plans'),
-        fetch('/api/federation/supply-chain/fed-status'),
+        fetch('/api/federation/supply-chain/goals', { headers: authHeaders() }),
+        fetch('/api/federation/supply-chain/risks', { headers: authHeaders() }),
+        fetch('/api/federation/supply-chain/plans', { headers: authHeaders() }),
+        fetch('/api/federation/supply-chain/fed-status', { headers: authHeaders() }),
       ]);
       if (goalsR.ok && risksR.ok && plansR.ok && statusR.ok) {
         setData({
@@ -49,7 +50,7 @@ export default function SupplyChainFederation() {
     if (!goalInput.trim()) return;
     try {
       await fetch('/api/federation/supply-chain/goal', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ tenant_id: 'default', goal: goalInput, target_materials: [], urgency: 'normal' }),
       });
       setGoalInput('');
@@ -61,7 +62,7 @@ export default function SupplyChainFederation() {
     if (!riskInput.material.trim()) return;
     try {
       await fetch('/api/federation/supply-chain/risk', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ tenant_id: 'default', material: riskInput.material, risk_level: riskInput.level, description: riskInput.desc }),
       });
       setRiskInput({ material: '', level: 'medium', desc: '' });
@@ -244,7 +245,7 @@ export default function SupplyChainFederation() {
               <button className="btn-primary text-xs py-1.5 px-4" onClick={async () => {
                 if (!planInput.goalId || !planInput.plan) return;
                 await fetch('/api/federation/supply-chain/plan', {
-                  method: 'POST', headers: {'Content-Type': 'application/json'},
+                  method: 'POST', headers: authHeaders({'Content-Type': 'application/json'}),
                   body: JSON.stringify({ initiator: 'default', goal_id: planInput.goalId, plan: planInput.plan }),
                 });
                 setPlanInput({goalId: '', plan: ''});

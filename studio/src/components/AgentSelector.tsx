@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { authHeaders } from '../api/client';
 
 export interface AgentInfo {
   id: string;
@@ -147,13 +148,17 @@ export default function AgentSelector({ onSelect }: { onSelect: (agent: AgentInf
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch('/api/agents')
-      .then(r => r.json())
+    fetch('/api/agents', { headers: authHeaders() })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
       .then(d => {
         setAgents(d.agents || []);
         if (d.agents?.length > 0) onSelect(d.agents[0]);
       })
-      .catch(() => {});
+      .catch((e) => {
+        // v28.2+ 全局鉴权：缺 token 时静默回退到空数组
+        // （上层仍可基于硬编码 SCENARIO_GROUPS 渲染分组骨架）
+        console.warn('[AgentSelector] /api/agents 加载失败:', e?.message || e);
+      });
   }, []);
 
   // 点击外部关闭

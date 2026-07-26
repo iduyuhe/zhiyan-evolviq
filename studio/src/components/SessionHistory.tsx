@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { authHeaders } from '../api/client';
 
 interface SessionSummary {
   session_id: string;
@@ -14,7 +15,8 @@ export default function SessionHistory({ onSelect }: { onSelect: (id: string) =>
   const fetchSessions = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/sessions');
+      const res = await fetch('/api/sessions', { headers: authHeaders() });
+      if (!res.ok) return;
       const data = await res.json();
       setSessions(data.sessions || []);
     } catch {
