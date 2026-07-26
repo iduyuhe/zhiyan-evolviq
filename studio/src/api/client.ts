@@ -11,15 +11,67 @@ export function setTenantKey(key: string | null): void {
 export function getTenantKey(): string | null {
   return _tenantKey;
 }
+
+// ============ 企业认证（v28）：JWT 存取 + 自动注入 ============
+const TOKEN_KEY = 'zhiyan_jwt';
+export function getToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY);
+}
+export function setToken(t: string | null): void {
+  if (t) localStorage.setItem(TOKEN_KEY, t);
+  else localStorage.removeItem(TOKEN_KEY);
+}
+
+export interface AuthUser {
+  id: string;
+  username: string;
+  display_name: string;
+  email: string;
+  role: string;
+  tenant_id: string;
+  auth_source: string;
+}
+
 function authHeaders(extra?: Record<string, string>, key?: string | null): Record<string, string> {
   // key 为 undefined → 使用全局激活租户 _tenantKey；为 null → 显式匿名（default）；为字符串 → 临时指定某个租户 Key
   const effectiveKey = key === undefined ? _tenantKey : key;
+  const token = getToken();
   return {
     'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(effectiveKey ? { 'X-Tenant-Key': effectiveKey } : {}),
     ...(extra ?? {}),
   };
 }
+
+// ============ 登录 / 当前用户 / 登出 ============
+export async function login(username: string, password: string): Promise<{ access_token: string; user: AuthUser }> {
+  const res = await fetch(`${API_BASE}/authn/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  });
+  if (!res.ok) {
+    const msg = await res.text().catch(() => '');
+    throw new Error(msg || `登录失败 (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function fetchMe(): Promise<AuthUser> {
+  const token = getToken();
+  if (!token) throw new Error('no token');
+  const res = await fetch(`${API_BASE}/authn/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`未授权 (${res.status})`);
+  return res.json();
+}
+
+export function logout(): void {
+  setToken(null);
+}
+
 
 export interface Session {
   session_id: string;

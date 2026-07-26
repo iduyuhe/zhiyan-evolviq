@@ -26,6 +26,8 @@ import TenantSwitcher from './components/TenantSwitcher';
 import TenantManagement from './components/TenantManagement';
 import { createSession, approveSession, quickCheck } from './api/client';
 import type { Session, ExecutionResult } from './api/client';
+import Login from './components/Login';
+import { getToken, fetchMe, logout, type AuthUser } from './api/client';
 
 type Stage = 'input' | 'planning' | 'approving' | 'executing' | 'result' | 'error';
 type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'twin' | 'governance' | 'federation' | 'supplychain' | 'tenant';
@@ -49,6 +51,34 @@ export default function App() {
   const [examples, setExamples] = useState<string[]>(DEFAULT_EXAMPLES.supply_chain);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // ============ 企业认证态（v28） ============
+  const [me, setMe] = useState<AuthUser | null>(null);
+  const [authChecking, setAuthChecking] = useState(true);
+
+  // 启动时校验本地 token（有则 /authn/me 探活，无/失效则进登录页）
+  useEffect(() => {
+    const token = getToken();
+    if (!token) {
+      setAuthChecking(false);
+      return;
+    }
+    fetchMe()
+      .then((u) => setMe(u))
+      .catch(() => {
+        logout();
+        setMe(null);
+      })
+      .finally(() => setAuthChecking(false));
+  }, []);
+
+  const handleLogin = (token: string, user: AuthUser) => {
+    setMe(user);
+  };
+  const handleLogout = () => {
+    logout();
+    setMe(null);
+  };
 
   // 桌面侧栏折叠偏好持久化
   useEffect(() => {
@@ -140,6 +170,21 @@ export default function App() {
 
   const totalSteps = stage === 'result' || stage === 'error' ? 4 : 3;
 
+  // 认证门禁：校验中 → loading；未登录 → 登录页；已登录 → 主应用
+  if (authChecking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white">
+        <div className="flex flex-col items-center gap-3">
+          <span className="w-9 h-9 border-[3px] border-zhiyan-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm text-gray-400">正在校验登录状态…</span>
+        </div>
+      </div>
+    );
+  }
+  if (!me) {
+    return <Login onLogin={handleLogin} />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* 顶栏 */}
@@ -189,10 +234,28 @@ export default function App() {
             </div>
           </div>
 
-          {/* 右：租户切换 + 通知 */}
+          {/* 右：租户切换 + 通知 + 用户 */}
           <div className="flex items-center gap-1 flex-shrink-0">
             <TenantSwitcher onManage={() => setTab('tenant')} />
             <NotificationBell />
+            {me && (
+              <div className="flex items-center gap-2 pl-1.5 border-l border-gray-200 ml-0.5">
+                <div className="hidden sm:flex flex-col items-end leading-tight">
+                  <span className="text-xs font-medium text-gray-700">{me.display_name || me.username}</span>
+                  <span className="text-[10px] text-gray-400">{me.role}</span>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-zhiyan-500 to-zhiyan-700 flex items-center justify-center text-white text-xs font-bold">
+                  {(me.display_name || me.username).slice(0, 1).toUpperCase()}
+                </div>
+                <button
+                  onClick={handleLogout}
+                  title="退出登录"
+                  className="px-2 py-1 text-xs rounded-md text-gray-500 hover:text-red-600 hover:bg-red-50 transition"
+                >
+                  退出
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
