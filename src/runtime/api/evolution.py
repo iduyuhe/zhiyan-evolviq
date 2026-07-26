@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from src.runtime.evolution import prompt_versions, kg_facts, reflection, failure_store, preference_learning
+from src.runtime.evolution.ontology import ontology as ontology_store
 from src.runtime.api.deps import get_tenant
 
 logger = logging.getLogger(__name__)
@@ -199,3 +200,49 @@ async def approve_fact(kid: str, tenant: str = Depends(get_tenant)):
 async def preference(agent: str):
     """该 Agent 的在线偏好校准信号（仅供驱动其它模块，不直接改业务数字）。"""
     return preference_learning.preference_calibration(agent)
+
+
+# ---------- v25.0 工业本体自生长 ----------
+
+@router.get("/ontology/schema")
+async def ontology_schema():
+    """当前本体 schema 一览（实体类型 + 关系类型 + 汇总）。"""
+    return {
+        "summary": ontology_store.schema_summary(),
+        "entity_types": [{"name": e.name, "description": e.description, "status": e.status, "source": e.source}
+                         for e in ontology_store.entity_types()],
+        "relationship_types": [{"name": e.name, "description": e.description, "status": e.status, "source": e.source}
+                               for e in ontology_store.relationship_types()],
+    }
+
+
+@router.get("/ontology/discover")
+async def ontology_discover():
+    """从 KG 事实提议中扫描潜在的新实体类型和关系类型候选。"""
+    return ontology_store.discover()
+
+
+class OntologyExtensionRequest(BaseModel):
+    kind: str  # "entity_type" | "relationship_type"
+    name: str
+    description: str = ""
+
+
+@router.post("/ontology/extensions")
+async def propose_ontology_extension(req: OntologyExtensionRequest):
+    """提议一条本体扩展（实体类型或关系类型）→ 存为 proposed 待审批。"""
+    try:
+        prop = ontology_store.propose_extension(req.kind, req.name, req.description)
+        return {"status": "proposed", "proposal": prop}
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+
+
+@router.post("/ontology/extensions/{proposal_id}/approve")
+async def approve_ontology_extension(proposal_id: str):
+    """人工审批通过一条本体扩展提议。"""
+    try:
+        prop = ontology_store.approve_extension(proposal_id)
+        return {"status": "approved", "proposal": prop}
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=str(e))
