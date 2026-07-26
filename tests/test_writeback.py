@@ -74,13 +74,13 @@ async def test_writeback_api_endpoint():
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://t") as t:
         r = await t.post(
-            "/api/writeback",
+            "/writeback",
             json={"system": "mes", "agent": "supply_chain", "decision_type": "z", "payload": {"v": 9}},
         )
         assert r.status_code == 200
         body = r.json()
         assert body["status"] == "pending"
         # stats 端点
-        s = await t.get("/api/writeback/stats")
+        s = await t.get("/writeback/stats")
         assert s.status_code == 200
         assert "pending" in s.json()

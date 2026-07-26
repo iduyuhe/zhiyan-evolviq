@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 
 from src.runtime.data_sources.writeback import writeback_bridge
 
-router = APIRouter(prefix="/api/writeback", tags=["writeback"])
+router = APIRouter(prefix="/writeback", tags=["writeback"])
 
 
 class WritebackRequest(BaseModel):
