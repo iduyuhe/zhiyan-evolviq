@@ -15,6 +15,7 @@ import StrategyTuningTab from './components/StrategyTuningTab';
 import GatewayTab from './components/GatewayTab';
 import TwinDashboard from './components/TwinDashboard';
 import HolonGovernance from './components/HolonGovernance';
+import FederationPanel from './components/FederationPanel';
 import AiInsightPanel from './components/AiInsightPanel';
 import NotificationBell from './components/NotificationBell';
 import type { AgentInfo } from './components/AgentSelector';
@@ -26,7 +27,7 @@ import { createSession, approveSession, quickCheck } from './api/client';
 import type { Session, ExecutionResult } from './api/client';
 
 type Stage = 'input' | 'planning' | 'approving' | 'executing' | 'result' | 'error';
-type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'twin' | 'governance' | 'tenant';
+type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'twin' | 'governance' | 'federation' | 'tenant';
 
 const STEPS = [
   { key: 'input', label: '目标设定', icon: '🎯' },
@@ -166,6 +167,7 @@ export default function App() {
                 { key: 'knowledge' as Tab, label: '知识图谱', icon: '🕸️' },
                 { key: 'strategy' as Tab, label: '策略调参', icon: '🎚️' },
                 { key: 'governance' as Tab, label: '治理', icon: '🏛️' },
+                { key: 'federation' as Tab, label: '联邦', icon: '🌍' },
                 { key: 'gateway' as Tab, label: '网关', icon: '🛰️' },
                 { key: 'twin' as Tab, label: '孪生大屏', icon: '🌐' },
                 { key: 'tenant' as Tab, label: '租户', icon: '🏢' },
@@ -369,6 +371,7 @@ export default function App() {
           {tab === 'knowledge' && <KnowledgeGraphTab />}
           {tab === 'strategy' && <StrategyTuningTab />}
           {tab === 'governance' && <HolonGovernance />}
+          {tab === 'federation' && <FederationPanel />}
           {tab === 'gateway' && <GatewayTab />}
           {tab === 'twin' && <TwinDashboard />}
           {tab === 'tenant' && <TenantManagement />}

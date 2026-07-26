@@ -10,6 +10,7 @@ from fastapi.responses import RedirectResponse
 
 from src.runtime.api import agents_api, auth, audit, events_api, health, mcp_tools, scheduler_api, sessions, supply_chain
 from src.runtime.api import interventions, reports, system, knowledge_graph, gateways, strategy, tenants, experience, evolution, data_sources, twin, governance
+from src.runtime.federation import api as federation_api
 from src.runtime.core.scheduler import scheduler
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -158,6 +159,7 @@ app.include_router(tenants.router)
 app.include_router(data_sources.router)
 app.include_router(twin.router)
 app.include_router(governance.router)
+app.include_router(federation_api.router)
 
 
 if __name__ == "__main__":
