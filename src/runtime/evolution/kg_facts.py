@@ -97,7 +97,51 @@ class KgFactStore:
             logger.info(f"🕸️ KG 事实已写入：{p['subject']} —{p['predicate']}→ {p['object_val']}")
         except Exception as e:
             logger.warning(f"⚠️ KG 事实 upsert 失败（不破管）：{e}")
+        # v26.0：tacit 通道事实审批 → 自动注册虚拟后果（五路全自进化）
+        self._auto_virtual_consequence(p, match=True)
         return p
+
+    def reject(self, kid: str, reason: str = "") -> dict:
+        """驳回一条 KG 事实提议（不写入图谱），自动记录虚拟后果。"""
+        p = self.get(kid)
+        if not p:
+            raise KeyError(f"事实提议不存在: {kid}")
+        p["status"] = "rejected"
+        p["note"] = (p.get("note", "") + f" | 驳回原因: {reason}").strip()
+        # v26.0：自动记录虚拟后果（match=False）→ 触发置信度调整或纠错
+        self._auto_virtual_consequence(p, match=False)
+        logger.info(f"🕸️ KG 事实已驳回：{p['subject']} —{p['predicate']}→ {p['object_val']}（{reason}）")
+        return p
+
+    def _auto_virtual_consequence(self, p: dict, match: bool) -> None:
+        """为来自 tacit 通道的事实提议自动注册虚拟后果。
+
+        当人类审批/驳回一条 tacit 通道的 KG 事实时，自动产生一条虚拟后果记录，
+        使该事实进入蓝弧闭环：approve→validated, reject→mismatch→置信度调整/纠错。
+        """
+        agent = p.get("agent", "")
+        if not agent.startswith("tacit:"):
+            return  # 非 tacit 通道不处理
+        try:
+            from src.runtime.consequence import consequence
+
+            # 构建虚拟拟后果：把人类审批作为"后果"
+            predicted = {p.get("predicate", "fact"): 1.0}
+            actual = {p.get("predicate", "fact"): 1.0 if match else 0.0}
+            action_id = f"virtual:tacit:{p['id']}"
+
+            consequence.virtual_consequence(
+                action_id=action_id,
+                agent=agent,
+                predicted=predicted,
+                actual=actual,
+                match=match,
+                source="virtual:human_approval",
+                linked_fact_id=p["id"],
+            )
+            logger.debug(f"🔵 虚拟后果已注册：{action_id} match={match}")
+        except Exception as e:
+            logger.debug(f"⚠️ 虚拟后果注册失败（不破管）：{e}")
 
     def list_proposals(self, agent: Optional[str] = None, tenant: Optional[str] = None) -> list[dict]:
         recs = self._proposals

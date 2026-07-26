@@ -70,8 +70,9 @@ def _on_tacit_event(ev) -> None:
 
         fact = extract_tacit_fact(ev)
         # 符号主义锚定：提议写入知识图谱（draft，待人类审批门）
+        proposal_id = None
         try:
-            kg_facts.propose(
+            prop = kg_facts.propose(
                 tenant_id="default",
                 agent=f"tacit:{ev.channel}",
                 subject=fact["subject"],
@@ -81,8 +82,25 @@ def _on_tacit_event(ev) -> None:
                 confidence=ev.confidence,
                 note=fact.get("note", ""),
             )
+            proposal_id = prop.get("id")
         except Exception as e:
             logger.warning(f"⚠️ 隐性捕获锚定 KG 失败（不破管）：{e}")
+
+        # v26.0：注册预期后果（待人类审批/驳回时通过虚拟后果闭环）
+        if proposal_id:
+            try:
+                from src.runtime.consequence import consequence
+
+                action_id = f"virtual:tacit:{proposal_id}"
+                consequence.expect_outcome(
+                    action_id=action_id,
+                    agent=f"tacit:{ev.channel}",
+                    predicted={fact["predicate"]: 1.0},
+                    linked_fact_id=proposal_id,
+                )
+            except Exception as e:
+                logger.debug(f"⚠️ 隐性捕获注册预期失败（不破管）：{e}")
+
         # 经验库捕获（连接主义隐性信号沉淀为工作记忆）
         try:
             experience.capture_tacit(

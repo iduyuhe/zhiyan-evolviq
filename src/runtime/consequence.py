@@ -253,6 +253,47 @@ class ConsequenceTracker:
             "match_rate": round(matched / max(total, 1), 3),
         }
 
+    def virtual_consequence(
+        self,
+        action_id: str,
+        agent: str,
+        predicted: dict,
+        actual: dict,
+        match: bool,
+        source: str = "virtual:human_approval",
+        linked_fact_id: str | None = None,
+    ) -> ConsequenceRecord:
+        """注册一条虚拟后果（不依赖 UNS 事件，用于隐性捕获等通道）。
+        
+        v26.0：当人类审批/驳回一条 tacit 通道的 KG 事实时，自动产生虚拟后果，
+        使该事实进入蓝弧闭环。
+        """
+        rec = ConsequenceRecord(
+            id=f"cr-{uuid.uuid4().hex[:12]}",
+            action_id=action_id,
+            agent=agent,
+            predicted=dict(predicted),
+            actual=dict(actual),
+            match=match,
+            match_detail={
+                "matched_keys": 1,
+                "total_keys": 1,
+                "details": {"virtual": {"expected": predicted, "actual": actual, "match": match}},
+                "source": source,
+            },
+            source=source,
+            linked_fact_id=linked_fact_id,
+            created_at=time.time(),
+        )
+        with self._lock:
+            self._records.append(rec)
+            self._trim()
+        logger.info(f"🔵 虚拟后果 [{('✓' if match else '✗')}] action={action_id} agent={agent}")
+
+        # 回流认知层（蓝弧闭合）
+        self._update_cognitive_layer(rec, linked_fact_id)
+        return rec
+
     def clear(self) -> None:
         with self._lock:
             self._records.clear()

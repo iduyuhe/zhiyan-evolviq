@@ -195,6 +195,20 @@ async def approve_fact(kid: str, tenant: str = Depends(get_tenant)):
     return {"status": "approved", "proposal": p}
 
 
+class RejectRequest(BaseModel):
+    reason: str = ""
+
+
+@router.post("/kg-facts/{kid}/reject")
+async def reject_fact(kid: str, req: RejectRequest):
+    """驳回一条 KG 事实提议（不写入图谱），自动记录虚拟后果。"""
+    try:
+        p = kg_facts.reject(kid, reason=req.reason)
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    return {"status": "rejected", "proposal": p}
+
+
 # ---------- P2-5 在线偏好学习 lite ----------
 @router.get("/preference/{agent}")
 async def preference(agent: str):
