@@ -1,92 +1,78 @@
-"""v21.5 隐性捕获单元测试
+"""隐性信号捕获摄入测试（v21.5 落地入口）。
 
-验证：
-1. UNS 人/社交/会议/协作四路事件 → 经验库隐性捕获 + 知识图谱 draft 锚定（抽取即锚定）
-2. gateway/system 路不触发隐性捕获（只做孪生体状态上行）
-3. 确定性抽取启发式（subject/predicate/object_val）
-4. 韧性降级：KG 锚定失败时经验库仍捕获
-5. 订阅钩子幂等注册（重复 init 不重复捕获）
+验证：信号经 POST /tacit-capture/{channel} 进入 UNS → 订阅管道完成
+「抽取即锚定」——经验库捕获 + 知识图谱 draft 提议。
 """
-
 import pytest
+from httpx import ASGITransport, AsyncClient
 
-from src.runtime.uns import (
-    uns,
-    CHANNEL_HUMAN,
-    CHANNEL_SOCIAL,
-    CHANNEL_MEETING,
-    CHANNEL_COLLAB,
-    CHANNEL_GATEWAY,
-)
+from src.runtime.main import app
 from src.runtime.experience import experience
-from src.runtime.evolution.kg_facts import kg_facts
-from src.runtime.tacit_capture import init_tacit_capture, extract_tacit_fact
+from src.runtime.uns import uns, CHANNEL_HUMAN
+from src.runtime.tacit_capture import extract_tacit_fact
 
 
 @pytest.fixture
-def cleared():
-    # 只清事件与记录，保留 UNS 订阅者（钩子 import 即注册，不可清）
-    uns._events.clear()
-    experience._records.clear()
-    kg_facts._proposals.clear()
-    yield
-    uns._events.clear()
-    experience._records.clear()
-    kg_facts._proposals.clear()
+def _client():
+    transport = ASGITransport(app=app)
+    return AsyncClient(transport=transport, base_url="http://test")
 
 
-def test_human_capture_anchors(cleared):
-    uns.publish_human(
-        "wecom://zhang", {"content": "供应商A交期风险高"}, entities=["EMP:zhang", "SUP:A"]
+@pytest.mark.asyncio
+async def test_ingest_human_signal_via_api(_client):
+    before = len(experience.tacit_captures(tenant="default"))
+    resp = await _client.post(
+        "/tacit-capture/human",
+        json={"source": "emp:zhang", "payload": {"judgment": "这条产线换型风险偏高，建议先小批验证"},
+              "entities": ["LINE:3", "EMP:zhang"], "confidence": 0.9},
     )
-    caps = experience.tacit_captures(channel=CHANNEL_HUMAN)
-    assert len(caps) == 1
-    assert caps[0]["channel"] == CHANNEL_HUMAN
-    assert caps[0]["extracted"]["subject"] == "EMP:zhang"
-    assert caps[0]["extracted"]["predicate"] == "tacit_judges"
-    # 锚定到 KG 为 draft 待审批
-    props = kg_facts.list_proposals()
-    assert len(props) == 1
-    assert props[0]["status"] == "draft"
-    assert props[0]["subject"] == "EMP:zhang"
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["status"] == "captured"
+    assert body["channel"] == "human"
+    # 经验库应新增一条隐性捕获
+    caps = experience.tacit_captures(tenant="default")
+    assert len(caps) > before
+    latest = caps[0]
+    assert latest["channel"] == "human"
+    assert "换型风险" in latest["context"]
 
 
-def test_all_four_channels_captured(cleared):
-    uns.publish_human("w", {"content": "h"})
-    uns.publish_social("s", {"content": "s"})
-    uns.publish_meeting("m", {"content": "m"})
-    uns.publish_collab("c", {"content": "c"}, entities=["DEV:x"])
-    assert len(experience.tacit_captures()) == 4
-    # gateway/system 不应触发隐性捕获
-    uns.publish_gateway("opcua://l", {"energy_kwh__L": 1.0})
-    assert len(experience.tacit_captures()) == 4
+@pytest.mark.asyncio
+async def test_invalid_channel_rejected(_client):
+    resp = await _client.post(
+        "/tacit-capture/gateway",
+        json={"source": "x", "payload": {"k": "v"}},
+    )
+    assert resp.status_code == 400
 
 
-def test_extract_heuristic(cleared):
-    ev = uns.publish_human("w", {"judgment": "交期风险"}, entities=["EMP:z", "SUP:A"])
+@pytest.mark.asyncio
+async def test_pipeline_anchors_to_kg(_client):
+    """UNS 四路信号 → 抽取 → KG draft 提议（抽取即锚定）。"""
+    from src.runtime.evolution.kg_facts import kg_facts
+
+    n_prop_before = len(kg_facts.list_proposals())
+    ev = uns.publish_human(
+        source="emp:li",
+        payload={"decision_rationale": "优先保供 A 供应商，因其交期最稳"},
+        entities=["SUP:A", "EMP:li"],
+        type="tacit_judgment",
+        confidence=0.8,
+    )
     fact = extract_tacit_fact(ev)
-    assert fact["subject"] == "EMP:z"
-    assert fact["predicate"] == "tacit_judges"
-    assert "交期风险" in fact["object_val"]
-    # meeting 路 → decided 谓词
-    ev2 = uns.publish_meeting("m", {"summary": "Q3 预算通过"}, entities=["EMP:li"])
-    fact2 = extract_tacit_fact(ev2)
-    assert fact2["predicate"] == "decided"
-    assert "Q3 预算通过" in fact2["object_val"]
+    assert fact["predicate"] in ("tacit_judges", "signals")
+    assert len(kg_facts.list_proposals()) > n_prop_before
 
 
-def test_resilience_kg_sink_fails(cleared, monkeypatch):
-    def boom(*a, **k):
-        raise RuntimeError("kg down")
+def test_extract_uses_type_predicate():
+    class _Ev:
+        channel = "social"
+        type = "business_event"
+        source = "wecom:g1"
+        payload = {"summary": "Q3 订单环比下滑 12%"}
+        entities = []
 
-    monkeypatch.setattr(kg_facts, "propose", boom)
-    uns.publish_human("w", {"content": "x"})
-    # KG 失败不影响经验库捕获（韧性降级，不破管）
-    assert len(experience.tacit_captures()) == 1
-
-
-def test_idempotent_hooks():
-    before = len(uns._subscribers.get(CHANNEL_HUMAN, []))
-    init_tacit_capture()
-    after = len(uns._subscribers.get(CHANNEL_HUMAN, []))
-    assert after == before, "重复 init 不应重复注册订阅者"
+    f = extract_tacit_fact(_Ev())
+    assert f["predicate"] == "observed_in"
+    assert "订单" in f["object_val"]

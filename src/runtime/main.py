@@ -14,6 +14,7 @@ from src.runtime.federation import api as federation_api
 from src.runtime.authn import api as authn_api
 from src.runtime.api import writeback as writeback_api
 from src.runtime.api import monitoring as monitoring_api
+from src.runtime.api import tacit_capture as tacit_capture_api
 from src.runtime.core.scheduler import scheduler
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -212,6 +213,7 @@ app.include_router(governance.router, dependencies=_AUTH_DEPS)
 app.include_router(federation_api.router, dependencies=_AUTH_DEPS)
 app.include_router(writeback_api.router, dependencies=_AUTH_DEPS)  # ERP/MES 回写审计桥
 app.include_router(monitoring_api.router, dependencies=_AUTH_DEPS)  # 监控告警（v28.3）
+app.include_router(tacit_capture_api.router, dependencies=_AUTH_DEPS)  # 隐性信号捕获摄入（v21.5）
 app.include_router(authn_api.router)  # 公开：登录/后端发现/OAuth 回调
 
 

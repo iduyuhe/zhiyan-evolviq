@@ -8,6 +8,7 @@ import TraceResultView from './components/TraceResultView';
 import GenericResultView from './components/GenericResultView';
 import DeviceMonitor from './components/DeviceMonitor';
 import AlertPanel from './components/AlertPanel';
+import TacitCapturePanel from './components/TacitCapturePanel';
 import SessionHistory from './components/SessionHistory';
 import AuditLogView from './components/AuditLogView';
 import ConsoleTab from './components/ConsoleTab';
@@ -32,7 +33,7 @@ import Login from './components/Login';
 import { getToken, fetchMe, logout, type AuthUser } from './api/client';
 
 type Stage = 'input' | 'planning' | 'approving' | 'executing' | 'result' | 'error';
-type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'twin' | 'governance' | 'federation' | 'supplychain' | 'writeback' | 'tenant';
+type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'twin' | 'governance' | 'federation' | 'supplychain' | 'writeback' | 'tacit' | 'tenant';
 
 const STEPS = [
   { key: 'input', label: '目标设定', icon: '🎯' },
@@ -210,6 +211,7 @@ export default function App() {
                 { key: 'studio' as Tab, label: 'Studio', icon: '🤖' },
                 { key: 'console' as Tab, label: '控制台', icon: '🎛️' },
                 { key: 'monitor' as Tab, label: '监控', icon: '📡' },
+                { key: 'tacit' as Tab, label: '隐性信号', icon: '🧠' },
                 { key: 'history' as Tab, label: '历史', icon: '📋' },
                 { key: 'audit' as Tab, label: '审计', icon: '📜' },
                 { key: 'knowledge' as Tab, label: '知识图谱', icon: '🕸️' },
@@ -433,6 +435,7 @@ export default function App() {
       ) : (
         <main className="max-w-3xl mx-auto px-4 py-8 space-y-4">
           {tab === 'monitor' && (<><DeviceMonitor /><AlertPanel /></>)}
+          {tab === 'tacit' && <TacitCapturePanel />}
           {tab === 'history' && <SessionHistory onSelect={() => { setTab('studio'); }} />}
           {tab === 'audit' && <AuditLogView />}
           {tab === 'console' && <ConsoleTab />}

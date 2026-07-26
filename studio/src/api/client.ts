@@ -742,3 +742,48 @@ export async function triggerMonitorCheck(): Promise<{ fired: AlertItem[] }> {
   return res.json();
 }
 
+// ---------------- 隐性信号捕获（v21.5） ----------------
+
+export type TacitChannel = 'human' | 'social' | 'meeting' | 'collab';
+
+export interface TacitCaptureItem {
+  tenant_id: string;
+  kind: string;
+  decision: string;
+  channel: string;
+  source: string;
+  context: string;
+  extracted: Record<string, any>;
+  entities: any[];
+  created_at: string;
+}
+
+export async function submitTacitSignal(
+  channel: TacitChannel,
+  source: string,
+  payload: Record<string, any>,
+  entities: string[] = [],
+  confidence = 1.0,
+): Promise<{ status: string; event_id: string; channel: string }> {
+  const res = await fetch(`${API_BASE}/tacit-capture/${channel}`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ source, payload, entities, confidence }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function getTacitCaptures(channel?: string, limit = 50): Promise<{
+  tenant_id: string;
+  tacit_captures: TacitCaptureItem[];
+  pending_kg_facts: any[];
+}> {
+  const q = new URLSearchParams();
+  if (channel) q.set('channel', channel);
+  q.set('limit', String(limit));
+  const res = await fetch(`${API_BASE}/experience/tacit?${q.toString()}`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
