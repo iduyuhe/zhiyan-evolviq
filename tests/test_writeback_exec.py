@@ -25,6 +25,8 @@ def _demo():
     writeback_bridge._sent.clear()
     yield base
     registry.unregister("mes", tenant_id="default")
+    writeback_bridge._pending.clear()
+    writeback_bridge._sent.clear()
 
 
 @pytest.mark.asyncio
