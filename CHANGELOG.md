@@ -1,5 +1,32 @@
 # Changelog
 
+## v28.0 (2026-07-27) — 投产就绪三件套（企业认证 / 一键部署 / 行业知识库）
+
+补齐客户说"我们要用"时最卡脖子的三项（DEPLOYMENT_GAP_ACTION.md P0 + 行业模板）：
+
+### 1. 企业级认证（LDAP/OAuth2/JWT/RBAC）
+- **新包 `src/runtime/authn/`**：用户/角色/租户三层 + JWT(HS256,无外部依赖) + RBAC。
+- **认证后端**：本地账号（PBKDF2 哈希）+ LDAP/AD（python-ldap 惰性导入，未装则优雅降级）+ LDAP Mock（离线演示）+ OAuth2/OIDC（Azure AD/企业微信/飞书/Keycloak）+ SAML 占位（可插拔）。
+- **登录链路韧性降级**：本地 → 目录后端 → 失败；目录用户首登自动建号。
+- **API**：`POST /authn/login`、`GET /authn/me`、`GET /authn/backends`、`GET/POST /authn/users`、`POST /authn/users/{id}/role`、`GET /authn/oauth/{login,callback}`。
+- **RBAC**：viewer < operator < tenant_admin < superadmin；`get_current_user` / `require_role()` 依赖已就绪，受保护路由可直接挂载。
+- **与多租户正交**：JWT 是「用户身份」层，X-Tenant-Key 是「租户」层，互不冲突。
+
+### 2. 一键部署脚本（install.sh + 自动 TLS）
+- **`install.sh`**：检测 Docker/端口 → 交互式配置（域名/管理员/DB/LLM）→ 自动生成强随机密钥 → 可选 HTTPS（Caddy 自动 ACME）→ `docker compose up -d` → 输出访问地址与密码。
+- **`docker-compose.tls.yml` + `Caddyfile`**：TLS 叠加层，启用后由 Caddy 前置自动证书，studio 不再直出 3006。
+- **`bash -n` 语法校验通过**；非交互模式（`--non-interactive` / `--with-tls`）支持环境变量驱动。
+
+### 3. 行业知识库模板（船舶 / 铁路 / 电子）
+- **`data/seed/{shipbuilding,railway,electronics}/seed.json`**：各领域 KG 事实 / 本体扩展 / 隐性经验 / Demo 数据。
+- **`src/runtime/seed/` 加载器**：`bootstrap_industry(industry)` 按 `ZHIYAN_INDUSTRY` 把种子注入三大回路——KG 事实提议池、本体扩展提议门、UNS human 通道（真实隐性捕获管线，抽取即锚定）。
+- 注入均为「提议」待审批门/蓝弧闭环把关，符合事实锚点铁律；任一环失败静默降级。
+
+### 测试与构建
+- 新增 `tests/test_authn.py`（9）+ `tests/test_seed.py`（4），`scripts/verify_seed.py` 验证三行业注入。
+- 全量回归 **161 passed 零回归**（原 150 + 11 新增）；Vite 构建通过。
+- `.env.example` 增补认证/目录对接/行业/TLS 配置项。
+
 ## v27.0 (2026-07-26) — Supply Chain Agent Federation
 
 Cross-enterprise supply chain collaboration: share goals, aggregate risks, joint planning across enterprises.

@@ -1,0 +1,35 @@
+# 智衍 EvolvIQ —— TLS 叠加层（与 docker-compose.prod.yml 合并使用）
+#
+# 用法：
+#   ./install.sh --with-tls
+# 等价于：
+#   docker compose -f docker-compose.prod.yml -f docker-compose.tls.yml up -d --build
+#
+# 作用：
+#   - 引入 Caddy 反向代理，自动向 Let's Encrypt 申请/续期证书（ACME）
+#   - studio 不再直接对外发布 3006，改为仅容器网络内暴露 80，由 Caddy 前置
+#   - 外部统一入口变为 https://<ZHIYAN_DOMAIN>（80 自动跳转 443）
+
+services:
+  studio:
+    # 覆盖 prod 中的 "3006:80" 发布，改为仅容器网络暴露
+    ports: []
+    expose:
+      - "80"
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - studio
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

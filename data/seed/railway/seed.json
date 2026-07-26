@@ -1,0 +1,50 @@
+{
+  "industry": "railway",
+  "label": "铁路通信",
+  "description": "铁路通信信号电子产品：SMT 制造、IPC 标准、铁路信号产品规范、高可靠与三防要求。",
+  "kg_facts": [
+    {"subject": "铁路信号产品", "predicate": "conforms_to", "object": "IPC-A-610 Class 3", "confidence": 0.9, "source": "rail_spec", "agent": "quality", "note": "高可靠电子产品接受标准（Class 3）"},
+    {"subject": "SMT物料", "predicate": "has_package", "object": "0402", "confidence": 0.85, "source": "bom", "agent": "smt", "note": "小尺寸阻容封装"},
+    {"subject": "SMT物料", "predicate": "has_package", "object": "QFP", "confidence": 0.85, "source": "bom", "agent": "smt"},
+    {"subject": "铁路信号产品", "predicate": "requires", "object": "三防涂覆", "confidence": 0.88, "source": "rail_spec", "agent": "process", "note": "防潮/防盐雾/防霉，用于车载与轨旁设备"},
+    {"subject": "焊点", "predicate": "acceptance_class", "object": "Class 3", "confidence": 0.86, "source": "ipc", "agent": "quality"},
+    {"subject": "车载设备", "predicate": "test_item", "object": "振动试验", "confidence": 0.8, "source": "rail_spec", "agent": "quality"}
+  ],
+  "ontology": {
+    "entities": [
+      {"name": "物料", "desc": "SMT 用电子元器件与PCB"},
+      {"name": "标准", "desc": "IPC / 铁路行业接受与试验标准"},
+      {"name": "铁路信号产品", "desc": "信号机/列控/通信类车载与轨旁设备"},
+      {"name": "工序", "desc": "SMT 贴装、回流焊、三防涂覆、测试"}
+    ],
+    "relations": [
+      {"name": "conforms_to", "desc": "产品符合某标准等级"},
+      {"name": "has_package", "desc": "元器件封装形式"},
+      {"name": "requires", "desc": "产品要求的工艺/试验"},
+      {"name": "applies_to", "desc": "标准适用的产品类型"}
+    ]
+  },
+  "tacit": [
+    {"channel": "human", "category": "可靠性经验", "text": "铁路产品回流焊后须做 Co-planarity 复检，BGA 虚焊在车载振动下高发"},
+    {"channel": "meeting", "category": "三防经验", "text": "三防涂覆前必须彻底清洁与遮蔽连接器，否则影响后续接插与散热"},
+    {"channel": "social", "category": "信号安全", "text": "涉及联锁安全的软件变更须走独立复核与回归，禁止现场直改"},
+    {"channel": "human", "category": "物料经验", "text": "0402 及以下小封装建议用飞达防错料，换料后首件必测极性"}
+  ],
+  "demo": {
+    "bom": [
+      {"item": "电阻 0402 10k", "qty": 2000, "unit": "ea", "package": "0402"},
+      {"item": "MCU QFP-100", "qty": 50, "unit": "ea", "package": "QFP"}
+    ],
+    "inventory": [
+      {"item": "电阻 0402 10k", "on_hand": 1800, "safety": 1500, "status": "充足"},
+      {"item": "MCU QFP-100", "on_hand": 30, "safety": 40, "status": "缺料"}
+    ],
+    "po": [
+      {"po": "PO-RAIL-001", "item": "MCU QFP-100", "qty": 60, "eta": "2026-08-03"}
+    ],
+    "equipment": [
+      {"device": "贴片机", "id": "DEV:smt-01", "use": "SMT 贴装"},
+      {"device": "回流焊炉", "id": "DEV:reflow-01", "use": "回流焊接"}
+    ]
+  }
+}

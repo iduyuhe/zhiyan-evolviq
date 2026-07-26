@@ -1,0 +1,54 @@
+{
+  "industry": "shipbuilding",
+  "label": "船舶海工",
+  "description": "船舶与海洋工程制造：钢板/型材、焊接工艺、分段总组、船级社规范、舾装与涂装。",
+  "kg_facts": [
+    {"subject": "钢板", "predicate": "has_grade", "object": "EH36", "confidence": 0.92, "source": "class_society", "agent": "quality", "note": "极寒区船体用高强钢，冲击功 -40℃ 要求"},
+    {"subject": "钢板", "predicate": "has_grade", "object": "AH36", "confidence": 0.92, "source": "class_society", "agent": "quality", "note": "常规强度船体结构钢"},
+    {"subject": "焊接工艺", "predicate": "has_method", "object": "FCAW", "confidence": 0.88, "source": "wps", "agent": "process", "note": "药芯焊丝电弧焊，船舶主流打底/填充"},
+    {"subject": "FCAW", "predicate": "typical_current", "object": "220-280A", "confidence": 0.8, "source": "wps", "agent": "process"},
+    {"subject": "分段", "predicate": "coded_as", "object": "BLOCK-XXX", "confidence": 0.85, "source": "coding_rule", "agent": "planning", "note": "分段编码规则：类型+区域+序号"},
+    {"subject": "船舶", "predicate": "certified_by", "object": "CCS", "confidence": 0.9, "source": "class_society", "agent": "quality"},
+    {"subject": "船舶", "predicate": "certified_by", "object": "DNV", "confidence": 0.9, "source": "class_society", "agent": "quality"},
+    {"subject": "焊材", "predicate": "for_grade", "object": "EH36", "confidence": 0.82, "source": "wps", "agent": "process", "note": "配套低温冲击韧性焊丝"}
+  ],
+  "ontology": {
+    "entities": [
+      {"name": "钢板", "desc": "船体结构用钢材，按强度等级与冲击温度分级"},
+      {"name": "焊接工艺", "desc": "船舶结构连接的工艺方法（FCAW/SMAW/SAW）"},
+      {"name": "分段", "desc": "船体建造的中间总成单元，由零件/部件组立而成"},
+      {"name": "船级社", "desc": "船舶入级与检验的第三方机构（CCS/DNV/ABS）"},
+      {"name": "焊材", "desc": "焊接用消耗材料（焊丝/焊条/保护气体）"}
+    ],
+    "relations": [
+      {"name": "has_grade", "desc": "材料具备某强度/韧性等级"},
+      {"name": "requires_process", "desc": "构件连接要求的焊接工艺"},
+      {"name": "coded_as", "desc": "制造单元遵循的编码规则"},
+      {"name": "certified_by", "desc": "产品/材料通过的船级社认证"},
+      {"name": "uses_consumable", "desc": "工艺所用焊材"}
+    ]
+  },
+  "tacit": [
+    {"channel": "human", "category": "工艺经验", "text": "分段吊装前必须复核重心计算与吊装工艺，否则极易失衡甚至倾覆"},
+    {"channel": "human", "category": "焊接经验", "text": "薄板拼板焊接采用分段退焊可显著减小焊接变形，切忌连续同向施焊"},
+    {"channel": "meeting", "category": "质量经验", "text": "关键焊缝 UT 探伤应安排在退火消除应力之后，避免应力干扰判伤"},
+    {"channel": "social", "category": "资质经验", "text": "EH36 等低温钢施焊焊工须持对应等级船级社资质，换证后需首件确认"}
+  ],
+  "demo": {
+    "bom": [
+      {"item": "钢板 EH36 20mm", "qty": 120, "unit": "张", "grade": "EH36"},
+      {"item": "焊丝 E71T-1", "qty": 800, "unit": "kg", "grade": "匹配EH36"}
+    ],
+    "inventory": [
+      {"item": "钢板 EH36 20mm", "on_hand": 96, "safety": 100, "status": "缺料"},
+      {"item": "焊丝 E71T-1", "on_hand": 1200, "safety": 500, "status": "充足"}
+    ],
+    "po": [
+      {"po": "PO-SHIP-001", "item": "钢板 EH36 20mm", "qty": 40, "eta": "2026-08-05"}
+    ],
+    "equipment": [
+      {"device": "门式起重机", "id": "DEV:gantry-01", "use": "分段吊装"},
+      {"device": "埋弧焊机", "id": "DEV:saw-02", "use": "拼板焊接"}
+    ]
+  }
+}

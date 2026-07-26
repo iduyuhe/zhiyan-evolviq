@@ -1,0 +1,128 @@
+"""企业认证 API——登录 / 当前用户 / 用户管理 / 后端状态 / OAuth2 回调
+
+路由前缀 /authn（与现有 /auth 授权边界互不冲突）。
+说明：
+- 所有写操作（建用户/改角色）受 require_role 保护，未登录 → 401，角色不足 → 403。
+- 现有 API Key 多租户体系（X-Tenant-Key）保持不变；JWT 是「用户身份」层，
+  与「租户」层正交，后续受保护路由可同时注入 get_current_user + get_tenant。
+"""
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from pydantic import BaseModel
+
+from src.runtime.authn import backends
+from src.runtime.authn.config import config
+from src.runtime.authn.deps import get_current_user, require_role
+from src.runtime.authn.service import authn_service
+
+router = APIRouter(prefix="/authn", tags=["authentication"])
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class CreateUserRequest(BaseModel):
+    username: str
+    password: str
+    role: str = "operator"
+    tenant_id: str = "default"
+    email: str | None = None
+    display_name: str | None = None
+
+
+class SetRoleRequest(BaseModel):
+    role: str
+
+
+@router.post("/login")
+async def login(req: LoginRequest):
+    """用户名 + 密码登录（本地优先，自动回退 LDAP）。成功返回 JWT。"""
+    result = await authn_service.authenticate(req.username, req.password)
+    if not result:
+        raise HTTPException(status_code=401, detail="用户名或密码错误（本地与目录均拒绝）")
+    return result
+
+
+@router.get("/me")
+async def me(u: dict = Depends(get_current_user)):
+    """返回当前登录用户信息。"""
+    return {"user": u}
+
+
+@router.get("/backends")
+async def backend_status(_: dict = Depends(get_current_user)):
+    """返回各认证后端配置状态（便于客户 IT 自查对接）。"""
+    return {
+        "local": {"enabled": True, "label": "本地账号"},
+        "ldap": {
+            "enabled": config.LDAP_ENABLED or config.LDAP_MOCK,
+            "mock": config.LDAP_MOCK,
+            "server": config.LDAP_SERVER or ("(mock)" if config.LDAP_MOCK else ""),
+            "label": "企业 AD/LDAP",
+        },
+        "oauth2": {"enabled": config.OAUTH_ENABLED, "label": "OAuth2 / OIDC"},
+        "saml": {"enabled": False, "label": "SAML 2.0（可扩展）"},
+    }
+
+
+@router.get("/users")
+async def list_users(
+    tenant_id: str | None = Query(None),
+    _: dict = Depends(require_role("tenant_admin")),
+):
+    """列出用户（租户管理员及以上）。"""
+    users = await authn_service.list_users(tenant_id)
+    return {"total": len(users), "users": users}
+
+
+@router.post("/users")
+async def create_user(req: CreateUserRequest, _: dict = Depends(require_role("tenant_admin"))):
+    """创建用户（租户管理员及以上）。"""
+    try:
+        rec = await authn_service.create_user(
+            username=req.username,
+            password=req.password,
+            role=req.role,
+            tenant_id=req.tenant_id,
+            email=req.email,
+            display_name=req.display_name,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+    return {"status": "created", "user": rec}
+
+
+@router.post("/users/{user_id}/role")
+async def set_role(user_id: str, req: SetRoleRequest, _: dict = Depends(require_role("superadmin"))):
+    """变更用户角色（仅超级管理员）。"""
+    try:
+        rec = await authn_service.set_role(user_id, req.role)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"status": "updated", "user": rec}
+
+
+@router.get("/oauth/login")
+async def oauth_login():
+    """跳转到 OAuth2 授权端点（Azure AD / 企业微信 / 飞书 / Keycloak）。"""
+    url = authn_service._oauth.authorize_url()
+    if not url:
+        raise HTTPException(status_code=404, detail="OAuth2 未配置（设置 OAUTH_* 环境变量启用）")
+    from fastapi.responses import RedirectResponse
+
+    return RedirectResponse(url)
+
+
+@router.get("/oauth/callback")
+async def oauth_callback(code: str = Query(...), state: str = Query("zhiyan")):
+    """OAuth2 回调：用 code 换取用户并签发 JWT，重定向回前端（token 带入 query）。"""
+    result = await authn_service.authenticate_oauth_code(code)
+    if not result:
+        raise HTTPException(status_code=401, detail="OAuth2 登录失败")
+    from fastapi.responses import RedirectResponse
+
+    return RedirectResponse(f"/?token={result['access_token']}")

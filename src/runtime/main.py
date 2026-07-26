@@ -11,6 +11,7 @@ from fastapi.responses import RedirectResponse
 from src.runtime.api import agents_api, auth, audit, events_api, health, mcp_tools, scheduler_api, sessions, supply_chain
 from src.runtime.api import interventions, reports, system, knowledge_graph, gateways, strategy, tenants, experience, evolution, data_sources, twin, governance
 from src.runtime.federation import api as federation_api
+from src.runtime.authn import api as authn_api
 from src.runtime.core.scheduler import scheduler
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -58,6 +59,19 @@ async def lifespan(app: FastAPI):
     from src.runtime.tenant_store import tenant_store
     await tenant_store.init()
     logger.info("🏢 租户存储已初始化")
+
+    # 企业认证：确保超级管理员账号存在（DB 不可用时降级内存态；测试可直接调用）
+    from src.runtime.authn.service import authn_service
+    await authn_service.ensure_admin()
+    logger.info("🔐 企业认证模块已就绪（本地/LDAP/OAuth2 + JWT/RBAC）")
+
+    # 行业知识库模板：按 ZHIYAN_INDUSTRY 注入对应种子（船舶/铁路/电子…）
+    industry = os.environ.get("ZHIYAN_INDUSTRY", "").strip()
+    if industry:
+        from src.runtime.seed import bootstrap_industry
+
+        seed_summary = bootstrap_industry(industry)
+        logger.info(f"🧩 行业知识库注入：{seed_summary}")
 
     # 数据接入层（P1）：从环境变量装载数据源（MES/ERP/PLM/WMS/时序库）。
     # 未配置项不注册，agent 自动回退 seed；真实系统不可达时连接器韧性降级。
@@ -160,6 +174,7 @@ app.include_router(data_sources.router)
 app.include_router(twin.router)
 app.include_router(governance.router)
 app.include_router(federation_api.router)
+app.include_router(authn_api.router)
 
 
 if __name__ == "__main__":

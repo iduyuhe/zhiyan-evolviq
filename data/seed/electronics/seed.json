@@ -1,0 +1,50 @@
+{
+  "industry": "electronics",
+  "label": "电子制造",
+  "description": "PCBA 电子制造：物料、AOI 判图规则、ESD 防护、回流焊温度曲线与良率管控。",
+  "kg_facts": [
+    {"subject": "PCBA", "predicate": "assembled_with", "object": "SMT", "confidence": 0.9, "source": "process", "agent": "process"},
+    {"subject": "AOI", "predicate": "judge_rule", "object": "桥连", "confidence": 0.87, "source": "aoi_rule", "agent": "quality", "note": "引脚间多余锡连接判为缺陷"},
+    {"subject": "AOI", "predicate": "judge_rule", "object": "少锡", "confidence": 0.85, "source": "aoi_rule", "agent": "quality"},
+    {"subject": "PCBA", "predicate": "protected_by", "object": "ESD-S20.20", "confidence": 0.88, "source": "esd_std", "agent": "quality", "note": "ANSI/ESD S20.20 静电防护体系"},
+    {"subject": "回流焊", "predicate": "profile_item", "object": "升温斜率≤3℃/s", "confidence": 0.82, "source": "reflow", "agent": "process"},
+    {"subject": "元器件", "predicate": "esd_sensitivity", "object": "HBM 250V", "confidence": 0.8, "source": "esd_std", "agent": "quality", "note": "敏感器件须防静电包装与接地操作"}
+  ],
+  "ontology": {
+    "entities": [
+      {"name": "PCBA", "desc": "印制电路板组装成品"},
+      {"name": "元器件", "desc": "主动/被动电子元件"},
+      {"name": "检测规则", "desc": "AOI/SPI 判图规则与阈值"},
+      {"name": "标准", "desc": "ESD / IPC 等行业标准"}
+    ],
+    "relations": [
+      {"name": "assembled_with", "desc": "PCBA 采用的组装工艺"},
+      {"name": "judge_rule", "desc": "检测设备依据的判图规则"},
+      {"name": "protected_by", "desc": "产品受某防护体系约束"},
+      {"name": "esd_sensitivity", "desc": "元器件的静电敏感等级"}
+    ]
+  },
+  "tacit": [
+    {"channel": "human", "category": "ESD经验", "text": "敏感器件拆包必须在静电工作台并佩戴腕带，散料盘裸露超 30 分钟须重新防潮烘烤"},
+    {"channel": "social", "category": "AOI经验", "text": "AOI 误判率高时优先调阈值与打光而非直接放行，避免真缺陷流入后段"},
+    {"channel": "meeting", "category": "回流经验", "text": "无铅回流峰值温度控制在 245℃ 内、液相线以上时间 <60s，可兼顾焊接与器件可靠性"},
+    {"channel": "human", "category": "良率经验", "text": "首件三温测试（常温/高低温）通过后再放量，能把隐性早期失效挡在产线外"}
+  ],
+  "demo": {
+    "bom": [
+      {"item": "电容 0603 1uF", "qty": 4000, "unit": "ea", "package": "0603"},
+      {"item": "IC QFN-48", "qty": 200, "unit": "ea", "package": "QFN"}
+    ],
+    "inventory": [
+      {"item": "电容 0603 1uF", "on_hand": 5200, "safety": 3000, "status": "充足"},
+      {"item": "IC QFN-48", "on_hand": 120, "safety": 150, "status": "缺料"}
+    ],
+    "po": [
+      {"po": "PO-ELEC-001", "item": "IC QFN-48", "qty": 300, "eta": "2026-08-02"}
+    ],
+    "equipment": [
+      {"device": "AOI", "id": "DEV:aoi-01", "use": "焊后光学检测"},
+      {"device": "回流焊炉", "id": "DEV:reflow-02", "use": "SMT 回流"}
+    ]
+  }
+}
