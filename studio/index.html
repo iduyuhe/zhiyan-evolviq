@@ -4,10 +4,30 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/zhiyan.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 双保险：HTML meta 强制不缓存，避免旧浏览器/某些代理忽略 HTTP 头导致白屏 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>智衍 EvolvIQ · Agent Studio</title>
   </head>
   <body class="bg-gray-50 text-gray-900 antialiased">
     <div id="root"></div>
+    <!--
+      noscript + 版本水印：JS 失败时也能看到版本号与提示，方便定位缓存/构建问题。
+      加载后由 main.tsx 注入真实 git short sha。
+    -->
+    <noscript>
+      <div style="padding:24px;font-family:system-ui;color:#475569;text-align:center;">
+        <h2 style="color:#0f172a;margin:0 0 8px;">智衍 EvolvIQ · 需要启用 JavaScript</h2>
+        <p style="margin:0;">如页面持续空白，请按 Ctrl+Shift+R 强制刷新，或用无痕窗口打开 <code>http://43.153.172.52:3006/</code></p>
+      </div>
+    </noscript>
+    <div
+      id="zhiyan-build-marker"
+      data-version="pending"
+      title="智衍 EvolvIQ 构建版本"
+      style="position:fixed;right:8px;bottom:6px;font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#94a3b8;background:rgba(255,255,255,.7);padding:2px 6px;border-radius:4px;z-index:9999;pointer-events:none;user-select:none;"
+    >build: pending</div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
