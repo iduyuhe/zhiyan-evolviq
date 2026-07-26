@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 from datetime import datetime, timezone, timedelta
 from typing import Awaitable, Callable, Optional
@@ -127,6 +128,58 @@ class ExperienceStore:
     def all(self, limit: int = 100) -> list[dict]:
         return list(reversed(self._records))[-limit:]
 
+    # ---------- v21.5 隐性捕获：五路感知 ③④⑤（人/社交/会议/协作） ----------
+
+    def capture_tacit(
+        self,
+        tenant: str,
+        channel: str,
+        source: str,
+        payload: dict | None = None,
+        entities: list | None = None,
+        extracted: dict | None = None,
+        confidence: float = 1.0,
+    ) -> dict:
+        """隐性捕获：从 UNS 人/社交/会议/协作四路沉淀一条隐性经验记忆。
+
+        与 record_feedback（人类对 Agent 动作的 approved/rejected 决策）不同，
+        隐性捕获是「连接主义抽取出的隐性信号」，尚未经人类审批，decision="captured"。
+        抽取出的结构化事实（extracted）已同步锚定到知识图谱（kg_facts.propose，draft 待审批门）。
+        本方法只落内存工作记忆（韧性降级：不依赖 db sink，图谱侧另有持久化锚点）。
+        """
+        rec = {
+            "tenant_id": tenant,
+            "kind": "tacit",
+            "decision": "captured",
+            "channel": channel,
+            "source": source,
+            "action_type": "",
+            "context": json.dumps(payload or {}, ensure_ascii=False)[:2000],
+            "extracted": extracted or {},
+            "entities": entities or [],
+            "note": "",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        self._records.append(rec)
+        logger.info(f"🧠 隐性捕获 [{channel}] {source} | tenant={tenant}")
+        return rec
+
+    def tacit_captures(
+        self, tenant: str = "default", channel: str | None = None, limit: int = 50
+    ) -> list[dict]:
+        """查询隐性捕获记忆（可选按 channel 过滤）。"""
+        out = [
+            r
+            for r in self._records
+            if r.get("kind") == "tacit"
+            and (tenant in ("all", r.get("tenant_id")))
+            and (channel is None or r.get("channel") == channel)
+        ]
+        return list(reversed(out))[:limit]
+
 
 # 全局单例
 experience = ExperienceStore()
+
+# v21.5 隐性捕获：UNS 四路订阅 → 经验库捕获 + 知识图谱锚定（import 即注册，幂等，无循环依赖）
+import src.runtime.tacit_capture  # noqa: E402
