@@ -695,3 +695,50 @@ export async function getWritebackStats(): Promise<WritebackStats> {
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
+
+// ---------------- 监控告警（v29.1） ----------------
+
+export interface AlertItem {
+  key: string;
+  kind: string;
+  severity: string;       // warning | critical
+  message: string;
+  detail: Record<string, any>;
+  ts: number;
+  notified: number;
+}
+
+export interface MonitorStatus {
+  alerts_total: number;
+  thresholds: {
+    wb_pending: number;
+    twin_stale_s: number;
+    login_fails: number;
+    login_window_s: number;
+  };
+  login_watch: Record<string, number>;
+  cooldown_s: number;
+  notifiers: string[];
+}
+
+export async function getAlerts(kind?: string, n = 50): Promise<AlertItem[]> {
+  const q = new URLSearchParams();
+  if (kind) q.set('kind', kind);
+  q.set('n', String(n));
+  const res = await fetch(`${API_BASE}/monitoring/alerts?${q.toString()}`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function getMonitorStatus(): Promise<MonitorStatus> {
+  const res = await fetch(`${API_BASE}/monitoring/status`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function triggerMonitorCheck(): Promise<{ fired: AlertItem[] }> {
+  const res = await fetch(`${API_BASE}/monitoring/check`, { method: 'POST', headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+

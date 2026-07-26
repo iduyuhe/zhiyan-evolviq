@@ -45,6 +45,7 @@ class Alert:
     message: str
     detail: dict = field(default_factory=dict)
     ts: float = field(default_factory=time.time)
+    notified: int = 0  # 成功送达的通知渠道数
 
     def to_dict(self) -> dict:
         return {
@@ -54,6 +55,7 @@ class Alert:
             "message": self.message,
             "detail": self.detail,
             "ts": self.ts,
+            "notified": self.notified,
         }
 
 
@@ -108,6 +110,12 @@ class AlertMonitor:
                 payload=alert.to_dict(),
                 route_holon=None,
             )
+        except Exception:
+            pass
+        # 通知渠道（邮件/企业微信/日志）——单渠道失败静默
+        try:
+            from src.runtime.notifiers import dispatch_notifications
+            alert.notified = dispatch_notifications(alert)
         except Exception:
             pass
         logger.warning(f"🚨 [{alert.severity}] {alert.kind}: {alert.message}")
@@ -217,7 +225,16 @@ class AlertMonitor:
             },
             "login_watch": {u: len(t) for u, t in self._login_fails.items() if t},
             "cooldown_s": self.cooldown_s,
+            "notifiers": [n.name for n in self._notifiers()],
         }
+
+    @staticmethod
+    def _notifiers():
+        try:
+            from src.runtime.notifiers import get_notifiers
+            return get_notifiers()
+        except Exception:
+            return []
 
     def clear(self) -> None:
         """清空（测试用）。"""

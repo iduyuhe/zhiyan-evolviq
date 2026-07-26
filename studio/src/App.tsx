@@ -7,6 +7,7 @@ import YieldResultView from './components/YieldResultView';
 import TraceResultView from './components/TraceResultView';
 import GenericResultView from './components/GenericResultView';
 import DeviceMonitor from './components/DeviceMonitor';
+import AlertPanel from './components/AlertPanel';
 import SessionHistory from './components/SessionHistory';
 import AuditLogView from './components/AuditLogView';
 import ConsoleTab from './components/ConsoleTab';
@@ -431,7 +432,7 @@ export default function App() {
         </div>
       ) : (
         <main className="max-w-3xl mx-auto px-4 py-8 space-y-4">
-          {tab === 'monitor' && <DeviceMonitor />}
+          {tab === 'monitor' && (<><DeviceMonitor /><AlertPanel /></>)}
           {tab === 'history' && <SessionHistory onSelect={() => { setTab('studio'); }} />}
           {tab === 'audit' && <AuditLogView />}
           {tab === 'console' && <ConsoleTab />}
