@@ -71,7 +71,7 @@
 | **P1** | 生态引力 Ecosystem Gravity | 开发者 / 贡献者 / 集成商网络规模与活跃度 | 开源框架吸引第三方集成商 |
 | **P2** | 信任主权 Trust Sovereignty | 可审计、自主可控、无 vendor lock-in | = 成熟度模型 Z 轴「自主可控度」 |
 | **P3** | 协同进化 Co-evolution Velocity | 社区驱动迭代速度 > 闭源团队 | born-native 快速演进 |
-| **P4** | 标准话语权 Standard Gravity | 主导开放协议 / 本体 / API 规范 | 「智衍工业经营本体」开放定义权 |
+| **P4** | 标准话语权 Standard Gravity | 主导开放协议 / 本体 / API 规范 | 「智衍工业经营本体（Ontology）」开放定义权（超越 Palantir 静态框架） |
 | **P5** | 人才磁场 Talent Magnetism | 开源影响力吸引顶尖人才与用户 | 以开放定位聚拢工业 AI 人才 |
 | **P6** | 共识飞轮 Consensus Flywheel | 数据 / 知识以共识许可回流公共池，越用越厚 | 行业知识包反哺社区 |
 
