@@ -16,6 +16,7 @@ import GatewayTab from './components/GatewayTab';
 import TwinDashboard from './components/TwinDashboard';
 import HolonGovernance from './components/HolonGovernance';
 import FederationPanel from './components/FederationPanel';
+import SupplyChainFederation from './components/SupplyChainFederation';
 import AiInsightPanel from './components/AiInsightPanel';
 import NotificationBell from './components/NotificationBell';
 import type { AgentInfo } from './components/AgentSelector';
@@ -27,7 +28,7 @@ import { createSession, approveSession, quickCheck } from './api/client';
 import type { Session, ExecutionResult } from './api/client';
 
 type Stage = 'input' | 'planning' | 'approving' | 'executing' | 'result' | 'error';
-type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'twin' | 'governance' | 'federation' | 'tenant';
+type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'twin' | 'governance' | 'federation' | 'supplychain' | 'tenant';
 
 const STEPS = [
   { key: 'input', label: '目标设定', icon: '🎯' },
@@ -168,6 +169,7 @@ export default function App() {
                 { key: 'strategy' as Tab, label: '策略调参', icon: '🎚️' },
                 { key: 'governance' as Tab, label: '治理', icon: '🏛️' },
                 { key: 'federation' as Tab, label: '联邦', icon: '🌍' },
+                { key: 'supplychain' as Tab, label: '产业链', icon: '🔗' },
                 { key: 'gateway' as Tab, label: '网关', icon: '🛰️' },
                 { key: 'twin' as Tab, label: '孪生大屏', icon: '🌐' },
                 { key: 'tenant' as Tab, label: '租户', icon: '🏢' },
@@ -372,6 +374,7 @@ export default function App() {
           {tab === 'strategy' && <StrategyTuningTab />}
           {tab === 'governance' && <HolonGovernance />}
           {tab === 'federation' && <FederationPanel />}
+          {tab === 'supplychain' && <SupplyChainFederation />}
           {tab === 'gateway' && <GatewayTab />}
           {tab === 'twin' && <TwinDashboard />}
           {tab === 'tenant' && <TenantManagement />}
