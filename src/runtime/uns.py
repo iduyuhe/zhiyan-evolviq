@@ -1,0 +1,205 @@
+"""轻量统一事件总线（Unified Namespace, UNS）
+
+五路感知归一接入（与战略文档 §3.3 事件 schema 一致）：
+    channel : gateway | system | human | social | meeting | collab
+    source  : opcua://line-3 | erp://sap/mm | wecom://group-x | collab://community-equipment
+    type    : sensor_reading | business_event | tacit_judgment | decision_rationale | collab_message
+    payload : {...结构化字段...}
+    entities: [LINE:3, DEV:hyd-105, MAT:CAP-001, SUP:A, EMP:zhang]
+    confidence / ts
+
+职责：
+- 五路信号同 schema 归一入总线，可查可回溯（query / channel_counts / recent）。
+- 结构化 machine 状态（gateway/system 路，带 holon 标注或 machine 前缀键）自动路由到
+  twin_feed（registry.route_event），驱动孪生体状态上行 —— 即「网关实时流进 agent」的最小落地。
+- collab 源：设备作为一等参与者进入协作话题（工业龙虾借鉴），与其他路并列归一。
+
+韧性铁律：UNS 是纯内存总线，任何路由/订阅失败静默降级，绝不阻断上游（网关、外部系统照常工作）。
+无外部依赖，import 即实例化单例 `uns`，无需 lifespan 初始化。
+"""
+
+from __future__ import annotations
+
+import time
+import uuid
+from dataclasses import dataclass
+from typing import Any, Callable
+
+# ---- 五路 channel 常量（与战略文档 §3.3 完全一致）----
+CHANNEL_GATEWAY = "gateway"
+CHANNEL_SYSTEM = "system"
+CHANNEL_HUMAN = "human"
+CHANNEL_SOCIAL = "social"
+CHANNEL_MEETING = "meeting"
+CHANNEL_COLLAB = "collab"
+
+ALL_CHANNELS = (
+    CHANNEL_GATEWAY,
+    CHANNEL_SYSTEM,
+    CHANNEL_HUMAN,
+    CHANNEL_SOCIAL,
+    CHANNEL_MEETING,
+    CHANNEL_COLLAB,
+)
+
+# 结构化 machine 状态 tag 前缀（前缀猜测模式下路由到 machine holon）
+MACHINE_STATE_PREFIXES = (
+    "energy_kwh__",
+    "power_kw__",
+    "green_ratio__",
+    "oee__",
+    "temp__",
+    "vibration__",
+    "status__",
+    "pressure__",
+    "flow__",
+)
+
+# 结构化状态上行（gateway/system 路）才会被路由到 twin_feed
+ROUTEABLE_CHANNELS = (CHANNEL_GATEWAY, CHANNEL_SYSTEM)
+
+
+@dataclass
+class UNSEvent:
+    """总线上的统一事件（同 schema）。route_holon 为内部路由用，不进 to_dict。"""
+
+    id: str
+    channel: str
+    source: str
+    type: str
+    payload: dict
+    entities: list
+    confidence: float
+    ts: float
+    route_holon: str | None = None  # 内部：结构化状态上行目标 holon（如 machine/material）
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "channel": self.channel,
+            "source": self.source,
+            "type": self.type,
+            "payload": self.payload,
+            "entities": self.entities,
+            "confidence": self.confidence,
+            "ts": self.ts,
+        }
+
+
+class UnifiedNamespace:
+    """轻量统一事件总线（内存环形缓冲 + 可选订阅 + twin_feed 自动路由）。"""
+
+    def __init__(self, maxlen: int = 5000):
+        self._events: list[UNSEvent] = []
+        self._maxlen = maxlen
+        self._subscribers: dict[str, list[Callable[[UNSEvent], Any]]] = {}
+
+    # ---------------- 发布 ----------------
+    def publish(
+        self,
+        channel: str,
+        source: str,
+        type: str,
+        payload: dict | None = None,
+        entities: list | None = None,
+        confidence: float = 1.0,
+        route_holon: str | None = None,
+    ) -> UNSEvent:
+        ev = UNSEvent(
+            id=str(uuid.uuid4()),
+            channel=channel,
+            source=source,
+            type=type,
+            payload=dict(payload or {}),
+            entities=list(entities or []),
+            confidence=confidence,
+            ts=time.time(),
+            route_holon=route_holon,
+        )
+        self._events.append(ev)
+        if len(self._events) > self._maxlen:
+            self._events = self._events[-self._maxlen:]
+        # 结构化状态上行（gateway/system 路）→ twin_feed
+        self._route_to_twin(ev)
+        # 广播给订阅者（可选）
+        self._notify(ev)
+        return ev
+
+    # 五路便捷入口
+    def publish_gateway(self, source, payload, entities=None, type="sensor_reading", confidence=1.0, route_holon="machine"):
+        return self.publish(CHANNEL_GATEWAY, source, type, payload, entities, confidence, route_holon=route_holon)
+
+    def publish_system(self, source, payload, entities=None, type="business_event", confidence=1.0, route_holon="machine"):
+        return self.publish(CHANNEL_SYSTEM, source, type, payload, entities, confidence, route_holon=route_holon)
+
+    def publish_human(self, source, payload, entities=None, type="tacit_judgment", confidence=1.0):
+        return self.publish(CHANNEL_HUMAN, source, type, payload, entities, confidence)
+
+    def publish_social(self, source, payload, entities=None, type="business_event", confidence=1.0):
+        return self.publish(CHANNEL_SOCIAL, source, type, payload, entities, confidence)
+
+    def publish_meeting(self, source, payload, entities=None, type="decision_rationale", confidence=1.0):
+        return self.publish(CHANNEL_MEETING, source, type, payload, entities, confidence)
+
+    def publish_collab(self, source, payload, entities=None, type="collab_message", confidence=1.0):
+        return self.publish(CHANNEL_COLLAB, source, type, payload, entities, confidence)
+
+    # ---------------- 路由：结构化状态 → twin_feed（韧性降级）----------------
+    def _route_to_twin(self, ev: UNSEvent) -> None:
+        if ev.channel not in ROUTEABLE_CHANNELS:
+            return
+        try:
+            if ev.route_holon:
+                values = {k: v for k, v in ev.payload.items() if not k.startswith("_")}
+                holon = ev.route_holon
+            else:
+                values = {
+                    k: v
+                    for k, v in ev.payload.items()
+                    if any(k.startswith(p) for p in MACHINE_STATE_PREFIXES)
+                }
+                if not values:
+                    return
+                holon = "machine"
+            # 延迟 import，避免与 data_sources 形成循环依赖
+            from src.runtime.data_sources.registry import registry
+
+            registry.route_event(holon, values, source=ev.source)
+        except Exception:
+            # 韧性降级：twin_feed 不可达 / 无对应孪生体 → 不阻断 UNS 与上游
+            pass
+
+    # ---------------- 订阅（可选，轻量）----------------
+    def subscribe(self, channel: str, handler: Callable[[UNSEvent], Any]) -> None:
+        self._subscribers.setdefault(channel, []).append(handler)
+
+    def _notify(self, ev: UNSEvent) -> None:
+        for h in self._subscribers.get(ev.channel, []):
+            try:
+                h(ev)
+            except Exception:
+                pass
+
+    # ---------------- 查询（可查可回溯）----------------
+    def query(self, channel: str | None = None, n: int | None = None) -> list[dict]:
+        evs = self._events if channel is None else [e for e in self._events if e.channel == channel]
+        if n is not None:
+            evs = evs[-n:]
+        return [e.to_dict() for e in evs]
+
+    def recent(self, n: int = 50) -> list[dict]:
+        return [e.to_dict() for e in self._events[-n:]]
+
+    def channel_counts(self) -> dict:
+        counts: dict[str, int] = {}
+        for e in self._events:
+            counts[e.channel] = counts.get(e.channel, 0) + 1
+        return counts
+
+    def clear(self) -> None:
+        self._events.clear()
+        self._subscribers.clear()
+
+
+# 进程级单例：import 即存在，纯内存，无需 lifespan 初始化
+uns = UnifiedNamespace()

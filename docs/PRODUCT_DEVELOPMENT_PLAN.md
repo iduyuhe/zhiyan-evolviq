@@ -44,13 +44,14 @@
 | **T2** | energy_carbon 消费孪生体 | `analyze()` 调用 `twin_context()` 融合实时能耗/功率/绿电比，产出含 `real_time_*` 字段结论 | ✅ 已启动 |
 | **T3** | 韧性降级 | 无孪生流回退 seed；孪生超期标 `stale`；异常静默不阻断 | ✅ 已启动 |
 | **T4** | 端到端验证 | `scripts/verify_twin_reasoning.py`：模拟流 → 断言实时字段 → 韧性降级 | ✅ 已启动 |
-| **T5** | UNS 五路归一 | 轻量统一事件总线，五路事件同 schema（gateway/system 先；human/social/meeting/collab 后） | ⬜ 待开工（v21.0 第二部分） |
+| **T5** | UNS 五路归一 | 轻量统一事件总线，五路事件同 schema（gateway/system 先；human/social/meeting/collab 后） | ✅ 已启动 |
 
-**T1–T4 验收标准**（本提交目标）：
+**T1–T5 验收标准**（本提交目标）：
 - [x] `energy_carbon.analyze()` 在模拟流下产出含 `real_time_*` 字段结论
 - [x] 网关/孪生不可达时回退 seed / 孪生空值，agent 不崩
-- [x] 全量测试零回归（目标 ≥ 123 passed）
-- [x] demo 脚本可一键复现端到端
+- [x] **UNS 五路事件同 schema 归一入总线，各 channel 可查可回溯；gateway 路自动路由孪生体**
+- [x] 全量测试零回归（目标 ≥ 131 passed）
+- [x] demo 脚本可一键复现端到端（verify_twin_reasoning + verify_uns）
 
 ---
 
@@ -85,7 +86,7 @@
 1. 路线 A（原生赋能者）是否正式签字？（战略已内化，待正式落章）
 2. 「智衍工业经营本体（Ontology）」命名是否对外启用？
 3. 公众号草稿（全息孪生社会 / 二十强图谱）是否发布？是否升格白皮书？
-4. **阶段 1 下半场（v21.0 起点）已开工** —— 本提交落地 T1–T4，T5(UNS) 与 v21.5+ 待续推。
+4. **阶段 1 下半场（v21.0 起点）已落地** —— 本提交落地 T1–T5（能耗孪生体 + energy_carbon 实时消费 + 韧性降级 + 端到端验证 + UNS 五路归一），v21.5(隐性捕获) + v22(蓝弧) 待续推。
 5. 首客场景是否定为「设备健康 / 能耗孪生」？（推荐：最短 ROI、数据最干净、最易 demo）
 
 ---

@@ -16,7 +16,7 @@ from src.gateways.ipc_cfx.gateway import IpcCfxGateway
 from src.gateways.modbus.gateway import ModbusGateway
 from src.gateways.mqtt.gateway import MQTTGateway
 from src.gateways.opcua.gateway import OpcUaGateway
-from src.runtime.data_sources import registry as ds_registry
+from src.runtime.uns import uns, CHANNEL_GATEWAY
 
 logger = logging.getLogger(__name__)
 
@@ -161,10 +161,11 @@ class GatewayManager:
         return result
 
     async def publish_to_twin_feed(self, datapoints, source: str | None = None) -> int:
-        """把网关读到的数据点归一为孪生体状态上行，路由到对应 holon 孪生体。
+        """把网关读到的数据点归一为 UNS 事件（gateway 路），由 UNS 内部路由到对应 holon 孪生体。
 
-        这是「网关实时流进 agent 推理」的最小落地：每次 read 即刷新孪生体，
-        agent 后续推理可经 BaseAgent.twin_context() 读取这份活镜像。
+        这是「网关实时流进 agent 推理」的最小落地，且把五路感知的第一步（网关流）
+        先归一进统一事件总线（轻量 UNS），再驱动孪生体状态上行；agent 后续推理可经
+        BaseAgent.twin_context() 读取这份活镜像。韧性：UNS 路由失败静默降级，不阻断 read。
         """
         if not datapoints:
             return 0
@@ -175,12 +176,28 @@ class GatewayManager:
             grouped[hk][dp.tag] = dp.value
         n = 0
         for hk, values in grouped.items():
-            n += ds_registry.route_event(hk, values, source=source or "gateway")
+            uns.publish(
+                CHANNEL_GATEWAY,
+                source or "gateway",
+                "sensor_reading",
+                payload=values,
+                entities=[f"HOLON:{hk}"],
+                route_holon=hk,
+            )
+            n += 1
         return n
 
     async def ingest_event(self, holon_kind: str, values: dict, source: str | None = None) -> int:
-        """公开入口：外部/测试注入一条实时事件（模拟订阅流），汇入孪生体状态。"""
-        return ds_registry.route_event(holon_kind, values, source=source or "external")
+        """公开入口：外部/测试注入一条实时事件（模拟订阅流），经 UNS(system 路) 汇入孪生体状态。"""
+        uns.publish(
+            CHANNEL_SYSTEM,
+            source or "external",
+            "sensor_reading",
+            payload=values,
+            entities=[f"HOLON:{holon_kind}"],
+            route_holon=holon_kind,
+        )
+        return 1
 
     async def disconnect_all(self):
         for gw in self._gateways.values():
