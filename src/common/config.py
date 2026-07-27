@@ -65,7 +65,11 @@ class Settings(BaseSettings):
     env_benchmark_url: str = ""   # 行业智能化对标官方名录（试点示范/灯塔工厂等）
     env_pull_interval: int = 3600  # 环境源后台轮询间隔（秒），0=不轮询仅手动
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "env_prefix": "zhiyan_",  # P0修复：与 .env 中 ZHIYAN_WECOM_TOKEN 等实际变量名匹配
+    }
 
 
 settings = Settings()
