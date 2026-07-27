@@ -240,7 +240,10 @@ compliance_q → 行业政策影响评估
 
 ### P2 · C 社交通道生产接入（HTTPS 前置已满足，待杜总提供密钥）
 
-- **🙋 杜总动作**：企微/钉钉后台生成应用密钥（`SOCIAL_CHANNEL_SETUP.md` 有逐步指引），邮件通道给一个专用 IMAP 账号。
+- **🙋 杜总动作**：**企微密钥（Token + EncodingAESKey + CorpID）**——见 `SOCIAL_CHANNEL_SETUP.md` §2 逐步指引，仅企微通道不接钉钉/邮件。
+  - 需登录 [企微管理后台](https://work.weixin.qq.com/) → 应用管理 → 自建应用 → 接收消息 → 设置 API 接收
+  - 回调 URL：`https://zhiyan.weomnitech.com.cn/api/connectors/wecom/callback`（HTTPS 已就绪）
+  - 填入 .env → 重启 runtime → 验证 `enabled=true`
 - 我方：回调 URL 配 `https://zhiyan.weomnitech.com.cn/api/connectors/...`，打开 `enabled`，验证信号入 UNS `social` 路。
 
 ### P3 · D 首客试点
@@ -263,7 +266,7 @@ compliance_q → 行业政策影响评估
 | 时点 | 动作 | 解锁 |
 |---|---|---|
 | ~~随时~~ ✅ 已完成（2026-07-27） | ~~DNS 加 A 记录：`zhiyan` → `115.191.20.92`~~ → HTTPS 入口已上线 | ~~P1~~ ✅ |
-| 随时（越早越好） | 企微/钉钉密钥 + IMAP 账号（`SOCIAL_CHANNEL_SETUP.md` 有逐步指引） | P2 |
+| 随时（越早越好） | 企微密钥（Token + EncodingAESKey + CorpID）→ 见 `SOCIAL_CHANNEL_SETUP.md` §2 | P2 |
 | 不迟于 S2 完成 | 拍板首客场景 + 试点企业 | P3 |
 | S2 发布前 | 确认/调整免费额度与付费线默认值 | G 对外发布 |
 
