@@ -1,12 +1,13 @@
 """轻量统一事件总线（Unified Namespace, UNS）
 
-五路感知归一接入（与战略文档 §3.3 事件 schema 一致）：
-    channel : gateway | system | human | social | meeting | collab
-    source  : opcua://line-3 | erp://sap/mm | wecom://group-x | collab://community-equipment
-    type    : sensor_reading | business_event | tacit_judgment | decision_rationale | collab_message
+六路感知归一接入（与战略文档 §3.3 事件 schema 一致，v30 五路→六路）：
+    channel : gateway | system | human | social | meeting | collab | environment
+    source  : opcua://line-3 | erp://sap/mm | wecom://group-x | env://policy/miit
+    type    : sensor_reading | business_event | tacit_judgment | decision_rationale | collab_message | env_signal
     payload : {...结构化字段...}
     entities: [LINE:3, DEV:hyd-105, MAT:CAP-001, SUP:A, EMP:zhang]
     confidence / ts
+    credibility : official | authoritative | general —— 仅⑥ environment 路必填（F4 可信治理）
 
 职责：
 - 五路信号同 schema 归一入总线，可查可回溯（query / channel_counts / recent）。
@@ -25,13 +26,14 @@ import uuid
 from dataclasses import dataclass
 from typing import Any, Callable
 
-# ---- 五路 channel 常量（与战略文档 §3.3 完全一致）----
+# ---- 六路 channel 常量（与战略文档 §3.3 完全一致，v30 新增 environment）----
 CHANNEL_GATEWAY = "gateway"
 CHANNEL_SYSTEM = "system"
 CHANNEL_HUMAN = "human"
 CHANNEL_SOCIAL = "social"
 CHANNEL_MEETING = "meeting"
 CHANNEL_COLLAB = "collab"
+CHANNEL_ENVIRONMENT = "environment"
 
 ALL_CHANNELS = (
     CHANNEL_GATEWAY,
@@ -40,7 +42,14 @@ ALL_CHANNELS = (
     CHANNEL_SOCIAL,
     CHANNEL_MEETING,
     CHANNEL_COLLAB,
+    CHANNEL_ENVIRONMENT,
 )
+
+# ---- F4 可信治理：credibility 分级（仅 environment 路必填）----
+CRED_OFFICIAL = "official"          # 官方发布（部委/交易所/标准机构）→ 直接锚定
+CRED_AUTHORITATIVE = "authoritative"  # 权威媒体/行业协会 → 进 _needs_review
+CRED_GENERAL = "general"            # 一般来源 → 进 _needs_review
+CREDIBILITY_LEVELS = (CRED_OFFICIAL, CRED_AUTHORITATIVE, CRED_GENERAL)
 
 # 结构化 machine 状态 tag 前缀（前缀猜测模式下路由到 machine holon）
 MACHINE_STATE_PREFIXES = (
@@ -71,10 +80,11 @@ class UNSEvent:
     entities: list
     confidence: float
     ts: float
+    credibility: str | None = None  # F4 可信治理：仅 environment 路必填（official/authoritative/general）
     route_holon: str | None = None  # 内部：结构化状态上行目标 holon（如 machine/material）
 
     def to_dict(self) -> dict:
-        return {
+        d = {
             "id": self.id,
             "channel": self.channel,
             "source": self.source,
@@ -84,6 +94,9 @@ class UNSEvent:
             "confidence": self.confidence,
             "ts": self.ts,
         }
+        if self.credibility is not None:
+            d["credibility"] = self.credibility
+        return d
 
 
 class UnifiedNamespace:
@@ -104,7 +117,11 @@ class UnifiedNamespace:
         entities: list | None = None,
         confidence: float = 1.0,
         route_holon: str | None = None,
+        credibility: str | None = None,
     ) -> UNSEvent:
+        # F4 可信治理：environment 路必须带合法 credibility；缺失/非法一律降为 general（保守不丢弃）
+        if channel == CHANNEL_ENVIRONMENT and credibility not in CREDIBILITY_LEVELS:
+            credibility = CRED_GENERAL
         ev = UNSEvent(
             id=str(uuid.uuid4()),
             channel=channel,
@@ -114,6 +131,7 @@ class UnifiedNamespace:
             entities=list(entities or []),
             confidence=confidence,
             ts=time.time(),
+            credibility=credibility,
             route_holon=route_holon,
         )
         self._events.append(ev)
@@ -143,6 +161,10 @@ class UnifiedNamespace:
 
     def publish_collab(self, source, payload, entities=None, type="collab_message", confidence=1.0):
         return self.publish(CHANNEL_COLLAB, source, type, payload, entities, confidence)
+
+    def publish_environment(self, source, payload, entities=None, type="env_signal", confidence=1.0, credibility=CRED_GENERAL):
+        """第⑥路环境感知：外部世界信号（政策/行情/对标等），credibility 必填（F4 可信治理）。"""
+        return self.publish(CHANNEL_ENVIRONMENT, source, type, payload, entities, confidence, credibility=credibility)
 
     # ---------------- 路由：结构化状态 → twin_feed（韧性降级）----------------
     def _route_to_twin(self, ev: UNSEvent) -> None:

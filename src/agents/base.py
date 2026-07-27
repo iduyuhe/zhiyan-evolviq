@@ -91,5 +91,23 @@ class BaseAgent(ABC):
         except Exception:
             return {}
 
+    async def env_context(self, tenant_id: str = "default", limit: int = 20) -> dict:
+        """环境感知上下文（v30.0 α，第⑥路）。
+
+        返回最近的环境事件信号（政策/行情/对标等），供 analyze() 内融入决策。
+        每条信号带 credibility 溯源（F4 可信治理）与 source URL。
+        安全降级：UNS 不可用时返回空信号列表，绝不阻断推理。
+        """
+        try:
+            from src.runtime.uns import uns, CHANNEL_ENVIRONMENT
+
+            signals = uns.query(channel=CHANNEL_ENVIRONMENT, n=limit)
+            return {
+                "signals": signals,
+                "count": len(signals),
+            }
+        except Exception:
+            return {"signals": [], "count": 0}
+
     def __repr__(self) -> str:  # pragma: no cover - 仅调试用
         return f"<{self.__class__.__name__} name={self.name!r}>"

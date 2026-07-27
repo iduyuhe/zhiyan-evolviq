@@ -47,6 +47,11 @@ class ProcurementAgent(BaseAgent):
         contracts = await self.tools.get_contracts()
         strategies = await self.tools.get_strategy_items()
 
+        # v30.0 α：环境感知上下文（行情信号→采购成本分析）
+        env = await self.env_context()
+        env_market = [s for s in env.get("signals", [])
+                      if s.get("payload", {}).get("category") in ("market",)]
+
         avg_score = round(sum(s["score"] for s in suppliers) / len(suppliers), 1)
         low_performers = [s for s in suppliers if s["tier"] in ("C", "D") or s["score"] < 70]
         expiring_soon = [c for c in contracts if not c["auto_renew"]]
@@ -85,6 +90,9 @@ class ProcurementAgent(BaseAgent):
             "strategies": strategies,
             "recommendations": recommendations,
             "actions_taken": actions_taken,
+            # v30.0 α：行情信号上下文（含来源溯源）
+            "env_signals": env_market,
+            "env_signal_count": env.get("count", 0),
         }
 
     def _generate_recommendations(self, suppliers, contracts, strategies, avg_score,

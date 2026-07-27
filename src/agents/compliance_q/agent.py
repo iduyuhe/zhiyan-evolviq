@@ -48,6 +48,11 @@ class ComplianceAgent(BaseAgent):
         regs = await self.tools.get_regulatory_summary()
         summary = await self.tools.get_compliance_summary()
 
+        # v30.0 α：环境感知上下文（政策信号→合规影响评估）
+        env = await self.env_context()
+        env_policy = [s for s in env.get("signals", [])
+                      if s.get("payload", {}).get("category") in ("policy",)]
+
         actions_taken = []
         # 授权内行动：对高严重度未关闭的审核发现自动创建 CAPA
         critical_open = [a for a in audits if a["status"] == "open" and a["severity"] == "high"]
@@ -82,6 +87,9 @@ class ComplianceAgent(BaseAgent):
             "regulations": regs,
             "recommendations": recommendations,
             "actions_taken": actions_taken,
+            # v30.0 α：环境感知上下文（政策信号，含来源溯源）
+            "env_signals": env_policy,
+            "env_signal_count": env.get("count", 0),
         }
 
     def _generate_recommendations(self, certs, audits, regs, summary, actions_taken) -> list:

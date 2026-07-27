@@ -59,6 +59,12 @@ class Settings(BaseSettings):
     email_imap_mailbox: str = "INBOX"
     email_poll_interval: int = 300
 
+    # 环境感知第⑥路（v30.0 α）：三类官方源。留空=simulated 演示态；配置真实 URL 后自动升级 live。
+    env_policy_url: str = ""      # 政策法规官方发布页（如部委公开发布 RSS/JSON）
+    env_market_url: str = ""      # 原材料行情官方指数接口
+    env_benchmark_url: str = ""   # 行业智能化对标官方名录（试点示范/灯塔工厂等）
+    env_pull_interval: int = 3600  # 环境源后台轮询间隔（秒），0=不轮询仅手动
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

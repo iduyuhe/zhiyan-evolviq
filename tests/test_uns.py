@@ -1,10 +1,11 @@
-"""T5 UNS 五路归一单元测试
+"""T5 UNS 五路归一单元测试（v30 六路：新增 environment 第⑥路 + credibility 字段）
 
 验证：
 1. 五路事件同 schema 归一入总线，各 channel 可查可回溯
 2. gateway 路事件经 UNS 自动路由到孪生体（twin_feed）
 3. collab 源正确标注 channel + entities（设备作为一等参与者）
 4. 韧性降级：twin_feed 不可达时 UNS.publish 不抛、非路由事件照常入库
+5. environment 第⑥路 + credibility 字段（F4 可信治理）
 """
 
 import pytest
@@ -16,6 +17,9 @@ from src.runtime.uns import (
     CHANNEL_SOCIAL,
     CHANNEL_MEETING,
     CHANNEL_COLLAB,
+    CHANNEL_ENVIRONMENT,
+    CRED_OFFICIAL,
+    CREDIBILITY_LEVELS,
 )
 from src.runtime.data_sources.registry import registry as ds_registry
 from src.runtime.data_sources.connectors.energy_twin import EnergyTwinDataSource
@@ -37,6 +41,8 @@ def test_five_channel_normalization(uns_inst):
     u.publish_social("email://proc", {"thread": "price"})
     u.publish_meeting("meet://strategy", {"topic": "Q3"})
     u.publish_collab("collab://community-equipment", {"msg": "液压机建议维护"}, entities=["DEV:hyd-105"])
+    u.publish_environment("env://policy/miit", {"title": "新标准"}, entities=["POLICY:标准"],
+                          credibility=CRED_OFFICIAL)
     counts = u.channel_counts()
     assert counts[CHANNEL_GATEWAY] == 1
     assert counts[CHANNEL_SYSTEM] == 1
@@ -44,6 +50,7 @@ def test_five_channel_normalization(uns_inst):
     assert counts[CHANNEL_SOCIAL] == 1
     assert counts[CHANNEL_MEETING] == 1
     assert counts[CHANNEL_COLLAB] == 1
+    assert counts[CHANNEL_ENVIRONMENT] == 1
 
 
 def test_gateway_routes_to_twin(uns_inst):

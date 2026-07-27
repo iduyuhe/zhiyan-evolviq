@@ -73,9 +73,12 @@ class SupplyChainAgent(BaseAgent):
         if not bom_id:
             bom_id = "BOM-SMIC-28nm-Logic"
 
-        # Step 1-3: 获取 BOM / 库存 / PO 数据
+        # Step 1-3: 获取 BOM / ��存 / PO 数据
         bom = await self.tools.get_bom_data(bom_id)
         material_codes = [item["material_code"] for item in bom["items"]]
+
+        # v30.0 α：环境感知上下文（行情信号融入供应链分析）
+        env = await self.env_context()
         inventory = await self.tools.get_inventory(material_codes)
         pos = await self.tools.get_po_data(material_codes)
 
@@ -209,6 +212,10 @@ class SupplyChainAgent(BaseAgent):
             "actions_taken": actions_taken,
             "alternatives_found": alternatives_found,
             "warning": self._generate_warnings(post_checks),
+            # v30.0 α：环境信号上下文（行情信号融入供应链分析，含来源溯源）
+            "env_signals": [s for s in env.get("signals", [])
+                           if s.get("payload", {}).get("category") in ("market", "policy")],
+            "env_signal_count": env.get("count", 0),
         }
 
         logger.info(f"✅ Execution completed: {result['summary']}")

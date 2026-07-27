@@ -18,6 +18,10 @@ from src.runtime.api import tacit_capture as tacit_capture_api
 from src.runtime.api import blue_arc as blue_arc_api
 from src.runtime.api import connectors as connectors_api  # 社交通道接入（v29.9）
 from src.runtime.api import connectivity as connectivity_api  # 配置 UI 连通性验证（§4.4）
+from src.runtime.api import env_perception as env_perception_api  # 环境感知第⑥路（v30.0 α）
+# v30.0：隐式导入注册 UNS environment 路订阅者（import 即注册，无 lifespan 依赖）
+import src.runtime.env_sources  # noqa: F401  管理器单例
+import src.runtime.env_perception  # noqa: F401  分级门管道
 from src.runtime.core.scheduler import scheduler
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -154,6 +158,19 @@ async def lifespan(app: FastAPI):
         from src.runtime.core import demo_seed
         demo_summary = demo_seed.seed_demo_data()
         logger.info(f"🎬 演示效果信号种子：{demo_summary}")
+        # v30.0 α：环境感知演示信号种子（三类源各 3 条模拟样本，走完整链路）
+        from src.runtime.env_sources.policy_source import PolicySource
+        from src.runtime.env_sources.market_source import MarketSource
+        from src.runtime.env_sources.benchmark_source import BenchmarkSource
+
+        for cls in (PolicySource, MarketSource, BenchmarkSource):
+            try:
+                src = cls()
+                for sig in src._simulated_samples(3):
+                    src.publish_signal(sig)
+                logger.info(f"🌐 环境演示种子：{src.name} × 3 条已入 UNS environment 路")
+            except Exception as e:
+                logger.warning(f"⚠️ 环境种子 {cls.__name__} 注入失败（不破管）：{e}")
 
     yield
     scheduler.stop()
@@ -222,6 +239,7 @@ app.include_router(authn_api.router)  # 公开：登录/后端发现/OAuth 回�
 app.include_router(connectors_api.admin_router)            # 社交连接器管理（需 JWT）
 app.include_router(connectors_api.callback_router)         # 企微/钉钉回调（免 JWT，靠签名鉴权）
 app.include_router(connectivity_api.router, dependencies=_AUTH_DEPS)  # 配置 UI 连通性验证（§4.4）
+app.include_router(env_perception_api.router)  # 环境感知第⑥路（v30.0 α）— 路由自带 Depends(require_auth)
 
 
 if __name__ == "__main__":

@@ -47,6 +47,11 @@ class ExecutiveCockpitAgent(BaseAgent):
         budgets = await self.tools.get_budget_utilization()
         production = await self.tools.get_production_summary()
 
+        # v30.0 α：环境感知上下文（政策+标杆信号融入战略分析）
+        env = await self.env_context()
+        env_strategic = [s for s in env.get("signals", [])
+                         if s.get("payload", {}).get("category") in ("policy", "benchmark")]
+
         net_margin = round(kpi["net_profit"] / kpi["revenue_quarter"] * 100, 1) if kpi["revenue_quarter"] else 0.0
         overspend = [b for b in budgets if b["status"] == "overspend"]
         prod_pct = round(production["actual_total"] / production["plan_total"] * 100, 1) if production["plan_total"] else 0.0
@@ -84,6 +89,9 @@ class ExecutiveCockpitAgent(BaseAgent):
             "production": production,
             "recommendations": recommendations,
             "actions_taken": actions_taken,
+            # v30.0 α：环境感知上下文（政策+标杆，含来源溯源）
+            "env_signals": env_strategic,
+            "env_signal_count": env.get("count", 0),
         }
 
     def _generate_recommendations(self, kpi, budgets, production, prod_pct, overspend, actions_taken) -> list:
