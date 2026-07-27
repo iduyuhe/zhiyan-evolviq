@@ -145,7 +145,7 @@ export default function TacitCapturePanel() {
                   {c.channel}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm text-gray-700">{c.context.slice(0, 120)}</div>
+                  <div className="text-sm text-gray-700">{(c.context || '').slice(0, 120)}</div>
                   <div className="text-[10px] text-gray-300 mt-1 font-mono">
                     {c.source} · {new Date(c.created_at).toLocaleString('zh-CN', { hour12: false })}
                     {(c.extracted?.predicate) ? ` · 锚定:${c.extracted.predicate}` : ''}

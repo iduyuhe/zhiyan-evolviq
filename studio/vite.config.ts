@@ -26,6 +26,7 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(APP_VERSION),
   },
+  build: { sourcemap: true },  // 调试用：生成 .map 文件便于定位线上 JS 错误
   plugins: [react()],
   server: {
     port: 5173,

@@ -260,7 +260,7 @@ export default function App() {
                   <span className="text-[10px] text-gray-400">{me.role}</span>
                 </div>
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-zhiyan-500 to-zhiyan-700 flex items-center justify-center text-white text-xs font-bold">
-                  {(me.display_name || me.username).slice(0, 1).toUpperCase()}
+                  {((me.display_name || me.username) || '?').slice(0, 1).toUpperCase()}
                 </div>
                 <button
                   onClick={handleLogout}

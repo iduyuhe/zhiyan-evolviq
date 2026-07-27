@@ -145,7 +145,7 @@ export default function AuditLogView() {
                   </div>
                   <p className="text-xs text-gray-500 truncate">{log.detail}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[10px] text-gray-400 font-mono">{log.session_id.slice(0, 12)}...</span>
+                    <span className="text-[10px] text-gray-400 font-mono">{(log.session_id || 'no-session').slice(0, 12)}...</span>
                     <span className="text-[10px] text-gray-300">|</span>
                     <span className="text-[10px] text-gray-400">
                       {new Date(log.timestamp).toLocaleTimeString('zh-CN')}

@@ -56,7 +56,7 @@ export default function GoalInput({ onSubmit, onQuickCheck, loading, agentExampl
               <div className="space-y-1.5">
                 <p className="text-xs text-gray-500 font-medium">💡 点击示例加载：</p>
                 <div className="space-y-1.5">
-                  {agentExamples.slice(0, 3).map((ex, i) => (
+                  {(agentExamples || []).slice(0, 3).map((ex, i) => (
                     <button
                       key={i}
                       type="button"

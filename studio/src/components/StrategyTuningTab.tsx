@@ -307,7 +307,7 @@ export default function StrategyTuningTab() {
                     {String(h.old)} → <b className="text-zhiyan-600">{String(h.new)}</b>
                   </span>
                 </div>
-                <span className="text-[10px] text-gray-400">{h.ts.slice(0, 19).replace('T', ' ')}</span>
+                <span className="text-[10px] text-gray-400">{(h.ts || '').slice(0, 19).replace('T', ' ')}</span>
               </div>
             ))}
           </div>

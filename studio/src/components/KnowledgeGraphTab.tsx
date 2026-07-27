@@ -92,7 +92,8 @@ function computeForceLayout(
   return pos;
 }
 
-function shortId(id: string): string {
+function shortId(id: string | undefined | null): string {
+  if (!id) return 'unknown';
   const idx = id.indexOf(':');
   return idx >= 0 ? id.slice(idx + 1) : id;
 }
