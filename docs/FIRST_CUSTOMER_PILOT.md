@@ -85,4 +85,66 @@
 
 ---
 
+## 6. 执行版 · 动手步骤清单（照着做）
+
+> 前面是"为什么 + 选型"，这节是"具体怎么动"。按 6.1→6.6 顺序走，每个勾完再下一项。
+
+### 6.1 场景确认（杜先生拍板）
+- [ ] 选定首客场景（**推荐 A：设备健康 / 能耗孪生**）
+- [ ] 锁定 1 家试点（口头确认即可启动，合同后补）
+- [ ] 选定 1 条产线 / 1 台关键设备作为数据源（建议：有温度/电流/能耗信号的设备，最易出孪生）
+
+### 6.2 选网关（按设备能力二选一）
+| 设备能力 | 选什么 | 备注 |
+|---|---|---|
+| 设备/PLC **原生支持 OPC-UA** | 直接用设备端点 `opc.tcp://<host>:<port>` | 最省事，零额外硬件 |
+| 设备只给 **Modbus/私有协议** | 加 **OPC-UA 协议转换软件**（Kepware / Prosys OPC-UA Server）或边缘网关 | 把 Modbus 转成 OPC-UA |
+| 设备/PLC **原生支持 MQTT** | 直接连 broker（EMQX / 设备自带） | topic 如 `factory/line3/telemetry` |
+| 以上都没有 | 边缘盒子（树莓派 + Node-RED）做协议桥接 | 把任意串口/IO 转 MQTT/OPC-UA |
+
+### 6.3 接线 + 节点映射（数据从设备到孪生体）
+1. 网络通：网关机与设备在同一网段，能 `telnet <host> <port>` 通。
+2. 订阅节点：列出要采的变量（如 `Line3.Oven1.Temperature`、`Line3.MainPower`）。
+3. **节点 → 孪生 tag 映射**（在数据源 config 的 `node_map` 登记，沿用契约）：
+   - `ns=2;s=Line3.MainPower` → `power_kw__line3`
+   - `ns=2;s=Line3.EnergyTotal` → `energy_kwh__line3`
+   - `ns=2;s=Line3.GreenRatio` → `green_ratio__line3`
+4. **先验证再保存**（呼应 §4.4 铁律）：用 `gateway.connect()` + 读 1 个节点，成功才落配置。
+
+### 6.4 服务器侧：从"演示"切"真实"
+编辑生产服务器 `/root/zhiyan/.env`：
+```ini
+ZHIYAN_DEMO_DATA=0          # 关掉演示数据，改吃真实网关流
+# 网关端点指向试点现场（若用默认 localhost 则无需改）
+ZHIYAN_OPCUA_ENDPOINT=opc.tcp://<试点网关IP>:4840
+# 或
+ZHIYAN_MQTT_BROKER=<试点brokerIP>
+```
+然后重启：
+```bash
+cd /root/zhiyan && docker compose -f docker-compose.prod.yml up -d runtime
+```
+
+### 6.5 连通性验证（上线前必做）
+登录系统 → 左侧「连接」tab → 网关区点"测试"，或：
+```bash
+curl -X POST -H "Authorization: Bearer <JWT>" \
+  -H "Content-Type: application/json" \
+  -d '{"protocol":"opcua","endpoint":"opc.tcp://<试点IP>:4840"}' \
+  http://43.153.172.52:3006/api/connectivity/gateway
+# 期望 {"ok": true, "latency_ms": ..., "mode": "live"}
+```
+> 若返回 `mode: simulated` 或 `ok:false`，说明仍走兜底/连不通——先排网络再继续。
+
+### 6.6 看北极星"实时化率"从 0 爬起（验收截图）
+1. 设备数据开始流入后，打开 `http://43.153.172.52:3006/` → 「孪生」tab（TwinDashboard）。
+2. 应看到孪生体 `updated_at` 在动（新鲜度上升）、`real_time_*` 字段被填充。
+3. 北极星实时化率 = 含实时孪生上下文的决策数 ÷ 总决策数，会从 **0%** 随真实流爬升。
+4. **截图留存**：孪生面板 + 实时化率非零读数，作为试点首个证据。
+
+### 6.7 产出 1 页试点总结（给客户/投融/生态用）
+- 场景 / 接入设备 / 数据维度 / 客户收益（停机下降?能耗省?）/ 下一步放大计划。
+
+---
+
 *本 runbook 与 `ECOSYSTEM_LAUNCH.md` 互为表里：首客提供真实场景喂生态叙事，生态提供集成商加速首客落地。两者同步启动才能把 CCI 天花板从纸面拉到现实。*
