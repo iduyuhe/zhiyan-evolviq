@@ -135,7 +135,9 @@ def _decrypt_echostr(echostr: str, aes_key: str, corp_id: str) -> str:
     plain = _decrypt_bytes(raw, aes_key)
     plain = _pkcs7_unpad(plain)
     # 明文结构：random(16B) + msg_len(4B, network) + msg + receiveid
-    msg = plain[16:][4:]
+    content = plain[16:]                            # 跳过 16 字节 random
+    msg_len = int.from_bytes(content[:4], "big")    # 读 4 字节 msg_len
+    msg = content[4:4 + msg_len]                    # 只取 msg（不含 receiveid）
     # 末尾 receiveid 校验（corp_id），不严格匹配则忽略
     return msg.decode("utf-8")
 
