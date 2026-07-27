@@ -33,14 +33,8 @@ from src.agents.yield_analysis.tools import YieldTools
 
 logger = logging.getLogger(__name__)
 
-# 多租户上下文：dispatch 调用期间记录当前租户，供下游工具在需要时读取。
-# （参考目录数据【物料/BOM/库存/PO】为平台级共享目录；租户上下文用于调用隔离与审计。）
-current_tenant: contextvars.ContextVar = contextvars.ContextVar("zhiyan_tenant", default="default")
-
-
-def get_current_tenant() -> str:
-    """读取当前调用所属租户（工具内可用）。"""
-    return current_tenant.get()
+# 多租户上下文统一由 src.runtime.context 提供（避免重复定义、保证与 API 层一致）。
+from src.runtime.context import current_tenant, get_current_tenant, set_current_tenant  # noqa: E402
 
 # 每个 Agent 的 in-process 工具实例（与运行时同一套实现）
 _INSTANCES = {
@@ -191,7 +185,7 @@ async def dispatch(tool_name: str, arguments: dict | None, tenant_id: str | None
     agent, method, _desc, _params = spec
     inst = _INSTANCES[agent]
     func = getattr(inst, method)
-    token = current_tenant.set(tenant_id or "default")
+    token = set_current_tenant(tenant_id or "default")
     try:
         return await func(**(arguments or {}))
     finally:

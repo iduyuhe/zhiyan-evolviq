@@ -40,7 +40,8 @@ async def test_writeback_pending_when_connector_unavailable():
     )
     assert res["status"] == "pending"
     assert res["record_id"]
-    assert len(writeback_bridge.pending()) == 1
+    # pending() 现支持按租户过滤；该用例提交到 default 租户，按租户隔离计数
+    assert len(writeback_bridge.pending("default")) == 1
 
 
 @pytest.mark.asyncio
@@ -52,7 +53,7 @@ async def test_writeback_sent_with_connector():
         system="mes", agent="supply_chain", decision_type="y", payload={"k": 2}
     )
     assert res["status"] == "sent"
-    assert writeback_bridge.stats()["sent_total"] == 1
+    assert writeback_bridge.stats("default")["sent_total"] == 1
 
 
 @pytest.mark.asyncio

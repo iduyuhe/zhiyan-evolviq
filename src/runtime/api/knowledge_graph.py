@@ -2,14 +2,31 @@
 
 import logging
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
 from src.common import neo4j_client as neo
 from src.runtime import knowledge_graph as kg
+from src.runtime.authn.deps import require_auth
+from src.runtime.context import get_current_tenant
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/kg", tags=["knowledge-graph"])
+
+# SUPERADMIN 角色名（与 roles.py 一致）
+_SUPERADMIN_ROLES = ("superadmin", "SUPERADMIN")
+
+
+def _effective_tenant(tenant: str | None, u: dict) -> str | None:
+    """多租户隔离：非超级管理员忽略客户端 tenant 参数（杜绝越权读他租户），
+    仅 SUPERADMIN 可显式指定租户跨看。
+
+    注：种子参考图谱未打 tenant 标签，故非超级管理员缺省仍返回全量（含共享参考图谱），
+    以保留 dev 展示行为；S2 对外前需把种子打标 tenant="default" 并默认按当前租户隔离。
+    """
+    if tenant and u.get("role") in _SUPERADMIN_ROLES:
+        return tenant
+    return None
 
 
 class RebuildResponse(BaseModel):
@@ -32,23 +49,24 @@ async def query(
     direction: str = Query("out", description="out / in / any"),
     category: str | None = Query(None, description="属性过滤，如 Material.category=三极管"),
     name: str | None = Query(None, description="name 属性过滤"),
-    tenant: str | None = Query(None, description="按租户隔离查询（仅返回该租户执行写入的图谱）；缺省返回全量（含共享参考图谱）"),
+    tenant: str | None = Query(None, description="按租户隔离查询（仅 SUPERADMIN 可指定；非管理员忽略此参数）"),
+    u: dict = Depends(require_auth),
 ):
     """预定义查询：按 label + 属性过滤节点，或按 node_id 查邻居。
 
-    tenant 参数用于多租户隔离：传入时仅返回该租户执行写入的节点/关系；
-    不传则返回全部（含平台共享的参考图谱种子）。
+    多租户隔离：非 SUPERADMIN 的 tenant 参数被忽略，无法读取其他租户图谱（防越权）。
     """
+    eff = _effective_tenant(tenant, u)
     try:
         if node_id:
-            return {"tenant": tenant, "node_id": node_id, "neighbors": await neo.get_neighbors(node_id, edge, direction, tenant=tenant)}
+            return {"tenant": eff, "node_id": node_id, "neighbors": await neo.get_neighbors(node_id, edge, direction, tenant=eff)}
         if label:
             filters = {}
             if category:
                 filters["category"] = category
             if name:
                 filters["name"] = name
-            return {"tenant": tenant, "label": label, "nodes": await neo.query_nodes(label, tenant=tenant, **filters)}
+            return {"tenant": eff, "label": label, "nodes": await neo.query_nodes(label, tenant=eff, **filters)}
         return {"hint": "需提供 label（列节点）或 node_id（查邻居）"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -64,12 +82,15 @@ async def rebuild():
 @router.get("/recall")
 async def recall(
     goal: str = Query(..., description="自然语言目标，用于召回相关历史经验"),
-    tenant: str | None = Query(None, description="按租户隔离"),
+    tenant: str | None = Query(None, description="按租户隔离（仅 SUPERADMIN 可指定；非管理员忽略）"),
     limit: int = Query(5, description="返回条数上限"),
+    u: dict = Depends(require_auth),
 ):
     """经验记忆召回：按目标召回相关历史 Insight（跨 Agent 经验记忆闭环读回）。
 
     供 Agent 推理前读回历史经验，也供前端/调试查看"系统记住了什么"。
+    多租户隔离：非 SUPERADMIN 忽略 tenant 参数，按当前租户召回。
     """
     from src.runtime.memory import recall as _recall
-    return await _recall(goal, tenant_id=tenant or "default", limit=limit)
+    eff = _effective_tenant(tenant, u) or get_current_tenant()
+    return await _recall(goal, tenant_id=eff, limit=limit)

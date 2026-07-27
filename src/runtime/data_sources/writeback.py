@@ -179,10 +179,21 @@ class WritebackBridge:
 
     # ---------------- 查询 ----------------
 
-    def pending(self) -> list[dict]:
+    def pending(self, tenant_id: str | None = None) -> list[dict]:
+        if tenant_id:
+            return [r.to_dict() for r in self._pending if r.tenant_id == tenant_id]
         return [r.to_dict() for r in self._pending]
 
-    def stats(self) -> dict:
+    def stats(self, tenant_id: str | None = None) -> dict:
+        if tenant_id:
+            pending = [r for r in self._pending if r.tenant_id == tenant_id]
+            sent = [r for r in self._sent if r.tenant_id == tenant_id]
+            return {
+                "tenant_id": tenant_id,
+                "pending": len(pending),
+                "sent_total": len(sent),
+                "systems": sorted(_SYSTEM_KIND.keys()),
+            }
         return {
             "pending": len(self._pending),
             "sent_total": len(self._sent),

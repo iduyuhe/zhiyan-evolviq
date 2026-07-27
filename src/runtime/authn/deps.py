@@ -15,6 +15,7 @@ from fastapi import Depends, Header, HTTPException
 from src.runtime.authn.config import config
 from src.runtime.authn.roles import parse_role
 from src.runtime.authn.service import authn_service
+from src.runtime.context import set_current_tenant
 
 
 async def get_current_user(authorization: str = Header(None, alias="Authorization")) -> dict:
@@ -64,10 +65,14 @@ async def require_auth(
             if scheme.lower() == "bearer" and token:
                 u = authn_service.get_user_from_token(token)
                 if u is not None:
+                    set_current_tenant(u.get("tenant_id", "default"))
                     return u
+        # P0 修复：匿名上下文必须是最小权限（viewer），绝不能再是 SUPERADMIN。
+        # 生产由 ZHIYAN_AUTH_REQUIRE=1 强制拒绝无 token 请求；此处仅保护"误配置/开发"场景。
+        set_current_tenant(x_tenant_key or "default")
         return {
             "username": "anonymous",
-            "role": "SUPERADMIN",
+            "role": "viewer",
             "tenant_id": x_tenant_key or "default",
             "auth_source": "local",
         }
@@ -82,4 +87,5 @@ async def require_auth(
         raise HTTPException(status_code=401, detail="JWT 无效或已过期")
     if not user.get("is_active", True):
         raise HTTPException(status_code=403, detail="账号已停用")
+    set_current_tenant(user.get("tenant_id", "default"))
     return user

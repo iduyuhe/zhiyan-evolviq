@@ -167,9 +167,11 @@ async def list_sessions_db(limit: int = Query(50, le=200), tenant: str = Depends
 
 @router.get("/{session_id}/db")
 async def get_session_db(session_id: str, tenant: str = Depends(get_tenant)):
-    """获取单条已落库会话（来自数据库）"""
+    """获取单条已落库会话（来自数据库）。按租户隔离：非本租户会话一律 404（不泄露存在性）。"""
     row = await db_get_session(session_id)
     if not row:
+        raise HTTPException(status_code=404, detail="Session not found in DB")
+    if row.get("tenant_id") != tenant:
         raise HTTPException(status_code=404, detail="Session not found in DB")
     return {"tenant_id": tenant, "source": "db", **row}
 
