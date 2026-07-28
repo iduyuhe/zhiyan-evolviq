@@ -194,7 +194,7 @@ compliance_q → 行业政策影响评估
 - **S3-2 相关性打分降噪** ✅（2026-07-28 commit 21ab780，373 passed + 双入口冒烟 PASS + 生产 E2E：9 条真实情报均带 relevance score/target_agents/reason/suppressed，F4 透明标注生效）：信号×租户画像关联度打分，高相关优先推给对应 agent（消费 S3-1 画像）。
 - **S3-3 源推荐** ✅（2026-07-28 commit 0bad380，383 passed 零回归 + tsc 0 错误 + 双入口冒烟 PASS + 生产 E2E：端点 `/environment/source-recommendations` 返回 3 官方源推荐，tenant=default、F4 透明 reasons 生效、draft 人审后订阅）：纯函数 `build_tenant_interest`（行为画像 agent→类目 + BOM 物料关键词启发式→类目 + 行业变量→默认类目）+ `recommend_sources`（按推荐度降序、subscribed 标记、透明理由），严格租户内隔离、绝不跨租户。
 - **S3-4 采纳/驳回反哺** ✅（2026-07-29 commit 26012fb，394 passed 零回归 + tsc 0 错误 + 双入口冒烟 PASS + 生产 E2E：POST feedback→GET 推荐 benchmark.rejected=True(score=0.12)、adopt 撤销恢复 False；🔴 租户隔离经 API 级测试验证）：推荐采纳(adopt→类目 boost)/驳回(reject→压到 REJECT_FLOOR 可撤销)事件回流源推荐打分（与蓝弧后果回流同构），复用 behavior_events 池、F4 透明标注。
-- **S3-5 行为导航④（无感转型导航器）**：推荐下一智能体，价值句式「你关注的 X，配合 Y 能算出 Z」，复用 `platform_insight` 透明标注 + 相邻呈现，融入「解锁进度」三圈视图。
+- **S3-5 行为导航④（无感转型导航器）** ✅（2026-07-29 commit 234d410，406 passed 零回归 + tsc 0 错误 + 双入口冒烟 PASS + 生产 E2E：agent-recommendations/unlock-progress 均返回 recommended_next，价值句式+locked+source=behavior+F4 reasons 生效）：按租户自身行为推荐下一值得解锁的智能体（关注重点→三圈最短价值路径），融入解锁进度三圈视图。
 - **S3-6 共生环闭环**：「因你而进化」通知（反馈→Issue→版本→回告，48h SLA）+ 租户「成长档案」。
 - **S3-7 体外感知大屏**：孪生大屏新增「体外感知」视图。
 - **#322 S3 阶段三件套验收**：全量零回归 + 双入口冒烟 PASS + 一页汇报 + 更新 MASTER 标记 S3 状态。
