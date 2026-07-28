@@ -89,7 +89,7 @@ def _publish_policy_subsidy():
 # ---------- UNS 通道分离 ----------
 
 class TestUNSChannel:
-    def test_publish_platform_insight_channel_and_credibility(self):
+    async def test_publish_platform_insight_channel_and_credibility(self):
         ev = uns.publish_platform_insight(
             source="platform://zhiyan/suggestion",
             payload={"title": "t", "content": "c"},
@@ -102,7 +102,7 @@ class TestUNSChannel:
         events = uns.query(channel=CHANNEL_PLATFORM_INSIGHT)
         assert any(e["id"] == ev.id for e in events)
 
-    def test_platform_insight_never_official(self):
+    async def test_platform_insight_never_official(self):
         ev = uns.publish_platform_insight(source="platform://zhiyan/suggestion", payload={"title": "x"})
         assert ev.credibility == "platform"
         assert ev.credibility != "official"
