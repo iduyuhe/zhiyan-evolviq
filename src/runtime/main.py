@@ -19,6 +19,7 @@ from src.runtime.api import blue_arc as blue_arc_api
 from src.runtime.api import connectors as connectors_api  # 社交通道接入（v29.9）
 from src.runtime.api import connectivity as connectivity_api  # 配置 UI 连通性验证（§4.4）
 from src.runtime.api import env_perception as env_perception_api  # 环境感知第⑥路（v30.0 α）
+from src.runtime.api import bom as bom_api  # BOM 上传+毛利影响测算（S2-5 #311）
 # v30.0：隐式导入注册 UNS environment 路订阅者（import 即注册，无 lifespan 依赖）
 import src.runtime.env_sources  # noqa: F401  管理器单例
 import src.runtime.env_perception  # noqa: F401  分级门管道
@@ -79,6 +80,11 @@ async def lifespan(app: FastAPI):
     from src.runtime.usage_meter import usage_meter
     await usage_meter.init()
     logger.info("📊 免费额度计量器已初始化（日信号/月解读）")
+
+    # S2 v30.5 β：BOM 存储（#311，信任爬梯③价值跳变；db 不可用时降级内存态）
+    from src.runtime.bom_store import bom_store
+    await bom_store.init()
+    logger.info("📄 BOM 存储已初始化（行情×BOM 毛利影响测算）")
 
     # 企业认证：确保超级管理员账号存在（DB 不可用时降级内存态；测试可直接调用）
     from src.runtime.authn.service import authn_service
@@ -250,6 +256,7 @@ app.include_router(connectors_api.admin_router)            # 社交连接器管�
 app.include_router(connectors_api.callback_router)         # 企微/钉钉回调（免 JWT，靠签名鉴权）
 app.include_router(connectivity_api.router, dependencies=_AUTH_DEPS)  # 配置 UI 连通性验证（§4.4）
 app.include_router(env_perception_api.router)  # 环境感知第⑥路（v30.0 α）— 路由自带 Depends(require_auth)
+app.include_router(bom_api.router)  # BOM 上传+毛利影响（S2-5 #311）— 路由自带 Depends(require_auth)
 
 
 if __name__ == "__main__":

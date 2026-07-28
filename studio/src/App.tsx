@@ -31,6 +31,7 @@ import WritebackPanel from './components/WritebackPanel';
 import ConnectivityPanel from './components/ConnectivityPanel';
 import EnvPerceptionPanel from './components/EnvPerceptionPanel';
 import UnlockProgressPanel from './components/UnlockProgressPanel';
+import BomMarginPanel from './components/BomMarginPanel';
 import { createSession, approveSession, quickCheck, authHeaders } from './api/client';
 import type { Session, ExecutionResult } from './api/client';
 import Login from './components/Login';
@@ -461,7 +462,7 @@ export default function App() {
           {tab === 'twin' && <TwinDashboard />}
           {tab === 'writeback' && <WritebackPanel />}
           {tab === 'tenant' && <TenantManagement />}
-          {tab === 'connect' && (<><UnlockProgressPanel /><EnvPerceptionPanel /><ConnectivityPanel /></>)}
+          {tab === 'connect' && (<><UnlockProgressPanel /><BomMarginPanel /><EnvPerceptionPanel /><ConnectivityPanel /></>)}
         </main>
       )}
 

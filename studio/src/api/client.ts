@@ -1111,3 +1111,92 @@ export async function getUnlockProgress(): Promise<UnlockProgressView> {
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
+
+// ============ BOM 上传 × 行情毛利影响（S2-5，#311 信任爬梯③价值跳变） ============
+
+export interface BomItem {
+  material: string;
+  qty: number;
+  unit_price: number;
+  cost: number;
+}
+
+export interface BomRecord {
+  id: string;
+  tenant_id: string;
+  filename: string;
+  product_name: string;
+  item_count: number;
+  total_material_cost: number;
+  created_at: string | null;
+  items?: BomItem[];
+}
+
+export interface MarginImpactItem {
+  material: string;
+  matched_entity: string;
+  signal_title: string;
+  item_cost: number;
+  cost_share_pct: number;
+  price_change_pct?: number;
+  cost_delta?: number;
+}
+
+export interface MarginImpactView {
+  bom_id: string;
+  product_name: string;
+  item_count: number;
+  total_material_cost: number;
+  impacts: MarginImpactItem[];
+  watchlist: MarginImpactItem[];
+  cost_delta_total: number;
+  cost_delta_pct: number;
+  signals_scanned: number;
+  summary: string;
+}
+
+/** 先测试后保存闸门：只解析不落盘，422 时抛错（detail 含行号原因） */
+export async function previewBom(filename: string, content: string): Promise<{
+  status: string; filename: string; item_count: number;
+  total_material_cost: number; items: BomItem[]; truncated: boolean;
+}> {
+  const res = await fetch(`${API_BASE}/bom/preview`, {
+    method: 'POST', headers: authHeaders(),
+    body: JSON.stringify({ filename, content }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+/** 上传即达信任爬梯③：响应内嵌首次毛利影响测算 + 上传后圈层 */
+export async function uploadBom(filename: string, content: string, productName = ''): Promise<{
+  status: string; bom: BomRecord; margin_impact: MarginImpactView | null;
+  current_circle: 'outer' | 'middle' | 'inner';
+}> {
+  const res = await fetch(`${API_BASE}/bom/upload`, {
+    method: 'POST', headers: authHeaders(),
+    body: JSON.stringify({ filename, content, product_name: productName }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function listBoms(): Promise<{ tenant_id: string; boms: BomRecord[] }> {
+  const res = await fetch(`${API_BASE}/bom`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function deleteBom(bomId: string): Promise<{ status: string; bom_id: string }> {
+  const res = await fetch(`${API_BASE}/bom/${bomId}`, {
+    method: 'DELETE', headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function getBomMarginImpact(bomId: string): Promise<MarginImpactView> {
+  const res = await fetch(`${API_BASE}/bom/${bomId}/margin-impact`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}

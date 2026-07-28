@@ -100,11 +100,10 @@ class UsageMeter:
         if tenant_id == DEFAULT_TENANT_ID:
             return True  # 平台/演示上下文，非 SaaS 注册租户
         try:
-            from src.runtime.tenant_store import tenant_store
+            from src.runtime.unlock_map import trust_ladder_reached
 
-            cfg = tenant_store.get_gateway_config(tenant_id)
-            if cfg:
-                return True  # 信任爬梯③：已接内部数据源 = 付费线，免限额
+            if trust_ladder_reached(tenant_id):
+                return True  # 信任爬梯③（网关或 BOM，#311 单一语义源）= 付费线，免限额
         except Exception:
             pass
         return False

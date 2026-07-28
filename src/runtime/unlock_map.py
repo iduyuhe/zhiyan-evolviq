@@ -36,7 +36,7 @@ CIRCLES = [
     {
         "key": "middle",
         "label": "中圈 · 外部×内部交叉",
-        "requirement": "接入第 1 个内部数据源（网关配置）即解锁，同时免除免费额度限制",
+        "requirement": "上传 1 份 BOM 或接入第 1 个内部数据源即解锁，同时免除免费额度限制",
         "agents": MIDDLE_AGENTS,
     },
     {
@@ -50,7 +50,8 @@ CIRCLES = [
 _CIRCLE_ORDER = {"outer": 0, "middle": 1, "inner": 2}
 
 NEXT_STEP = {
-    "outer": "在「连接」页配置第 1 个内部数据源（网关），即可解锁中圈 4 个交叉分析 agent，"
+    "outer": "上传 1 份 BOM（物料清单文件，不接系统、不进内网），或在「连接」页配置"
+             "第 1 个内部数据源（网关），即可解锁中圈 4 个交叉分析 agent，"
              "并免除信号/解读免费额度——数据仍只读，不改动任何现有系统。",
     "middle": "预约私有化部署评估，解锁内圈 12 个深度自治 agent（设备维护/良率/排产等），"
               "全部数据不出厂区。",
@@ -62,17 +63,38 @@ def _private_deployment() -> bool:
     return os.getenv("ZHIYAN_PRIVATE_DEPLOYMENT", "0") == "1"
 
 
-def current_circle(tenant_id: str) -> str:
-    """当前圈层判定（事实进度，与 usage_meter 豁免逻辑同源语义）。"""
-    if _private_deployment():
-        return "inner"
+def trust_ladder_reached(tenant_id: str) -> bool:
+    """信任爬梯③单一语义源（#311 收敛）：
+
+    达成条件二选一（总纲 §3.5 中圈=「外部×轻量内部数据」）：
+    - 已配置网关（接入第 1 个内部数据源）
+    - 已上传 1 份 BOM（轻量内部数据文件，不接系统不进内网）
+
+    usage_meter 豁免与本模块圈层判定都引用此函数——两个系统永不矛盾。
+    """
     try:
         from src.runtime.tenant_store import tenant_store
 
         if tenant_store.get_gateway_config(tenant_id):
-            return "middle"  # 信任爬梯③：已接第 1 个内部数据源
+            return True
     except Exception:
         pass
+    try:
+        from src.runtime.bom_store import bom_store
+
+        if bom_store.has_bom(tenant_id):
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def current_circle(tenant_id: str) -> str:
+    """当前圈层判定（事实进度，与 usage_meter 豁免逻辑同源语义）。"""
+    if _private_deployment():
+        return "inner"
+    if trust_ladder_reached(tenant_id):
+        return "middle"  # 信任爬梯③：已接内部数据源或已上传 BOM
     return "outer"
 
 
