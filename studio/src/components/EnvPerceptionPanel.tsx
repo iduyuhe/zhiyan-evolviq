@@ -24,6 +24,7 @@ import {
   EnvSubscription,
   EnvSignal,
   EnvSourceRecommendation,
+  postEnvRecommendationFeedback,
   ConnectivityTestResult,
 } from '../api/client';
 
@@ -279,6 +280,7 @@ export default function EnvPerceptionPanel() {
   const [feedStat, setFeedStat] = useState<{ pool: number; visible: number; suppressed_count?: number } | null>(null);
   const [piCount, setPiCount] = useState(0);
   const [recommendations, setRecommendations] = useState<EnvSourceRecommendation[]>([]);
+  const [feedbackCount, setFeedbackCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [pulling, setPulling] = useState(false);
   const [pullMsg, setPullMsg] = useState('');
@@ -300,6 +302,7 @@ export default function EnvPerceptionPanel() {
       setFeedStat({ pool: fd.pool_size, visible: fd.visible });
       setPiCount(fd.platform_insight_count || 0);
       setRecommendations(rec.recommendations || []);
+      setFeedbackCount(rec.feedback_count || 0);
     } catch {
       /* 静默：ErrorBoundary 兜底渲染错误，网络错误不白屏 */
     } finally {
@@ -347,6 +350,8 @@ export default function EnvPerceptionPanel() {
         poll_interval_sec: 3600,
       });
       trackBehavior('source_subscribe', 'source', rec.source_name);
+      // S3-4：订阅即「采纳」→ 回流推荐模型（该类目后续推荐度上调）
+      try { await postEnvRecommendationFeedback(rec.source_name, 'adopt'); } catch { /* 静默 */ }
       await refresh();
     } catch (e) {
       const err = e as Error & { status?: number };
@@ -355,6 +360,26 @@ export default function EnvPerceptionPanel() {
           ? '💡 ' + extractDetail(err.message)
           : '订阅失败：' + extractDetail(err.message),
       );
+    }
+  };
+
+  // S3-4：驳回推荐 → 回流模型（推荐度下调，可撤销）；绝不静默消失（F4 透明）
+  const onRejectRec = async (rec: EnvSourceRecommendation) => {
+    try {
+      await postEnvRecommendationFeedback(rec.source_name, 'reject');
+      await refresh();
+    } catch (e) {
+      setPullMsg('驳回失败：' + extractDetail((e as Error).message));
+    }
+  };
+
+  // S3-4：撤销驳回 → 记一次「采纳」覆盖最新动作（最新动作胜出）
+  const onUndoReject = async (rec: EnvSourceRecommendation) => {
+    try {
+      await postEnvRecommendationFeedback(rec.source_name, 'adopt');
+      await refresh();
+    } catch (e) {
+      setPullMsg('撤销失败：' + extractDetail((e as Error).message));
     }
   };
 
@@ -502,7 +527,9 @@ export default function EnvPerceptionPanel() {
       <section className="card p-4">
         <div className="flex items-center justify-between mb-2">
           <h3 className="font-semibold text-gray-900">为你推荐的信息源</h3>
-          <span className="text-[11px] text-gray-400">按你的画像相关性排序</span>
+          <span className="text-[11px] text-gray-400">
+            {feedbackCount > 0 ? `已学习你的 ${feedbackCount} 次采纳/驳回` : '按你的画像相关性排序'}
+          </span>
         </div>
         <p className="text-xs text-gray-500 mb-3">
           基于你的行业属性、已上传 BOM 的物料构成、以及常用智能体的解读偏好，推荐最值得订阅的外部信息源。推荐依据全程透明——确认后点「订阅」即生效。
@@ -533,6 +560,11 @@ export default function EnvPerceptionPanel() {
                           默认模板（未显式订阅）
                         </span>
                       ) : null}
+                      {rec.rejected && (
+                        <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-red-50 text-red-600">
+                          已驳回
+                        </span>
+                      )}
                     </div>
                     <ul className="mt-1.5 space-y-0.5">
                       {rec.reasons.map((r, i) => (
@@ -542,15 +574,32 @@ export default function EnvPerceptionPanel() {
                       ))}
                     </ul>
                   </div>
-                  {!rec.subscribed && (
-                    <button
-                      className="btn-primary text-xs whitespace-nowrap shrink-0"
-                      onClick={() => onSubscribeRec(rec)}
-                      disabled={quotaFull}
-                    >
-                      订阅
-                    </button>
-                  )}
+                  <div className="flex flex-col items-end gap-1.5 shrink-0">
+                    {rec.rejected ? (
+                      <button
+                        className="btn-secondary text-xs whitespace-nowrap"
+                        onClick={() => onUndoReject(rec)}
+                      >
+                        撤销驳回
+                      </button>
+                    ) : !rec.subscribed ? (
+                      <>
+                        <button
+                          className="btn-primary text-xs whitespace-nowrap"
+                          onClick={() => onSubscribeRec(rec)}
+                          disabled={quotaFull}
+                        >
+                          订阅
+                        </button>
+                        <button
+                          className="btn-ghost text-xs whitespace-nowrap text-gray-400 hover:text-red-500"
+                          onClick={() => onRejectRec(rec)}
+                        >
+                          不感兴趣
+                        </button>
+                      </>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             ))}

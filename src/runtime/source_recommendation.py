@@ -264,3 +264,45 @@ def recommend_sources(
         })
     recs.sort(key=lambda r: r["score"], reverse=True)
     return recs
+
+
+# ---------- S3-4 采纳/驳回反哺（#318，与蓝弧后果回流同构）----------
+
+REJECT_FLOOR = 0.12  # 驳回的源/类目 → 推荐度压到该下限（仍可撤销，不静默消失）
+
+
+def apply_feedback(recs: list[dict], adjustments: dict) -> tuple[list[dict], bool]:
+    """将本租户采纳/驳回反馈回流到推荐打分（F4 透明标注；🔴 仅本租户反馈）。
+
+    adjustments：recommendation_feedback_store.adjustments_for(tenant) 产物。
+    - 驳回的源 / 类目 → 推荐度压到 REJECT_FLOOR，标记 rejected=True，附透明理由（可撤销）。
+    - 采纳强化类目 → 该类目源推荐度 +对应 boost（封顶 1.0），附透明理由。
+
+    返回 (调整后推荐列表[按 score 降序], 是否应用了任何反馈)。
+    """
+    cat_boost = (adjustments or {}).get("category_boost", {}) or {}
+    rejected_sources = set((adjustments or {}).get("rejected_sources", []) or [])
+    rejected_cats = set((adjustments or {}).get("rejected_categories", []) or [])
+    applied = bool(cat_boost or rejected_sources or rejected_cats)
+
+    out: list[dict] = []
+    for rec in recs or []:
+        r = dict(rec)
+        r["rejected"] = False
+        rejected = (r.get("source_name") in rejected_sources) or (r.get("category") in rejected_cats)
+        if rejected:
+            r["rejected"] = True
+            r["score"] = min(r.get("score", 1.0), REJECT_FLOOR)
+            reason = "你曾驳回此主题推荐，已下调推荐度（可撤销）"
+            if reason not in r["reasons"]:
+                r["reasons"] = list(r["reasons"]) + [reason]
+        elif r.get("category") in cat_boost:
+            boost = cat_boost[r["category"]]
+            r["score"] = min(1.0, round((r.get("score", 0.0) + boost), 3))
+            reason = "你曾采纳同类信息源，已上调推荐度"
+            if reason not in r["reasons"]:
+                r["reasons"] = list(r["reasons"]) + [reason]
+        out.append(r)
+
+    out.sort(key=lambda x: x["score"], reverse=True)
+    return out, applied

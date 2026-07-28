@@ -1109,12 +1109,15 @@ export interface EnvSourceRecommendation {
   score: number;            // 推荐度 [0,1]
   subscribed: boolean;      // 是否已订阅（已订阅=确认，未订阅=draft 待审）
   is_default?: boolean;     // 当前走行业默认模板（未显式配置）
+  rejected?: boolean;       // S3-4：被驳回（推荐度已下调，可撤销）
   reasons: string[];        // F4 透明标注：推荐依据
 }
 
 export interface EnvSourceRecommendationView {
   tenant_id: string;
   industry: string;
+  feedback_applied?: boolean;   // S3-4：本次推荐是否应用了采纳/驳回反馈
+  feedback_count?: number;      // S3-4：本租户反馈事件总数（可度量）
   interest: {
     category_interests: Record<string, number>;
     material_terms: string[];
@@ -1128,6 +1131,36 @@ export interface EnvSourceRecommendationView {
 /** S3-3 源推荐：按租户行业/物料(BOM)/行为画像推荐值得订阅的信息源（draft 形式，人审后订阅）。 */
 export async function getEnvSourceRecommendations(): Promise<EnvSourceRecommendationView> {
   const res = await fetch(`${API_BASE}/environment/source-recommendations`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+// ============ S3-4 采纳/驳回反哺（#318）============
+
+export interface EnvRecommendationFeedbackResponse {
+  status: string;
+  action: string;
+  target_kind: string;
+  target_id: string;
+  category: string | null;
+  adjustments_summary: {
+    category_boost: Record<string, number>;
+    rejected_sources: string[];
+    rejected_categories: string[];
+    count: number;
+  };
+}
+
+/** S3-4 采纳/驳回反哺：记录一次推荐采纳/驳回，回流推荐模型（F4 透明、仅本租户）。 */
+export async function postEnvRecommendationFeedback(
+  sourceName: string | null,
+  action: 'adopt' | 'reject',
+  targetKind: 'source' | 'category' | 'signal' = 'source',
+): Promise<EnvRecommendationFeedbackResponse> {
+  const res = await fetch(`${API_BASE}/environment/recommendations/feedback`, {
+    method: 'POST', headers: authHeaders(),
+    body: JSON.stringify({ source_name: sourceName, action, target_kind: targetKind }),
+  });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }

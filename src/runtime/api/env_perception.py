@@ -30,6 +30,13 @@ from src.runtime.authn.deps import require_auth
 from src.runtime.context import get_current_tenant
 from src.runtime.env_sources.manager import env_manager
 from src.runtime.env_perception import env_review
+from src.runtime.signal_relevance import SOURCE_NAME_CATEGORY
+from src.runtime.recommendation_feedback_store import (
+    FB_ADOPT as REC_FB_ADOPT,
+    FB_REJECT as REC_FB_REJECT,
+    adjustments_for as rec_feedback_adjustments,
+    record as fb_record,
+)
 from src.runtime import env_subscription_store as _sub_mod
 from src.runtime.env_subscription_store import QuotaExceeded, env_subscription_store
 from src.runtime.uns import uns, CHANNEL_ENVIRONMENT
@@ -297,6 +304,7 @@ async def source_recommendations():
     from src.runtime.behavior_store import behavior_store
     from src.runtime.bom_store import bom_store
     from src.runtime.source_recommendation import (
+        apply_feedback,
         build_tenant_interest,
         recommend_sources,
     )
@@ -324,9 +332,15 @@ async def source_recommendations():
     interest = build_tenant_interest(profile, materials, industry)
     recs = recommend_sources(known, subs, interest)
 
+    # S3-4 采纳/驳回反哺（#318）：本租户反馈回流打分（F4 透明；🔴 仅本租户）
+    adj = rec_feedback_adjustments(tenant)
+    recs, feedback_applied = apply_feedback(recs, adj)
+
     return {
         "tenant_id": tenant,
         "industry": industry,
+        "feedback_applied": feedback_applied,
+        "feedback_count": adj.get("count", 0),
         "interest": {
             "category_interests": interest["category_interests"],
             "material_terms": sorted(interest["material_terms"])[:30],
@@ -335,4 +349,65 @@ async def source_recommendations():
             "industry_categories": sorted(interest["industry_categories"]),
         },
         "recommendations": recs,
+    }
+
+
+class RecommendationFeedbackRequest(BaseModel):
+    """采纳/驳回推荐事件（#318 反哺入口）。
+
+    与蓝弧后果回流同构：声明动作（adopt/reject）→ 立即回流推荐打分。
+    target_kind 支持 source（信息源）/ category（类目）/ signal（情报 id）。
+    """
+
+    source_name: str | None = Field(default=None, description="推荐源名（target_kind=source 时必填）")
+    action: str = Field(..., description="adopt=采纳 | reject=驳回")
+    target_kind: str = Field(default="source", description="source | category | signal")
+
+
+@router.post("/recommendations/feedback")
+async def post_recommendation_feedback(req: RecommendationFeedbackRequest):
+    """S3-4 采纳/驳回反哺（#318）：记录一次推荐采纳/驳回，回流推荐模型。
+
+    返回 {status, category, adjustments_summary}。下次 GET /environment/source-recommendations
+    即体现调整（F4 透明标注）。🔴 严格租户内隔离，反馈仅作用于本租户。
+    """
+    if req.action not in (REC_FB_ADOPT, REC_FB_REJECT):
+        raise HTTPException(status_code=422, detail=f"action 须为 {REC_FB_ADOPT}/{REC_FB_REJECT}")
+
+    tenant = get_current_tenant()
+
+    if req.target_kind == "source":
+        if not req.source_name:
+            raise HTTPException(status_code=422, detail="target_kind=source 时 source_name 必填")
+        names = _known_source_names()
+        if req.source_name not in names:
+            raise HTTPException(status_code=404, detail=f"未知环境源：{req.source_name}（可选：{names}）")
+        category = SOURCE_NAME_CATEGORY.get(req.source_name)
+        target_id = req.source_name
+    elif req.target_kind == "category":
+        if not req.source_name:
+            raise HTTPException(status_code=422, detail="target_kind=category 时 source_name 填类目名（policy/market/benchmark）")
+        category = req.source_name
+        target_id = req.source_name
+    else:  # signal
+        if not req.source_name:
+            raise HTTPException(status_code=422, detail="target_kind=signal 时 source_name 填信号 id")
+        category = None
+        target_id = req.source_name
+
+    await fb_record(tenant, req.target_kind, target_id, req.action, category)
+    adj = rec_feedback_adjustments(tenant)
+    summary = {
+        "category_boost": adj["category_boost"],
+        "rejected_sources": adj["rejected_sources"],
+        "rejected_categories": adj["rejected_categories"],
+        "count": adj["count"],
+    }
+    return {
+        "status": "recorded",
+        "action": req.action,
+        "target_kind": req.target_kind,
+        "target_id": target_id,
+        "category": category,
+        "adjustments_summary": summary,
     }
