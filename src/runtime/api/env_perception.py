@@ -10,6 +10,12 @@
     GET  /environment/review               _needs_review 审核队列（非官方信号）
     POST /environment/review/{id}/approve  人工批准 → 锚定
     POST /environment/review/{id}/reject   人工驳回 → 丢弃
+
+S2 v30.5 β 新增（租户订阅规则——「抓取共享、语义隔离」消费层）：
+    GET    /environment/subscriptions           当前租户订阅视图（显式规则+默认模板）
+    PUT    /environment/subscriptions/{name}    新建/更新规则（先测试后保存闸门；超免费额度 402）
+    DELETE /environment/subscriptions/{name}    删除规则（回落行业默认模板）
+    GET    /environment/feed                    租户过滤后的环境信号流（语义隔离）
 """
 
 from __future__ import annotations
@@ -17,10 +23,14 @@ from __future__ import annotations
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 
 from src.runtime.authn.deps import require_auth
+from src.runtime.context import get_current_tenant
 from src.runtime.env_sources.manager import env_manager
 from src.runtime.env_perception import env_review
+from src.runtime import env_subscription_store as _sub_mod
+from src.runtime.env_subscription_store import QuotaExceeded, env_subscription_store
 from src.runtime.uns import uns, CHANNEL_ENVIRONMENT
 
 logger = logging.getLogger(__name__)
@@ -83,3 +93,86 @@ async def reject_review(item_id: str):
     if item is None:
         raise HTTPException(status_code=404, detail="条目不存在或已处理")
     return {"status": "rejected", "item": item}
+
+
+# ============ S2 v30.5 β：租户订阅规则（语义隔离消费层） ============
+
+
+class SubscriptionRequest(BaseModel):
+    """订阅规则请求体（β1 筛选规则模型）"""
+
+    enabled: bool = True
+    credibility_min: str = Field(default="general", description="official|authoritative|general")
+    keywords_include: list[str] = Field(default_factory=list)
+    keywords_exclude: list[str] = Field(default_factory=list)
+    poll_interval_sec: int = Field(default=3600, ge=60)
+    force: bool = Field(default=False, description="连通性测试失败时是否强制保存")
+
+
+def _known_source_names() -> list[str]:
+    return [s["name"] for s in env_manager.list()]
+
+
+@router.get("/subscriptions")
+async def list_subscriptions():
+    tenant = get_current_tenant()
+    names = _known_source_names()
+    return {
+        "tenant_id": tenant,
+        "subscriptions": env_subscription_store.list_for(tenant, names),
+        "enabled_count": env_subscription_store.enabled_count(tenant, names),
+        "free_max_sources": _sub_mod.FREE_MAX_SOURCES,
+    }
+
+
+@router.put("/subscriptions/{source_name}")
+async def upsert_subscription(source_name: str, req: SubscriptionRequest):
+    tenant = get_current_tenant()
+    names = _known_source_names()
+    if source_name not in names:
+        raise HTTPException(status_code=404, detail=f"未知环境源：{source_name}（可选：{names}）")
+    # 先测试后保存闸门（§4.4）：启用时先探源；失败须 force 才落盘
+    test_result = None
+    if req.enabled:
+        test_result = await env_manager.test(source_name)
+        if not test_result.get("ok") and not req.force:
+            raise HTTPException(
+                status_code=409,
+                detail={"message": "源连通性测试未通过，未保存（可 force=true 强制保存）",
+                        "test": test_result},
+            )
+    try:
+        sub = await env_subscription_store.upsert(
+            tenant,
+            source_name,
+            enabled=req.enabled,
+            credibility_min=req.credibility_min,
+            keywords_include=req.keywords_include,
+            keywords_exclude=req.keywords_exclude,
+            poll_interval_sec=req.poll_interval_sec,
+            known_sources=names,
+        )
+    except QuotaExceeded as e:
+        raise HTTPException(status_code=402, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    return {"status": "saved", "subscription": sub, "test": test_result}
+
+
+@router.delete("/subscriptions/{source_name}")
+async def delete_subscription(source_name: str):
+    tenant = get_current_tenant()
+    ok = await env_subscription_store.delete(tenant, source_name)
+    if not ok:
+        raise HTTPException(status_code=404, detail="该源无显式规则（当前即行业默认模板）")
+    return {"status": "deleted", "source_name": source_name, "fallback": "default_template"}
+
+
+@router.get("/feed")
+async def tenant_feed(n: int = 50):
+    """租户可见环境信号流：平台信号池 × 本租户订阅规则（语义隔离）。"""
+    tenant = get_current_tenant()
+    pool = uns.query(channel=CHANNEL_ENVIRONMENT, n=max(n * 3, 100))
+    filtered = env_subscription_store.filter_signals(tenant, pool, _known_source_names())
+    return {"tenant_id": tenant, "signals": filtered[-n:], "pool_size": len(pool),
+            "visible": len(filtered)}

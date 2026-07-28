@@ -70,6 +70,11 @@ async def lifespan(app: FastAPI):
     await tenant_store.init()
     logger.info("🏢 租户存储已初始化")
 
+    # S2 v30.5 β：环境订阅规则（tenant-scoped 语义隔离层，db 不可用时降级内存态）
+    from src.runtime.env_subscription_store import env_subscription_store
+    await env_subscription_store.init()
+    logger.info("🌐 环境订阅规则存储已初始化（抓取共享、语义隔离）")
+
     # 企业认证：确保超级管理员账号存在（DB 不可用时降级内存态；测试可直接调用）
     from src.runtime.authn.service import authn_service
     await authn_service.ensure_admin()
