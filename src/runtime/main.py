@@ -20,6 +20,7 @@ from src.runtime.api import connectors as connectors_api  # 社交通道接入�
 from src.runtime.api import connectivity as connectivity_api  # 配置 UI 连通性验证（§4.4）
 from src.runtime.api import env_perception as env_perception_api  # 环境感知第⑥路（v30.0 α）
 from src.runtime.api import bom as bom_api  # BOM 上传+毛利影响测算（S2-5 #311）
+from src.runtime.api import feedback as feedback_api  # 共生进化环反馈入口（S2-6 #313）
 # v30.0：隐式导入注册 UNS environment 路订阅者（import 即注册，无 lifespan 依赖）
 import src.runtime.env_sources  # noqa: F401  管理器单例
 import src.runtime.env_perception  # noqa: F401  分级门管道
@@ -86,11 +87,27 @@ async def lifespan(app: FastAPI):
     await bom_store.init()
     logger.info("📄 BOM 存储已初始化（行情×BOM 毛利影响测算）")
 
+    # S2 v30.5 β：共生进化环反馈存储（#313，脱敏管道+48h SLA；db 不可用时降级内存态）
+    from src.runtime.feedback_store import feedback_store
+    await feedback_store.init()
+    logger.info("🔁 共生进化环反馈存储已初始化（脱敏审核门+48h SLA 看板）")
+
     # 企业认证：确保超级管理员账号存在（DB 不可用时降级内存态；测试可直接调用）
     from src.runtime.authn.service import authn_service
     await authn_service.ensure_admin()
     await authn_service.sync_admin_password()  # 按 ZHIYAN_ADMIN_PASSWORD 同步（仅启动期）
     logger.info("🔐 企业认证模块已就绪（本地/LDAP/OAuth2 + JWT/RBAC）")
+
+    # S2.5 #313：杜特第0号用户开通（确定性租户 dute + 团队账号，幂等）
+    # 走现有多租户+JWT 体系，自建自用先行；团队账号初始密码可经环境变量覆盖。
+    from src.runtime.seed_dute import seed_dute_tenant
+
+    try:
+        dute_summary = await seed_dute_tenant()
+        if dute_summary.get("created"):
+            logger.info(f"🏢 杜特第0号租户开通完成：{dute_summary.get('accounts', [])}")
+    except Exception as e:
+        logger.warning(f"⚠️ 杜特第0号租户开通失败（不阻断启动）：{e}")
 
     # 行业知识库模板：按 ZHIYAN_INDUSTRY 注入对应种子（船舶/铁路/电子…）
     industry = os.environ.get("ZHIYAN_INDUSTRY", "").strip()
@@ -257,6 +274,7 @@ app.include_router(connectors_api.callback_router)         # 企微/钉钉回调
 app.include_router(connectivity_api.router, dependencies=_AUTH_DEPS)  # 配置 UI 连通性验证（§4.4）
 app.include_router(env_perception_api.router)  # 环境感知第⑥路（v30.0 α）— 路由自带 Depends(require_auth)
 app.include_router(bom_api.router)  # BOM 上传+毛利影响（S2-5 #311）— 路由自带 Depends(require_auth)
+app.include_router(feedback_api.router)  # 共生进化环反馈入口（S2-6 #313）— 路由自带 Depends(require_auth)
 
 
 if __name__ == "__main__":

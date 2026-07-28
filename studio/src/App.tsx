@@ -32,13 +32,14 @@ import ConnectivityPanel from './components/ConnectivityPanel';
 import EnvPerceptionPanel from './components/EnvPerceptionPanel';
 import UnlockProgressPanel from './components/UnlockProgressPanel';
 import BomMarginPanel from './components/BomMarginPanel';
+import FeedbackPanel from './components/FeedbackPanel';
 import { createSession, approveSession, quickCheck, authHeaders } from './api/client';
 import type { Session, ExecutionResult } from './api/client';
 import Login from './components/Login';
 import { getToken, fetchMe, logout, type AuthUser } from './api/client';
 
 type Stage = 'input' | 'planning' | 'approving' | 'executing' | 'result' | 'error';
-type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'twin' | 'governance' | 'federation' | 'supplychain' | 'writeback' | 'tacit' | 'bluearc' | 'tenant' | 'connect';
+type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'twin' | 'governance' | 'federation' | 'supplychain' | 'writeback' | 'tacit' | 'bluearc' | 'tenant' | 'connect' | 'symbiosis';
 
 const STEPS = [
   { key: 'input', label: '目标设定', icon: '🎯' },
@@ -236,6 +237,7 @@ export default function App() {
                 { key: 'writeback' as Tab, label: '回写', icon: '🔁' },
                 { key: 'tenant' as Tab, label: '租户', icon: '🏢' },
                 { key: 'connect' as Tab, label: '连接', icon: '🔌' },
+                { key: 'symbiosis' as Tab, label: '共生环', icon: '🤝' },
               ].map(t => (
                 <button
                   key={t.key}
@@ -463,6 +465,7 @@ export default function App() {
           {tab === 'writeback' && <WritebackPanel />}
           {tab === 'tenant' && <TenantManagement />}
           {tab === 'connect' && (<><UnlockProgressPanel /><BomMarginPanel /><EnvPerceptionPanel /><ConnectivityPanel /></>)}
+          {tab === 'symbiosis' && <FeedbackPanel />}
         </main>
       )}
 

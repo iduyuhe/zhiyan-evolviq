@@ -1200,3 +1200,77 @@ export async function getBomMarginImpact(bomId: string): Promise<MarginImpactVie
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
+
+// ============ 共生进化环 · 反馈入口（S2-6 #313） ============
+export type FeedbackType = 'like' | 'dislike' | 'idea';
+
+export interface FeedbackItem {
+  id: string;
+  tenant_id: string;
+  user_id: string | null;
+  feedback_type: FeedbackType;
+  target_kind: string | null;
+  target_id: string | null;
+  text: string | null;
+  status: 'received' | 'pending_review' | 'issued' | 'rejected';
+  created_at: string | null;
+  first_response_due_at: string | null;
+  responded_at: string | null;
+  github_issue_url: string | null;
+  github_issue_number: number | null;
+}
+
+export interface FeedbackBoard {
+  scope: string;
+  total: number;
+  counts: Record<string, number>;
+  pending: number;
+  overdue: number;
+  closed: number;
+  sla_met: number;
+  sla_rate: number | null;
+  recent: FeedbackItem[];
+}
+
+/** 提交反馈（👍/👎/💡 + 可选文本与目标引用） */
+export async function submitFeedback(
+  feedbackType: FeedbackType,
+  text?: string,
+  targetKind?: string,
+  targetId?: string,
+): Promise<{ status: string; feedback: FeedbackItem }> {
+  const res = await fetch(`${API_BASE}/feedback`, {
+    method: 'POST', headers: authHeaders(),
+    body: JSON.stringify({ feedback_type: feedbackType, text: text || null, target_kind: targetKind || null, target_id: targetId || null }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+/** 我的反馈列表（本租户） */
+export async function listMyFeedback(status?: string): Promise<{ total: number; feedbacks: FeedbackItem[] }> {
+  const url = status ? `${API_BASE}/feedback?status=${encodeURIComponent(status)}` : `${API_BASE}/feedback`;
+  const res = await fetch(url, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+/** 48h 首响应 SLA 看板（租户管理员/超级管理员） */
+export async function getFeedbackBoard(): Promise<FeedbackBoard> {
+  const res = await fetch(`${API_BASE}/feedback/board`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+/** 脱敏审核门：提报为 GitHub Issue（from-customer） */
+export async function escalateFeedback(fbId: string): Promise<{
+  success: boolean; status: string; github_issue_url: string | null;
+  github_issue_number: number | null; desensitized_text: string | null;
+}> {
+  const res = await fetch(`${API_BASE}/feedback/${fbId}/escalate`, {
+    method: 'POST', headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+

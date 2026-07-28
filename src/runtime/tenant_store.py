@@ -76,6 +76,16 @@ class TenantStore:
             tid = gen_key()[:12]
         return await self._create(tid, name)
 
+    async def register_with_id(self, tid: str, name: str) -> tuple[str, str]:
+        """确定性注册（幂等）：用于预置租户（如杜特第0号用户）。
+
+        - 已存在 → 返回 (tid, None)（明文 key 不可恢复，调用方应已留存）。
+        - 不存在 → 创建并返回 (tid, 明文 api_key)。
+        """
+        if tid in self._by_id:
+            return tid, None
+        return await self._create(tid, name)
+
     async def resolve(self, api_key: str | None) -> str | None:
         """用明文密钥解析 tenant_id；无效/停用返回 None。"""
         if not api_key:
