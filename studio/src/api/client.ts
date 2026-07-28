@@ -69,7 +69,9 @@ export async function fetchMe(): Promise<AuthUser> {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error(`未授权 (${res.status})`);
-  return res.json();
+  const data = await res.json();
+  // 后端返回 {user: {...}}；兼容直接返回 user 的旧契约（GitHub #48）
+  return data.user ? data.user : data;
 }
 
 export function logout(): void {
@@ -731,7 +733,9 @@ export async function getAlerts(kind?: string, n = 50): Promise<AlertItem[]> {
   q.set('n', String(n));
   const res = await fetch(`${API_BASE}/monitoring/alerts?${q.toString()}`, { headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  const data = await res.json();
+  // 后端返回 {alerts:[...]}；兼容直接返回数组的旧契约（GitHub #49）
+  return Array.isArray(data) ? data : (data.alerts ?? []);
 }
 
 export async function getMonitorStatus(): Promise<MonitorStatus> {

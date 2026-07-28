@@ -17,7 +17,7 @@
 #
 # 环境变量（非交互模式可用，省去提问）：
 #   ZHIYAN_DOMAIN  ZHIYAN_ADMIN_EMAIL  ZHIYAN_ADMIN_PASSWORD
-#   ZHIYAN_JWT_SECRET  ZHIYAN_DB_PASSWORD  LLM_API_KEY  LLM_BASE_URL
+#   ZHIYAN_JWT_SECRET  ZHIYAN_DB_PASSWORD  ZHIYAN_LLM_API_KEY  ZHIYAN_LLM_BASE_URL
 # =============================================================================
 
 set -euo pipefail
@@ -129,11 +129,11 @@ ask "数据库密码（留空自动生成）" "${ZHIYAN_DB_PASSWORD:-}"
 ZHIYAN_DB_PASSWORD="$_ANS"
 if [ -z "$ZHIYAN_DB_PASSWORD" ]; then ZHIYAN_DB_PASSWORD="$(rand 32)"; fi
 
-ask "LLM API Key（OpenAI 兼容，留空稍后配置）" "${LLM_API_KEY:-}"
+ask "LLM API Key（OpenAI 兼容，留空稍后配置）" "${ZHIYAN_LLM_API_KEY:-}"
 LLM_API_KEY="$_ANS"
 if [ -z "$LLM_API_KEY" ]; then LLM_API_KEY="your-llm-api-key"; fi
 
-ask "LLM Base URL" "${LLM_BASE_URL:-https://api.openai.com/v1}"
+ask "LLM Base URL" "${ZHIYAN_LLM_BASE_URL:-https://api.openai.com/v1}"
 LLM_BASE_URL="$_ANS"
 
 ask "行业知识库（shipbuilding/railway/electronics/留空=半导体默认）" "${ZHIYAN_INDUSTRY:-}"
@@ -148,8 +148,8 @@ fi
 info "生成 $ENVFILE ..."
 cat > "$ENVFILE" <<EOF
 # ===== 由 install.sh 生成（$(date '+%Y-%m-%d %H:%M:%S')）=====
-LLM_API_KEY=$LLM_API_KEY
-LLM_BASE_URL=$LLM_BASE_URL
+ZHIYAN_LLM_API_KEY=$LLM_API_KEY
+ZHIYAN_LLM_BASE_URL=$LLM_BASE_URL
 
 # ===== 企业认证 =====
 ZHIYAN_ADMIN_USERNAME=admin

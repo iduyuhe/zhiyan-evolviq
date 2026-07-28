@@ -96,7 +96,7 @@ class ExperienceStore:
         now = datetime.now(timezone.utc)
         approvals = rejections = recent_rejections = 0
         for r in self._records:
-            if r["agent"] != agent:
+            if r.get("agent") != agent:
                 continue
             if r["decision"] == "approved":
                 approvals += 1
@@ -117,12 +117,12 @@ class ExperienceStore:
 
     def get_preferences(self, agent: str, limit: int = 20) -> list[dict]:
         """该 Agent 被人类采纳的偏好记忆（context 摘要）。"""
-        out = [r for r in self._records if r["agent"] == agent and r["decision"] == "approved"]
+        out = [r for r in self._records if r.get("agent") == agent and r["decision"] == "approved"]
         return list(reversed(out))[-limit:]
 
     def get_forbidden(self, agent: str, limit: int = 20) -> list[dict]:
         """该 Agent 被人类驳回的禁忌记忆（context 摘要）。"""
-        out = [r for r in self._records if r["agent"] == agent and r["decision"] == "rejected"]
+        out = [r for r in self._records if r.get("agent") == agent and r["decision"] == "rejected"]
         return list(reversed(out))[-limit:]
 
     def all(self, limit: int = 100) -> list[dict]:
