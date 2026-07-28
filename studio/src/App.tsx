@@ -33,7 +33,7 @@ import EnvPerceptionPanel from './components/EnvPerceptionPanel';
 import UnlockProgressPanel from './components/UnlockProgressPanel';
 import BomMarginPanel from './components/BomMarginPanel';
 import FeedbackPanel from './components/FeedbackPanel';
-import { createSession, approveSession, quickCheck, authHeaders } from './api/client';
+import { createSession, approveSession, quickCheck, authHeaders, apiUrl } from './api/client';
 import type { Session, ExecutionResult } from './api/client';
 import Login from './components/Login';
 import { getToken, fetchMe, logout, type AuthUser } from './api/client';
@@ -115,7 +115,7 @@ export default function App() {
     // 挂载时若未登录不拉取——否则 effect 只在挂载跑一次、token 尚未就绪 → 401 静默失败，
     // 登录后永不重拉 → agents 永远为空 → 侧边栏无可点项（"点击没反应"）。
     if (!me) return;
-    fetch('/api/agents', { headers: authHeaders() })
+    fetch(apiUrl('/agents'), { headers: authHeaders() })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((d) => {
         const list = (d.agents || []) as AgentInfo[];
@@ -204,7 +204,7 @@ export default function App() {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* 顶栏 */}
       <header className="border-b border-gray-200 bg-white/80 backdrop-blur-md sticky top-0 z-20 shadow-sm">
-        <div className="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
+        <div className="max-w-[1400px] mx-auto px-4 h-16 flex items-center justify-between gap-2">
           {/* 左：品牌 */}
           <div className="flex items-center gap-2.5 flex-shrink-0">
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-zhiyan-500 to-zhiyan-700 flex items-center justify-center text-white text-sm font-bold shadow-md">
@@ -217,8 +217,8 @@ export default function App() {
           </div>
 
           {/* 中：Tab + Agent选择器 */}
-          <div className="flex items-center gap-2 flex-1 justify-center">
-            <div className="flex items-center bg-gray-100 rounded-lg p-0.5 gap-0.5">
+          <div className="flex items-center gap-2 flex-1 min-w-0 justify-center">
+            <div className="flex items-center bg-gray-100 rounded-lg p-0.5 gap-0.5 overflow-x-auto max-w-full">
               {[
                 { key: 'studio' as Tab, label: 'Studio', icon: '🤖' },
                 { key: 'console' as Tab, label: '控制台', icon: '🎛️' },
@@ -281,7 +281,7 @@ export default function App() {
 
         {/* Studio进度条 */}
         {tab === 'studio' && stage !== 'input' && (
-          <div className="max-w-3xl mx-auto px-4 pb-2">
+          <div className="max-w-[1400px] mx-auto px-4 pb-2">
             <div className="hidden sm:flex items-center gap-1 text-xs text-gray-400">
               {STEPS.slice(0, totalSteps).map((step, i) => {
                 const idx = STEPS.findIndex(s => s.key === stage);

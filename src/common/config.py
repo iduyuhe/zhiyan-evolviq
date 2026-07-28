@@ -20,8 +20,10 @@ class Settings(BaseSettings):
     llm_provider: str = "deepseek"
     llm_api_key: str = ""
     llm_base_url: str = "https://api.deepseek.com/v1"
-    llm_reasoning_model: str = "deepseek-reasoner"
-    llm_fast_model: str = "deepseek-chat"
+    # 2026-07-24 DeepSeek 正式弃用 deepseek-reasoner / deepseek-chat → V4 系列。
+    # deepseek-v4-flash 同时支持思考/非思考模式：推理模型须开启 thinking（见 llm_client.chat）。
+    llm_reasoning_model: str = "deepseek-v4-flash"
+    llm_fast_model: str = "deepseek-v4-flash"
 
     # LLM —— 备用 混元 Hunyuan（OpenAI 兼容，腾讯 MaaS tokenhub 通道）
     hunyuan_api_key: str = ""

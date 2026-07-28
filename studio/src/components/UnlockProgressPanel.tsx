@@ -8,7 +8,7 @@
  * 铁律：所有请求经 client.ts authHeaders()；渲染在 App 的 ErrorBoundary 内。
  */
 import { useState, useEffect } from 'react';
-import { getUnlockProgress, UnlockProgressView, UnlockCircle, authHeaders } from '../api/client';
+import { getUnlockProgress, UnlockProgressView, UnlockCircle, authHeaders, apiUrl } from '../api/client';
 
 interface AgentMeta {
   id: string;
@@ -113,7 +113,7 @@ export default function UnlockProgressPanel() {
     getUnlockProgress()
       .then((v) => alive && setView(v))
       .catch((e) => alive && setError(e?.message || String(e)));
-    fetch('/api/agents', { headers: authHeaders() })
+    fetch(apiUrl('/agents'), { headers: authHeaders() })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (!alive || !d?.agents) return;

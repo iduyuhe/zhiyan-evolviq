@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { authHeaders } from '../api/client';
+import { authHeaders, apiUrl } from '../api/client';
 
 export interface AgentInfo {
   id: string;
@@ -148,7 +148,7 @@ export default function AgentSelector({ onSelect }: { onSelect: (agent: AgentInf
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch('/api/agents', { headers: authHeaders() })
+    fetch(apiUrl('/agents'), { headers: authHeaders() })
       .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
       .then(d => {
         setAgents(d.agents || []);

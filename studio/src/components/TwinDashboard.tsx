@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { authHeaders } from '../api/client';
+import { authHeaders, apiUrl } from '../api/client';
 
 interface DashboardData {
   uns: { channel_counts: Record<string, number>; recent_events: any[]; total_events: number };
@@ -85,7 +85,7 @@ export default function TwinDashboard() {
 
   const fetchData = useCallback(async () => {
     try {
-      const r = await fetch('/api/twin/dashboard', { headers: authHeaders() });
+      const r = await fetch(apiUrl('/twin/dashboard'), { headers: authHeaders() });
       if (r.ok) {
         setData(await r.json());
         setLastUpdated(new Date());

@@ -91,6 +91,11 @@ class LLMClient:
             "temperature": temperature,
             "max_tokens": max_tokens,
         }
+        # DeepSeek V4 系列（2026-07-24 起取代 deepseek-reasoner / deepseek-chat）：
+        # 推理模型须显式开启 thinking 模式，否则退化为非思考模式、丧失推理能力。
+        if reasoning and str(model).startswith("deepseek-v4"):
+            payload["thinking"] = {"type": "enabled"}
+            payload["reasoning_effort"] = "high"
         try:
             async with httpx.AsyncClient(timeout=httpx.Timeout(25.0)) as client:
                 resp = await client.post(url, headers=headers, json=payload)
@@ -114,7 +119,7 @@ class LLMClient:
             agent_name: 路由到的 Agent 名称
             goal: 用户自然语言目标
             analysis_context: 确定性 Agent 分析产出的原始文本（作为事实锚点）
-            reasoning: 是否用推理模型（deepseek-reasoner / hunyuan 对应模型）
+            reasoning: 是否用推理模型（deepseek-v4-flash 思考模式 / hunyuan 对应模型）
 
         Returns:
             Markdown 规划文本，或 None（调用方走规则引擎兜底）

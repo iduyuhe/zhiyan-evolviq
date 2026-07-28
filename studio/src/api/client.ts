@@ -1,6 +1,12 @@
 // API基地址：开发模式通过Vite代理(/api→local), 生产模式指向远程服务器
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
+/** 拼接带 API_BASE 前缀的请求路径，支持子路径部署（VITE_API_BASE）。所有组件统一走此助手，避免硬编码 /api/。 */
+export function apiUrl(path: string): string {
+  if (!path.startsWith('/')) path = '/' + path;
+  return `${API_BASE}${path}`;
+}
+
 // ============ 多租户：当前租户 Key（由 TenantContext 注入） ============
 // 所有受租户隔离的接口都会自动在请求头带上 X-Tenant-Key；
 // 为 null 时后端回退到 default 租户（向后兼容）。

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { authHeaders } from '../api/client';
+import { authHeaders, apiUrl } from '../api/client';
 
 interface EventItem {
   id: string;
@@ -19,7 +19,7 @@ export default function NotificationBell() {
 
   const fetchEvents = async () => {
     try {
-      const res = await fetch('/api/events?limit=10', { headers: authHeaders() });
+      const res = await fetch(apiUrl('/events?limit=10'), { headers: authHeaders() });
       if (!res.ok) return;
       const data = await res.json();
       setEvents(data.events || []);
@@ -45,7 +45,7 @@ export default function NotificationBell() {
   }, []);
 
   const markAllRead = async () => {
-    await fetch('/api/events/read-all', { method: 'POST', headers: authHeaders() });
+    await fetch(apiUrl('/events/read-all'), { method: 'POST', headers: authHeaders() });
     setUnread(0);
     setEvents(prev => prev.map(e => ({ ...e, read: true })));
   };
