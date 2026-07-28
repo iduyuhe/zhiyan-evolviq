@@ -32,6 +32,7 @@ from src.runtime.env_perception import env_review
 from src.runtime import env_subscription_store as _sub_mod
 from src.runtime.env_subscription_store import QuotaExceeded, env_subscription_store
 from src.runtime.uns import uns, CHANNEL_ENVIRONMENT
+from src.runtime.unlock_map import progress_view
 from src.runtime.usage_meter import usage_meter
 
 logger = logging.getLogger(__name__)
@@ -195,4 +196,17 @@ async def tenant_quota():
         "limit": None if view["unlimited"] else _sub_mod.FREE_MAX_SOURCES,
         "period": "static",
     }
+    return view
+
+
+@router.get("/unlock-progress")
+async def unlock_progress():
+    """无感转型三圈解锁进度（#310）。
+
+    事实进度 + 下一步说明；F4 纪律：不推销、不弹窗——前端相邻呈现。
+    附带 quota 摘要，前端一次请求可渲染完整「解锁进度」视图。
+    """
+    tenant = get_current_tenant()
+    view = progress_view(tenant)
+    view["quota"] = usage_meter.view(tenant)
     return view

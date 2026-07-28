@@ -1083,3 +1083,31 @@ export async function pullEnvSources(limit = 10): Promise<Record<string, any>> {
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
+
+// ============ 无感转型三圈解锁进度（S2-3，#310） ============
+
+export interface UnlockCircle {
+  key: 'outer' | 'middle' | 'inner';
+  label: string;
+  requirement: string;
+  agents: string[];
+  agent_count: number;
+  unlocked: boolean;
+}
+
+export interface UnlockProgressView {
+  tenant_id: string;
+  current_circle: 'outer' | 'middle' | 'inner';
+  circles: UnlockCircle[];
+  unlocked_agents: number;
+  total_agents: number;
+  next_step: string;
+  quota: EnvQuotaView;
+}
+
+/** 三圈解锁进度（事实进度 + 下一步说明；F4 纪律：不推销不弹窗，相邻呈现） */
+export async function getUnlockProgress(): Promise<UnlockProgressView> {
+  const res = await fetch(`${API_BASE}/environment/unlock-progress`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
