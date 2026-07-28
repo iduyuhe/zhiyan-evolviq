@@ -274,7 +274,7 @@ export default function EnvPerceptionPanel() {
   const [enabledCount, setEnabledCount] = useState(0);
   const [freeMax, setFreeMax] = useState(3);
   const [feed, setFeed] = useState<EnvSignal[]>([]);
-  const [feedStat, setFeedStat] = useState<{ pool: number; visible: number } | null>(null);
+  const [feedStat, setFeedStat] = useState<{ pool: number; visible: number; suppressed_count?: number } | null>(null);
   const [piCount, setPiCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [pulling, setPulling] = useState(false);
@@ -383,6 +383,7 @@ export default function EnvPerceptionPanel() {
             <span className="text-[11px] text-gray-400">
               平台池 {feedStat.pool} 条 → 你可见 {feedStat.visible} 条
               {piCount > 0 ? ` · 平台建议 ${piCount} 条` : ''}
+              {feedStat.suppressed_count ? ` · 已降噪 ${feedStat.suppressed_count} 条低相关` : ''}
             </span>
           )}
         </div>
@@ -399,7 +400,9 @@ export default function EnvPerceptionPanel() {
           <p className="text-sm text-gray-400">暂无信号——点「立即拉取」抓取最新外部信息。</p>
         ) : (
           <div className="space-y-2 max-h-80 overflow-y-auto">
-            {[...feed].reverse().map((s, i) => {
+            {[...feed]
+              .sort((a, b) => (b.relevance?.score ?? 0) - (a.relevance?.score ?? 0))
+              .map((s, i) => {
               if (s.kind === 'platform_insight') {
                 const based = (s.payload?.based_on as Array<{ title?: string }> | undefined) || [];
                 return (
@@ -440,6 +443,21 @@ export default function EnvPerceptionPanel() {
                       {s.source}
                       {s.ts ? ` · ${new Date(s.ts * 1000).toLocaleString()}` : ''}
                     </p>
+                    {s.relevance && (
+                      <div className="mt-1 flex flex-wrap items-center gap-1">
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${s.relevance.suppressed ? 'bg-gray-100 text-gray-400' : 'bg-zhiyan-50 text-zhiyan-700'}`}>
+                          相关性 {Math.round((s.relevance.score ?? 0) * 100)}%
+                        </span>
+                        {(s.relevance.target_agents || []).map((a) => (
+                          <span key={a} className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500">
+                            → {a}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {s.relevance?.reason && (
+                      <p className="text-[10px] text-gray-400 mt-0.5 leading-snug">{s.relevance.reason}</p>
+                    )}
                   </div>
                 </div>
               );

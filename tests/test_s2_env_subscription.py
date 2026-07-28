@@ -263,9 +263,9 @@ class TestSubscriptionAPI:
     @pytest.mark.asyncio
     async def test_feed_respects_rules(self, client):
         """/feed：A 只订 policy×official；B 默认模板全收。"""
-        uns.publish_environment(source="env://policy/policy", payload={"title": "官方新政"},
+        uns.publish_environment(source="env://policy/policy", payload={"title": "官方新政", "category": "policy"},
                                 entities=[], credibility="official")
-        uns.publish_environment(source="env://market/market", payload={"title": "行情波动"},
+        uns.publish_environment(source="env://market/market", payload={"title": "行情波动", "category": "market"},
                                 entities=[], credibility="general")
         async with client as c:
             await c.put("/environment/subscriptions/market",

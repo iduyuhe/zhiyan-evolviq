@@ -184,22 +184,35 @@ async def delete_subscription(source_name: str):
 
 
 @router.get("/feed")
-async def tenant_feed(n: int = 50):
+async def tenant_feed(n: int = 50, include_suppressed: bool = False):
     """租户可见环境信号流：平台信号池 × 本租户订阅规则（语义隔离）× 日额度计量。
 
     免费额度（#309）：当日去重后新信号 ≤ ZHIYAN_FREE_DAILY_SIGNALS（默认 50）。
     超限不 402（避免面板轮询雪崩）——截断下发并在 quota.exhausted 提示升级。
 
-    G5 轨道二（#314）：合并「平台建议」（kind=platform_insight）与真实情报（kind=intelligence）
-    相邻呈现。平台建议由智衍平台基于真实情报派生、透明标注、不计入外部信号日额度。
+    S3-2 相关性打分降噪（#317）：消费本租户行为画像（S3-1）+ 订阅规则，给每条真实情报
+    打 relevance（score / target_agents / reason / suppressed），按相关性降序、低相关降噪
+    （suppressed 默认不返回，?include_suppressed=true 可调试）；F4 透明标注打分依据。
+
+    G5 轨道二（#314）：真实情报（已按相关性排序、高相关优先）在前，平台建议
+    （kind=platform_insight）相邻在后。平台建议由智衍平台基于真实情报派生、透明标注、
+    不计入外部信号日额度。
     """
     tenant = get_current_tenant()
     pool = uns.query(channel=CHANNEL_ENVIRONMENT, n=max(n * 3, 100))
     filtered = env_subscription_store.filter_signals(tenant, pool, _known_source_names())
     allowed, quota = await usage_meter.consume_signals(tenant, filtered[-n:])
 
-    # 真实情报打 kind=intelligence
-    intel = [{**s, "kind": "intelligence"} for s in allowed]
+    # S3-2：本租户画像 + 订阅 → 关注权重；真实情报逐条打分、降噪、按相关性降序
+    from src.runtime.behavior_store import behavior_store
+    from src.runtime.signal_relevance import derive_attention, rank_intelligence_signals
+
+    profile = behavior_store.profile(tenant)
+    subs = env_subscription_store.list_for(tenant, _known_source_names())
+    attention = derive_attention(profile, subs)
+    ranked_intel, suppressed_count = rank_intelligence_signals(
+        allowed, attention, include_suppressed=include_suppressed
+    )
 
     # 平台建议（共享池）→ 归一为与信号同形结构，kind=platform_insight
     insights = platform_insight_store.list_for(tenant_id="default", n=n)
@@ -220,13 +233,14 @@ async def tenant_feed(n: int = 50):
         for ins in insights
     ]
 
-    # 相邻呈现：真实情报 + 平台建议按 ts 倒序合并（平台建议不挤占外部信号日额度）
-    merged = sorted(intel + insight_items, key=lambda x: x.get("ts") or 0, reverse=True)[:n]
+    # 合并：真实情报（已按相关性降序，高相关优先）在前，平台建议相邻在后
+    merged = (ranked_intel + insight_items)[:n]
     return {
         "tenant_id": tenant,
         "signals": merged,
         "pool_size": len(pool),
         "visible": len(filtered),
+        "suppressed_count": suppressed_count,
         "platform_insight_count": len(insight_items),
         "quota": quota,
     }

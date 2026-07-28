@@ -994,6 +994,15 @@ export interface EnvSignal {
   entities?: string[];
   ts?: number;
   kind?: string;  // 'intelligence' = 真实外部情报 | 'platform_insight' = 智衍平台建议（G5 轨道二）
+  // S3-2 相关性打分降噪：score=关联度[0,1] / target_agents=优先推送的 agent /
+  // suppressed=是否降噪 / reason=F4 透明标注打分依据 / category=情报类目
+  relevance?: {
+    score: number;
+    target_agents: string[];
+    suppressed: boolean;
+    reason: string;
+    category: string;
+  };
 }
 
 export async function getEnvironmentOverview(): Promise<{
@@ -1079,6 +1088,7 @@ export async function getEnvQuota(): Promise<EnvQuotaView> {
 
 export async function getEnvFeed(n = 30): Promise<{
   tenant_id: string; signals: EnvSignal[]; pool_size: number; visible: number;
+  suppressed_count?: number;
   platform_insight_count?: number;
   quota?: { unlimited?: boolean; used?: number; limit?: number; remaining?: number;
     truncated?: number; exhausted?: boolean; upgrade_hint?: string | null };
