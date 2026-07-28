@@ -21,6 +21,7 @@ S2 v30.5 β 新增（租户订阅规则——「抓取共享、语义隔离」�
 from __future__ import annotations
 
 import logging
+import os
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -281,3 +282,57 @@ async def unlock_progress():
     view = progress_view(tenant)
     view["quota"] = usage_meter.view(tenant)
     return view
+
+
+@router.get("/source-recommendations")
+async def source_recommendations():
+    """S3-3 源推荐（#317，γ1）：按租户行业 / 物料（BOM）/ 行为画像推荐值得订阅的信息源。
+
+    推荐呈 draft 形式（reasons 透明标注依据），由人审后在前端点「订阅」落盘——
+    绝不静默自动订阅（F4 透明纪律 + 信任爬梯③付费闸门）。
+
+    聚合：本租户已知源清单 + 本租户订阅规则 + 本租户 BOM 全量物料 + 本租户行为画像
+    + 行业变量（ZHIYAN_INDUSTRY）。🔴 严格租户内隔离，绝不跨租户。
+    """
+    from src.runtime.behavior_store import behavior_store
+    from src.runtime.bom_store import bom_store
+    from src.runtime.source_recommendation import (
+        build_tenant_interest,
+        recommend_sources,
+    )
+
+    tenant = get_current_tenant()
+    names = _known_source_names()
+    known = env_manager.list()
+    subs = env_subscription_store.list_for(tenant, names)
+
+    # 本租户行为画像（S3-1 供血）
+    profile = behavior_store.profile(tenant)
+
+    # 本租户 BOM 全量物料（list_for 已剔除 items，需逐份 get 取回物料名）
+    materials: list[str] = []
+    for rec in bom_store.list_for(tenant):
+        full = bom_store.get(tenant, rec["id"])
+        for it in (full or {}).get("items", []) or []:
+            m = it.get("material")
+            if m:
+                materials.append(str(m))
+
+    # 行业变量
+    industry = (os.getenv("ZHIYAN_INDUSTRY", "") or "").strip()
+
+    interest = build_tenant_interest(profile, materials, industry)
+    recs = recommend_sources(known, subs, interest)
+
+    return {
+        "tenant_id": tenant,
+        "industry": industry,
+        "interest": {
+            "category_interests": interest["category_interests"],
+            "material_terms": sorted(interest["material_terms"])[:30],
+            "material_by_category": interest["material_by_category"],
+            "agent_by_category": interest["agent_by_category"],
+            "industry_categories": sorted(interest["industry_categories"]),
+        },
+        "recommendations": recs,
+    }

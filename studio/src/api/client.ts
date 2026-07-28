@@ -1098,6 +1098,40 @@ export async function getEnvFeed(n = 30): Promise<{
   return res.json();
 }
 
+// ============ S3-3 源推荐（#317，γ1）============
+
+export interface EnvSourceRecommendation {
+  source_name: string;
+  kind: string;
+  label: string;
+  credibility: string;
+  category: string;
+  score: number;            // 推荐度 [0,1]
+  subscribed: boolean;      // 是否已订阅（已订阅=确认，未订阅=draft 待审）
+  is_default?: boolean;     // 当前走行业默认模板（未显式配置）
+  reasons: string[];        // F4 透明标注：推荐依据
+}
+
+export interface EnvSourceRecommendationView {
+  tenant_id: string;
+  industry: string;
+  interest: {
+    category_interests: Record<string, number>;
+    material_terms: string[];
+    material_by_category: Record<string, string[]>;
+    agent_by_category: Record<string, string[]>;
+    industry_categories: string[];
+  };
+  recommendations: EnvSourceRecommendation[];
+}
+
+/** S3-3 源推荐：按租户行业/物料(BOM)/行为画像推荐值得订阅的信息源（draft 形式，人审后订阅）。 */
+export async function getEnvSourceRecommendations(): Promise<EnvSourceRecommendationView> {
+  const res = await fetch(`${API_BASE}/environment/source-recommendations`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
 export async function pullEnvSources(limit = 10): Promise<Record<string, any>> {
   const res = await fetch(`${API_BASE}/environment/pull?limit=${limit}`, {
     method: 'POST', headers: authHeaders(),

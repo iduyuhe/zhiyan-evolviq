@@ -17,11 +17,13 @@ import {
   saveEnvSubscription,
   deleteEnvSubscription,
   getEnvFeed,
+  getEnvSourceRecommendations,
   pullEnvSources,
   trackBehavior,
   EnvSourceStatus,
   EnvSubscription,
   EnvSignal,
+  EnvSourceRecommendation,
   ConnectivityTestResult,
 } from '../api/client';
 
@@ -276,6 +278,7 @@ export default function EnvPerceptionPanel() {
   const [feed, setFeed] = useState<EnvSignal[]>([]);
   const [feedStat, setFeedStat] = useState<{ pool: number; visible: number; suppressed_count?: number } | null>(null);
   const [piCount, setPiCount] = useState(0);
+  const [recommendations, setRecommendations] = useState<EnvSourceRecommendation[]>([]);
   const [loading, setLoading] = useState(false);
   const [pulling, setPulling] = useState(false);
   const [pullMsg, setPullMsg] = useState('');
@@ -283,10 +286,11 @@ export default function EnvPerceptionPanel() {
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const [ov, sv, fd] = await Promise.all([
+      const [ov, sv, fd, rec] = await Promise.all([
         getEnvironmentOverview(),
         listEnvSubscriptions(),
         getEnvFeed(20),
+        getEnvSourceRecommendations(),
       ]);
       setSources(ov.sources || []);
       setSubs(sv.subscriptions || []);
@@ -295,6 +299,7 @@ export default function EnvPerceptionPanel() {
       setFeed(fd.signals || []);
       setFeedStat({ pool: fd.pool_size, visible: fd.visible });
       setPiCount(fd.platform_insight_count || 0);
+      setRecommendations(rec.recommendations || []);
     } catch {
       /* 静默：ErrorBoundary 兜底渲染错误，网络错误不白屏 */
     } finally {
@@ -325,6 +330,33 @@ export default function EnvPerceptionPanel() {
 
   const srcByName = new Map(sources.map((s) => [s.name, s]));
   const quotaFull = enabledCount >= freeMax;
+
+  // S3-3：draft 推荐 → 人审后订阅（绝不一键全开；F4 透明纪律）
+  const onSubscribeRec = async (rec: EnvSourceRecommendation) => {
+    if (rec.subscribed) return;
+    if (quotaFull) {
+      setPullMsg('💡 免费版信息源额度已满，接入第 1 个内部数据源即可解锁更多。');
+      return;
+    }
+    try {
+      await saveEnvSubscription(rec.source_name, {
+        enabled: true,
+        credibility_min: 'general',
+        keywords_include: [],
+        keywords_exclude: [],
+        poll_interval_sec: 3600,
+      });
+      trackBehavior('source_subscribe', 'source', rec.source_name);
+      await refresh();
+    } catch (e) {
+      const err = e as Error & { status?: number };
+      setPullMsg(
+        err.status === 402
+          ? '💡 ' + extractDetail(err.message)
+          : '订阅失败：' + extractDetail(err.message),
+      );
+    }
+  };
 
   return (
     <div className="space-y-5">
@@ -462,6 +494,66 @@ export default function EnvPerceptionPanel() {
                 </div>
               );
             })}
+          </div>
+        )}
+      </section>
+
+      {/* D. S3-3 源推荐：按你的行业 / 物料(BOM) / 行为画像 推荐值得订阅的信息源（draft，人审后订阅） */}
+      <section className="card p-4">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-semibold text-gray-900">为你推荐的信息源</h3>
+          <span className="text-[11px] text-gray-400">按你的画像相关性排序</span>
+        </div>
+        <p className="text-xs text-gray-500 mb-3">
+          基于你的行业属性、已上传 BOM 的物料构成、以及常用智能体的解读偏好，推荐最值得订阅的外部信息源。推荐依据全程透明——确认后点「订阅」即生效。
+        </p>
+        {recommendations.length === 0 ? (
+          <p className="text-sm text-gray-400">暂无可用环境源</p>
+        ) : (
+          <div className="space-y-2.5">
+            {recommendations.map((rec) => (
+              <div
+                key={rec.source_name}
+                className="rounded-lg border border-gray-100 p-3"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-gray-800">{rec.label}</span>
+                      <CredBadge c={rec.credibility} />
+                      <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-zhiyan-50 text-zhiyan-700">
+                        推荐度 {Math.round((rec.score ?? 0) * 100)}%
+                      </span>
+                      {rec.subscribed ? (
+                        <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-green-50 text-green-700">
+                          已订阅
+                        </span>
+                      ) : rec.is_default ? (
+                        <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-gray-50 text-gray-400">
+                          默认模板（未显式订阅）
+                        </span>
+                      ) : null}
+                    </div>
+                    <ul className="mt-1.5 space-y-0.5">
+                      {rec.reasons.map((r, i) => (
+                        <li key={i} className="text-[11px] text-gray-500 leading-snug">
+                          · {r}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  {!rec.subscribed && (
+                    <button
+                      className="btn-primary text-xs whitespace-nowrap shrink-0"
+                      onClick={() => onSubscribeRec(rec)}
+                      disabled={quotaFull}
+                    >
+                      订阅
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </section>
