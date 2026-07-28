@@ -67,6 +67,36 @@ async def test_writeback_rejects_unknown_system():
 
 
 @pytest.mark.asyncio
+async def test_writeback_pending_survives_restart_p1(tmp_path, monkeypatch):
+    """P1③：pending 落 SQLite，进程重启（新实例）自动恢复，不再丢队列。"""
+    from src.runtime.data_sources.writeback import WritebackBridge
+
+    db = str(tmp_path / "wb_test.db")
+    monkeypatch.setenv("ZHIYAN_WRITEBACK_DB", db)
+    registry.unregister(DataSourceKind.MES)
+
+    b1 = WritebackBridge()
+    res = await b1.submit(
+        system="mes", agent="supply_chain", decision_type="restart_t",
+        payload={"k": "持久化"}, tenant_id="TENANT_WB",
+    )
+    assert res["status"] == "pending"
+
+    # 模拟重启：全新实例从盘恢复
+    b2 = WritebackBridge()
+    recovered = b2.pending("TENANT_WB")
+    assert len(recovered) == 1
+    assert recovered[0]["decision_type"] == "restart_t"
+
+    # 重试成功后从盘删除，再次"重启"不再恢复
+    registry.register(_FakeMES())
+    sent = await b2.retry_pending()
+    assert sent >= 1
+    b3 = WritebackBridge()
+    assert len(b3.pending("TENANT_WB")) == 0
+
+
+@pytest.mark.asyncio
 async def test_writeback_api_endpoint():
     from src.runtime.main import app
     import httpx

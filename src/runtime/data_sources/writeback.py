@@ -16,10 +16,17 @@
     - POST 失败 → 同样进 pending 队列，供 retry_pending() 周期重试。
     - 全部失败都不阻断 agent 主流程（审计是旁路）。
 
+P1③ 持久化：pending 队列同步落 SQLite（默认 ./zhiyan_writeback.db，
+    env ZHIYAN_WRITEBACK_DB 覆盖；设为 "disabled" 则纯内存——测试环境用）。
+    重启进程自动恢复未发送记录；SQLite 任何异常静默降级为纯内存（韧性铁律）。
+
 进程级单例 `writeback_bridge`。
 """
 
+import json
 import logging
+import os
+import sqlite3
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -75,6 +82,72 @@ class WritebackBridge:
         self._pending: list[WritebackRecord] = []
         self._sent: list[WritebackRecord] = []
         self._max_kept = 200  # 已发送/失败记录最多保留条数
+        # P1③ SQLite 持久化（失败静默降级纯内存）
+        self._db_path = os.environ.get("ZHIYAN_WRITEBACK_DB", "./zhiyan_writeback.db")
+        self._db_enabled = self._db_path.lower() != "disabled"
+        if self._db_enabled:
+            self._init_db_and_recover()
+
+    # ---------------- P1③ 持久化（韧性：任何异常静默降级） ----------------
+
+    def _init_db_and_recover(self) -> None:
+        """建表 + 重启恢复 pending。失败则关闭持久化，纯内存运行。"""
+        try:
+            with sqlite3.connect(self._db_path) as conn:
+                conn.execute(
+                    """CREATE TABLE IF NOT EXISTS writeback_pending (
+                        id TEXT PRIMARY KEY,
+                        system TEXT, tenant_id TEXT, agent TEXT,
+                        decision_type TEXT, decision_id TEXT,
+                        payload TEXT, error TEXT, created_at REAL
+                    )"""
+                )
+                rows = conn.execute(
+                    "SELECT id, system, tenant_id, agent, decision_type, decision_id,"
+                    " payload, error, created_at FROM writeback_pending ORDER BY created_at"
+                ).fetchall()
+            for row in rows:
+                try:
+                    self._pending.append(
+                        WritebackRecord(
+                            id=row[0], system=row[1], tenant_id=row[2], agent=row[3],
+                            decision_type=row[4], decision_id=row[5],
+                            payload=json.loads(row[6] or "{}"),
+                            status="pending", error=row[7], created_at=row[8] or time.time(),
+                        )
+                    )
+                except Exception:  # noqa: BLE001 单行坏数据不阻断恢复
+                    continue
+            if rows:
+                logger.info(f"🔁 写回队列重启恢复 {len(self._pending)} 条 pending（{self._db_path}）")
+        except Exception as e:  # noqa: BLE001
+            self._db_enabled = False
+            logger.warning(f"⚠️ 写回队列 SQLite 初始化失败，降级纯内存（不破管）：{e}")
+
+    def _db_add(self, rec: WritebackRecord) -> None:
+        if not self._db_enabled:
+            return
+        try:
+            with sqlite3.connect(self._db_path) as conn:
+                conn.execute(
+                    "INSERT OR REPLACE INTO writeback_pending VALUES (?,?,?,?,?,?,?,?,?)",
+                    (
+                        rec.id, rec.system, rec.tenant_id, rec.agent, rec.decision_type,
+                        rec.decision_id, json.dumps(rec.payload, ensure_ascii=False),
+                        rec.error, rec.created_at,
+                    ),
+                )
+        except Exception as e:  # noqa: BLE001
+            logger.warning(f"⚠️ 写回 pending 落盘失败（内存队列不受影响）：{e}")
+
+    def _db_remove(self, rec_id: str) -> None:
+        if not self._db_enabled:
+            return
+        try:
+            with sqlite3.connect(self._db_path) as conn:
+                conn.execute("DELETE FROM writeback_pending WHERE id = ?", (rec_id,))
+        except Exception as e:  # noqa: BLE001
+            logger.warning(f"⚠️ 写回 pending 删盘失败（不破管）：{e}")
 
     # ---------------- 提交 ----------------
 
@@ -105,6 +178,7 @@ class WritebackBridge:
             rec.status = "pending"
             rec.error = "connector_unavailable"
             self._pending.append(rec)
+            self._db_add(rec)
             logger.info(f"📤 回写 {system} 连接器不可用，进 pending 队列（{rec.id}）")
             return {"status": "pending", "record_id": rec.id, "detail": "connector_unavailable"}
         body = {
@@ -122,6 +196,7 @@ class WritebackBridge:
                 rec.status = "pending"
                 rec.error = "post_failed_or_unavailable"
                 self._pending.append(rec)
+                self._db_add(rec)
                 return {"status": "pending", "record_id": rec.id, "detail": "post_failed"}
             rec.status = "sent"
             rec.sent_at = time.time()
@@ -134,6 +209,7 @@ class WritebackBridge:
             rec.status = "pending"
             rec.error = str(e)
             self._pending.append(rec)
+            self._db_add(rec)
             logger.warning(f"⚠️ 回写 {system} 异常进 pending：{e}")
             return {"status": "pending", "record_id": rec.id, "detail": f"exception:{e}"}
 
@@ -167,10 +243,12 @@ class WritebackBridge:
                 rec.sent_at = time.time()
                 rec.response = resp if isinstance(resp, dict) else {"raw": str(resp)}
                 self._sent.append(rec)
+                self._db_remove(rec.id)
                 sent += 1
             except Exception as e:  # noqa: BLE001
                 rec.error = str(e)
                 still_pending.append(rec)
+                self._db_add(rec)  # 更新盘上 error 信息
         self._pending = still_pending
         self._trim()
         if sent:

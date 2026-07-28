@@ -120,6 +120,65 @@ def test_alert_published_to_uns(monkeypatch):
     assert evs[-1]["payload"]["kind"] == "login_anomaly"
 
 
+# ---------------- ④ 网关 simulated 降级显性告警（P1②） ----------------
+
+def test_gateway_degraded_alert_p1():
+    """P1②：simulated 降级必须显性告警（UNS system 路 + 本地缓冲），并 cooldown 去重。"""
+    a = alert_monitor.report_gateway_degraded("modbus", tenant_id="default", phase="startup")
+    assert a is not None
+    assert a.kind == "gateway_degraded"
+    assert a.severity == "warning"
+    assert a.detail["mode"] == "simulated"
+    # UNS system 路可查
+    evs = [e for e in uns.query(channel="system", n=20)
+           if e.get("payload", {}).get("kind") == "gateway_degraded"]
+    assert len(evs) >= 1
+    # cooldown 去重
+    assert alert_monitor.report_gateway_degraded("modbus", phase="startup") is None
+    # persistent 阶段为 critical（不同 phase 共用 key，先清再发）
+    alert_monitor.clear()
+    p = alert_monitor.report_gateway_degraded("mqtt", phase="persistent")
+    assert p is not None and p.severity == "critical"
+
+
+def test_gateway_recovered_alert_p1():
+    """P1②：simulated→真实连接升级发恢复通知（info 级）。"""
+    a = alert_monitor.report_gateway_recovered("opcua", mode="opcua-live")
+    assert a is not None
+    assert a.kind == "gateway_recovered"
+    assert a.severity == "info"
+    assert a.detail["mode"] == "opcua-live"
+
+
+@pytest.mark.asyncio
+async def test_gateway_manager_fires_degraded_on_init_p1():
+    """P1②：GatewayManager.initialize() 首连回退 simulated 时实际触发告警。"""
+    from src.gateways.manager import GatewayManager
+
+    alert_monitor.clear()
+    mgr = GatewayManager()  # 测试环境无真实 PLC/Broker → 必然全回退 simulated
+    await mgr.initialize()
+    degraded = alert_monitor.alerts(kind="gateway_degraded")
+    assert len(degraded) >= 1
+    names = {d["detail"]["gateway"] for d in degraded}
+    assert names & {"modbus", "mqtt", "opcua", "ipc_cfx"}
+
+
+@pytest.mark.asyncio
+async def test_twin_feed_carries_source_mode_p1():
+    """P1②：网关上行 UNS 事件带 _source_mode 溯源标记，且不污染孪生数值。"""
+    from src.gateways.manager import GatewayManager
+
+    mgr = GatewayManager()
+    await mgr.initialize()
+    dps = await mgr.read("modbus", "line_1_temp")
+    assert dps
+    evs = uns.query(channel="gateway", n=5)
+    tagged = [e for e in evs if e.get("payload", {}).get("_source_mode")]
+    assert tagged, "网关事件必须带 _source_mode 标记"
+    assert tagged[-1]["payload"]["_source_mode"] == "simulated"
+
+
 # ---------------- API 端点 ----------------
 
 @pytest.mark.asyncio

@@ -69,11 +69,26 @@ async def require_auth(
                     return u
         # P0 修复：匿名上下文必须是最小权限（viewer），绝不能再是 SUPERADMIN。
         # 生产由 ZHIYAN_AUTH_REQUIRE=1 强制拒绝无 token 请求；此处仅保护"误配置/开发"场景。
-        set_current_tenant(x_tenant_key or "default")
+        # P1④ 收紧：X-Tenant-Key 默认必须是已注册租户 key（fail-closed），
+        # 仅 ZHIYAN_DEV_TRUST_TENANT_KEY=1（开发/测试）才直接信任任意值。
+        tenant = "default"
+        if x_tenant_key:
+            if config.DEV_TRUST_TENANT_KEY:
+                tenant = x_tenant_key
+            else:
+                from src.runtime.tenant_store import tenant_store
+
+                resolved = await tenant_store.resolve(x_tenant_key)
+                if resolved is None:
+                    raise HTTPException(
+                        status_code=401, detail="无效或已失效的租户密钥（X-Tenant-Key）"
+                    )
+                tenant = resolved
+        set_current_tenant(tenant)
         return {
             "username": "anonymous",
             "role": "viewer",
-            "tenant_id": x_tenant_key or "default",
+            "tenant_id": tenant,
             "auth_source": "local",
         }
     # 强制模式：严格校验

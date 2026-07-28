@@ -8,6 +8,7 @@
 事实锚点：仅聚合真实网关状态，不改写任何业务数据。
 """
 
+import asyncio
 import logging
 import time
 
@@ -68,6 +69,9 @@ class GatewayManager:
             except Exception as e:
                 logger.warning(f"⚠️ 网关 {name} 初始化失败（不破管）：{e}")
                 summary[name] = "error"
+            # P1② 显性降级：首连回退 simulated → 告警（不再静默喂假数据）
+            if getattr(gw, "_mode", None) == "simulated":
+                self._alert_degraded(name, phase="startup")
             # 启动机会性升级循环（仅 simulated 时重试真实连接）
             try:
                 asyncio.create_task(self._upgrade_loop(name, gw))
@@ -76,6 +80,25 @@ class GatewayManager:
         self._initialized = True
         logger.info(f"🛰️ 网关管理器已初始化：{summary}")
         return summary
+
+    def _alert_degraded(self, name: str, phase: str) -> None:
+        """P1②：simulated 降级显性告警（韧性：告警失败静默，绝不阻断网关）。"""
+        try:
+            from src.runtime.monitoring import alert_monitor
+            alert_monitor.report_gateway_degraded(
+                name, tenant_id=self._tenant_id or "default", phase=phase
+            )
+        except Exception:
+            pass
+
+    def _alert_recovered(self, name: str, mode: str) -> None:
+        try:
+            from src.runtime.monitoring import alert_monitor
+            alert_monitor.report_gateway_recovered(
+                name, mode, tenant_id=self._tenant_id or "default"
+            )
+        except Exception:
+            pass
 
     async def _upgrade_loop(self, name: str, gw, attempts: int = 24, interval: float = 5.0):
         """后台：网关处于 simulated 时，周期性重试真实连接，成功则自动切 live。
@@ -90,9 +113,15 @@ class GatewayManager:
                     await gw.connect()
                     if getattr(gw, "_mode", "simulated") != "simulated":
                         logger.info(f"🛰️ 网关 {name} 已升级为 live 模式（{gw._mode}）")
+                        # P1② 恢复通知：仿真→真实，运营者可确认数据已切真
+                        self._alert_recovered(name, getattr(gw, "_mode", "live"))
                         break
             except Exception as e:
                 logger.debug(f"网关 {name} 升级重试中：{e}")
+        else:
+            # P1② 升级重试用尽仍 simulated → critical 持续降级告警
+            if getattr(gw, "_mode", "simulated") == "simulated":
+                self._alert_degraded(name, phase="persistent")
 
     async def ensure_ready(self):
         """幂等：仅在尚未初始化时连接一次。
@@ -224,13 +253,20 @@ class GatewayManager:
         for dp in datapoints:
             hk = getattr(dp, "holon_kind", "machine") or "machine"
             grouped[hk][dp.tag] = dp.value
+        # P1② 数据溯源标记：事件带 _source_mode（simulated/live 等）。
+        # 下划线前缀键会被 _route_to_twin 过滤，不污染孪生数值，但事件可查可审计。
+        src_gw = self._gateways.get(source) if source else None
+        src_mode = getattr(src_gw, "_mode", None) if src_gw else None
         n = 0
         for hk, values in grouped.items():
+            payload = dict(values)
+            if src_mode:
+                payload["_source_mode"] = src_mode
             uns.publish(
                 CHANNEL_GATEWAY,
                 source or "gateway",
                 "sensor_reading",
-                payload=values,
+                payload=payload,
                 entities=[f"HOLON:{hk}"],
                 route_holon=hk,
             )

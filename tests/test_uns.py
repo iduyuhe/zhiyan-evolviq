@@ -125,3 +125,105 @@ def test_query_filter_and_recent(uns_inst):
     assert len(u.query(channel=CHANNEL_GATEWAY)) == 5
     assert len(u.query(n=3)) == 3
     assert len(u.recent(2)) == 2
+
+
+# ---------------- P1⑤ 并发安全对抗测试 ----------------
+
+def test_concurrent_publish_no_loss_p1():
+    """多线程并发 publish：不丢事件、不抛异常、计数精确（RLock + deque 原子性）。"""
+    import threading
+
+    u = UnifiedNamespace(maxlen=100000)
+    n_threads, n_per = 8, 200
+    errors: list[Exception] = []
+
+    def worker(tid: int):
+        try:
+            for i in range(n_per):
+                u.publish_human(f"wecom://t{tid}", {"note": f"msg-{tid}-{i}"})
+        except Exception as e:  # pragma: no cover
+            errors.append(e)
+
+    threads = [threading.Thread(target=worker, args=(t,)) for t in range(n_threads)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert not errors
+    assert u.channel_counts()[CHANNEL_HUMAN] == n_threads * n_per
+
+
+def test_concurrent_subscribe_publish_p1():
+    """publish 与 subscribe 并发交错：订阅者列表不被破坏，已注册 handler 全部收到后续事件。"""
+    import threading
+
+    u = UnifiedNamespace(maxlen=100000)
+    received = []
+    lock = threading.Lock()
+
+    def make_handler(hid: int):
+        def h(ev):
+            with lock:
+                received.append((hid, ev.id))
+        return h
+
+    stop = threading.Event()
+
+    def subscriber_worker():
+        for i in range(50):
+            u.subscribe(CHANNEL_SOCIAL, make_handler(i))
+        stop.set()
+
+    def publisher_worker():
+        while not stop.is_set():
+            u.publish_social("email://x", {"n": 1})
+        # stop 后再发一批，此时 50 个 handler 已全部注册
+        for _ in range(10):
+            u.publish_social("email://x", {"n": 2})
+
+    ts = [threading.Thread(target=subscriber_worker), threading.Thread(target=publisher_worker)]
+    for t in ts:
+        t.start()
+    for t in ts:
+        t.join()
+    # stop 后发布的 10 条，每条应被全部 50 个 handler 收到
+    tail_counts: dict[int, int] = {}
+    for hid, _ in received:
+        tail_counts[hid] = tail_counts.get(hid, 0) + 1
+    # 每个 handler 至少收到 stop 后的 10 条
+    assert all(tail_counts.get(i, 0) >= 10 for i in range(50))
+
+
+def test_ring_buffer_maxlen_under_concurrency_p1():
+    """环形淘汰在并发下依然守 maxlen 上限（deque 原子淘汰，绝不超界）。"""
+    import threading
+
+    u = UnifiedNamespace(maxlen=50)
+    threads = [
+        threading.Thread(target=lambda: [u.publish_human("wecom://x", {"i": i}) for i in range(100)])
+        for _ in range(4)
+    ]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert len(u.recent(n=10000)) == 50
+
+
+def test_async_concurrent_publish_p1():
+    """asyncio 多协程并发 publish（模拟 FastAPI 并发请求）：计数精确。"""
+    import asyncio
+
+    u = UnifiedNamespace(maxlen=100000)
+
+    async def producer(pid: int):
+        for i in range(100):
+            u.publish_meeting(f"meet://p{pid}", {"topic": f"t-{pid}-{i}"})
+            if i % 25 == 0:
+                await asyncio.sleep(0)
+
+    async def main():
+        await asyncio.gather(*(producer(p) for p in range(10)))
+
+    asyncio.run(main())
+    assert u.channel_counts()[CHANNEL_MEETING] == 1000

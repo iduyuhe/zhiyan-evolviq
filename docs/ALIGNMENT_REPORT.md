@@ -13,7 +13,7 @@
 | **战略对齐** | 🟢 地基扎实，主线在轨 | 六路感知/三主义闭环/网关/UNS/隐性捕获/蓝弧/自进化/环境感知⑥ 全部落地代码；S1 已完成 |
 | **功能对齐** | 🟢 全绿 | 全量 pytest **242 passed / 0 failed**；2 个良性 teardown 警告 |
 | **性能对齐** | 🟢 单用户极快，并发受单事件循环约束 | 单线程 p99 < 2.1ms，bootstrap 4.7ms；进程内并发 p95 60–80ms（TestClient 串行化，**非生产真实瓶颈**） |
-| **代码健壮性** | 🟢 P0 与隔离主干已修（当日闭环） | ✅ 匿名降 viewer + 多租户隔离强制（写回/KG/会话）+ 4 项对抗测试入门禁；余 5 项 P1 见 §4.2 |
+| **代码健壮性** | 🟢 P0 + 全部 P1 已修（当日闭环） | ✅ 匿名降 viewer + 多租户隔离强制 + tacit 租户化 + 写回持久化 + 网关降级告警 + tenant key fail-closed + UNS 并发锁；259 passed 门禁 |
 | **生产健康** | 🟢 白屏红线守住 | 生产 `https://zhiyan.weomnitech.com.cn` 冒烟门禁 **PASS（无白屏）** |
 
 **核心判断**：系统"地基"（战略架构 + 功能完整性）已经很强，可以继续向下推进 S2。但**多租户隔离与鉴权边界是 S2 对外前的硬阻断项**，必须在本阶段收口，否则一旦外部租户进来就会暴露越权/串数据。
@@ -105,7 +105,7 @@ scripts/_deploy/smoke_check.py https://zhiyan.weomnitech.com.cn
 
 ### 4.2 必须收口的问题（P0 / P1）— **审计当日已修复主干**
 
-> **修复状态（2026-07-27，全量回归 246 passed 零回归）**：以下 ✅ 项已在审计同日落地修复，对抗测试 `tests/test_tenant_isolation.py`（4 项）已纳入零回归门禁。
+> **修复状态（2026-07-27，全量回归 259 passed 零回归）**：以下 ✅ 项已在审计同日落地修复，对抗测试（`test_tenant_isolation.py` 8 项 + `test_uns.py` 并发 4 项 + 写回/监控守护）已纳入零回归门禁。
 
 #### ✅ P0 已修复 — 匿名 SUPERADMIN 越权面
 - **原问题**：`src/runtime/authn/deps.py`（`require_auth` 在 `REQUIRE_AUTH=False` 时返回 `role:"SUPERADMIN"`），任何未设 `ZHIYAN_AUTH_REQUIRE=1` 的部署即开放匿名超管。
@@ -118,14 +118,12 @@ scripts/_deploy/smoke_check.py https://zhiyan.weomnitech.com.cn
 - **KG 越权**：`api/knowledge_graph.py` 新增 `_effective_tenant()`——非 SUPERADMIN 忽略客户端 tenant 参数；`/query`、`/recall` 挂 `Depends(require_auth)`。测试 `test_kg_query_ignores_spoofed_tenant_p0_p1` 守护。
 - **会话越权读**：`api/sessions.py` `get_session_db` 取回后校验 `row.tenant_id != tenant → 404`（防按 session_id 跨租户读）。
 
-#### 🟡 P1 待收口（子代理深度审计追加发现，4 项）
-1. **X-Tenant-Key 在 dev 模式被直接信任**：`require_auth` 非强制分支以 `X-Tenant-Key` 头即定租户（无凭据校验）。生产靠 `ZHIYAN_AUTH_REQUIRE=1` 挡；dev/demo 环境仍可伪造租户。方向：非强制模式仅允许 `default` 租户或要求 tenant key 注册校验。
-2. **tacit_capture 硬编码 `tenant_id="default"`**：`api/tacit_capture.py` 隐性捕获信号全部落入 default 租户，击穿经验库/KG 隔离——多租户下 A 的会议纪要会进入共享经验库。方向：改用 `get_current_tenant()`（社交回调无 JWT 场景按连接器绑定租户）。
-3. **写回 pending 队列纯内存**：runtime 重启丢失未发送回写记录，与"ERP 执行回写+审计"定位冲突。方向：落 SQLite 持久化（与 sessions 同库）。
-4. **网关 simulated 回退静默喂假数据**：OPC-UA/AMQP connect 失败自动转 simulated，Agent 无感知继续基于假数据决策。方向：降级时在 UNS system 路发告警事件 + 数据带 `source_mode:"simulated"` 标记，前端连接面板红标。
-
-#### 🟡 P1 待收口 — UNS 内存存储无并发锁
-- `uns.py` `_subscribers`/`counts` 无锁；TestClient 单循环掩盖竞态，真实 uvicorn 多线程下 publish/subscribe 并发改 dict 有 race。修复：加 `asyncio.Lock`。
+#### ✅ P1 已修复（余 5 项，2026-07-27 同日收口，全量回归 259 passed）
+1. **✅ X-Tenant-Key fail-closed**：`require_auth` 非强制分支改为默认经 `tenant_store.resolve()` 校验，无效 key 返回 401；仅 `ZHIYAN_DEV_TRUST_TENANT_KEY=1`（`authn/config.py`）时信任（dev/测试专用，`tests/conftest.py` 已设）。测试 `test_tenant_key_fail_closed_p1` 守护。
+2. **✅ tacit_capture 租户化**：`UNSEvent` 加 `tenant_id` 快照字段（`publish` 时取 `get_current_tenant()`，显式传入优先）；`tacit_capture.py` 按事件快照租户落 `kg_facts.propose` / `experience.capture_tacit`；社交连接器（`connectors/base.py`）经 `ZHIYAN_{KIND}_TENANT` / `ZHIYAN_CONNECTOR_TENANT` env 绑定租户。测试 `test_uns_event_snapshots_tenant_p1` 等 3 项守护。
+3. **✅ 写回 pending SQLite 持久化**：`data_sources/writeback.py` 落盘 `ZHIYAN_WRITEBACK_DB`（默认 `./zhiyan_writeback.db`，`disabled` 纯内存）；重启自动恢复 pending，retry 成功即清盘。测试 `test_writeback_pending_survives_restart_p1` 守护。
+4. **✅ 网关 simulated 降级显性告警**：`monitoring.py` 加 `report_gateway_degraded/recovered`（UNS system 路，startup=warning / persistent=critical / recovered=info，cooldown 去重）；`gateways/manager.py` initialize 与升级循环双钩子；上行事件带 `_source_mode` 溯源（下划线键不污染孪生值）。测试 `test_gateway_*_p1` 4 项守护。
+5. **✅ UNS 并发安全**：`uns.py` 改 `deque(maxlen)`（原子环形淘汰）+ `threading.RLock`（publish 为同步方法，被协程与后台线程并发调用，asyncio.Lock 不适用）；publish 锁内追加+取订阅者快照，handler 锁外执行防死锁；query/recent/channel_counts 锁内快照。对抗测试 4 项（多线程发布计数精确 / 订阅-发布交错 / 并发环形上限 / asyncio 多协程）守护。
 
 ### 4.3 建议项（P2，子代理深度审计合并后共 10 项，摘要）
 - `CHANGELOG.md` 滞后（停在 v28.2，实际 v30.0 α）——发版同步。
@@ -154,11 +152,13 @@ scripts/_deploy/smoke_check.py https://zhiyan.weomnitech.com.cn
 |---|---|
 | 多租户隔离强制（写回/KG/会话）| ✅ 已修（context.py + get_current_tenant 统一）|
 | 隔离对抗测试 | ✅ `test_tenant_isolation.py` 4 项入门禁 |
-| tacit_capture 硬编码 default 租户 | ⏳ 待修 |
-| 写回 pending 队列持久化 | ⏳ 待修 |
-| 网关 simulated 降级显性告警 | ⏳ 待修 |
-| X-Tenant-Key dev 模式信任 | ⏳ 待修 |
-| UNS 并发安全（`asyncio.Lock`）| ⏳ 待修 |
+| tacit_capture 硬编码 default 租户 | ✅ 已修（UNSEvent 租户快照 + 连接器 env 绑定）|
+| 写回 pending 队列持久化 | ✅ 已修（SQLite 落盘 + 重启恢复）|
+| 网关 simulated 降级显性告警 | ✅ 已修（UNS system 告警 + `_source_mode` 溯源）|
+| X-Tenant-Key dev 模式信任 | ✅ 已修（fail-closed，须 tenant_store 校验）|
+| UNS 并发安全 | ✅ 已修（RLock + deque，4 项对抗测试）|
+
+> **P1 全部收口（2026-07-27）**：全量回归 **259 passed 零回归**（246 → 259，新增 13 项 P1 守护测试）。S2 开工前置条件已满足。
 
 ### 🟢 P2（顺手做）
 - CHANGELOG 同步至 v30.0 α

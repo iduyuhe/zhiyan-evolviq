@@ -67,6 +67,12 @@ class AuthnConfig:
     # 开发/测试默认关闭，避免破坏 150+ 既有测试与不带 token 的 e2e 脚本。
     REQUIRE_AUTH = _flag("ZHIYAN_AUTH_REQUIRE")
 
+    # ---- P1④ X-Tenant-Key 信任收紧 ----
+    # 非强制模式下携带 X-Tenant-Key：默认必须经 tenant_store 校验（无效→401，fail-closed），
+    # 防止"忘开 AUTH_REQUIRE 的误配置环境"被任意头冒充任意租户。
+    # 仅开发/测试显式设 ZHIYAN_DEV_TRUST_TENANT_KEY=1 时才无校验直接信任（tests/conftest.py 已设）。
+    DEV_TRUST_TENANT_KEY = _flag("ZHIYAN_DEV_TRUST_TENANT_KEY")
+
     @classmethod
     def ldap_mock_users(cls) -> dict[str, str]:
         out = {}

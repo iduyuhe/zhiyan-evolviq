@@ -69,11 +69,13 @@ def _on_tacit_event(ev) -> None:
         from src.runtime.evolution.kg_facts import kg_facts
 
         fact = extract_tacit_fact(ev)
+        # P1① 租户隔离：按事件快照租户落库（发布时已在 UNS 层钉死，不信任 payload）
+        tenant = getattr(ev, "tenant_id", None) or "default"
         # 符号主义锚定：提议写入知识图谱（draft，待人类审批门）
         proposal_id = None
         try:
             prop = kg_facts.propose(
-                tenant_id="default",
+                tenant_id=tenant,
                 agent=f"tacit:{ev.channel}",
                 subject=fact["subject"],
                 predicate=fact["predicate"],
@@ -104,7 +106,7 @@ def _on_tacit_event(ev) -> None:
         # 经验库捕获（连接主义隐性信号沉淀为工作记忆）
         try:
             experience.capture_tacit(
-                tenant="default",
+                tenant=tenant,
                 channel=ev.channel,
                 source=ev.source,
                 payload=ev.payload,

@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import os
 import time
 import logging
 from typing import Any
@@ -27,6 +28,13 @@ class SocialConnectorBase:
     def __init__(self) -> None:
         self.enabled: bool = False  # 配置就绪（关键凭证非空）
         self._last_error: str | None = None
+        # P1① 租户绑定：回调免 JWT，信号租户按连接器配置钉死。
+        # 优先级：ZHIYAN_<KIND>_TENANT（单连接器）> ZHIYAN_CONNECTOR_TENANT（全局）> default
+        self.tenant_id: str = (
+            os.environ.get(f"ZHIYAN_{self.kind.upper()}_TENANT")
+            or os.environ.get("ZHIYAN_CONNECTOR_TENANT")
+            or "default"
+        )
 
     # ---- 配置自检（子类实现：返回是否具备运行所需凭证）----
     def _check_config(self) -> bool:
@@ -60,6 +68,7 @@ class SocialConnectorBase:
                 payload=payload,
                 entities=entities or [],
                 confidence=confidence,
+                tenant_id=self.tenant_id,  # P1① 回调免 JWT → 按连接器绑定租户打标
             )
             logger.info(f"✅ [{self.name}] 社交信号已入 UNS social：{text[:50]}")
             return ev.id
@@ -72,5 +81,6 @@ class SocialConnectorBase:
             "name": self.name,
             "kind": self.kind,
             "enabled": self.enabled,
+            "tenant_id": self.tenant_id,
             "error": self._last_error,
         }

@@ -21,10 +21,14 @@
 
 from __future__ import annotations
 
+import threading
 import time
 import uuid
+from collections import deque
 from dataclasses import dataclass
 from typing import Any, Callable
+
+from src.runtime.context import get_current_tenant
 
 # ---- 六路 channel 常量（与战略文档 §3.3 完全一致，v30 新增 environment）----
 CHANNEL_GATEWAY = "gateway"
@@ -82,6 +86,7 @@ class UNSEvent:
     ts: float
     credibility: str | None = None  # F4 可信治理：仅 environment 路必填（official/authoritative/general）
     route_holon: str | None = None  # 内部：结构化状态上行目标 holon（如 machine/material）
+    tenant_id: str = "default"  # P1① 租户隔离：发布时快照请求租户（contextvars），下游锚定按此落库
 
     def to_dict(self) -> dict:
         d = {
@@ -93,6 +98,7 @@ class UNSEvent:
             "entities": self.entities,
             "confidence": self.confidence,
             "ts": self.ts,
+            "tenant_id": self.tenant_id,
         }
         if self.credibility is not None:
             d["credibility"] = self.credibility
@@ -103,9 +109,13 @@ class UnifiedNamespace:
     """轻量统一事件总线（内存环形缓冲 + 可选订阅 + twin_feed 自动路由）。"""
 
     def __init__(self, maxlen: int = 5000):
-        self._events: list[UNSEvent] = []
+        # P1⑤ 并发安全：deque(maxlen) 原子环形淘汰 + RLock 保护共享状态。
+        # publish 是同步方法，会被 asyncio 协程与后台线程（连接器轮询）同时调用，
+        # 因此用 threading.RLock 而非 asyncio.Lock（后者只能在 await 中使用）。
+        self._events: deque[UNSEvent] = deque(maxlen=maxlen)
         self._maxlen = maxlen
         self._subscribers: dict[str, list[Callable[[UNSEvent], Any]]] = {}
+        self._lock = threading.RLock()
 
     # ---------------- 发布 ----------------
     def publish(
@@ -118,6 +128,7 @@ class UnifiedNamespace:
         confidence: float = 1.0,
         route_holon: str | None = None,
         credibility: str | None = None,
+        tenant_id: str | None = None,
     ) -> UNSEvent:
         # F4 可信治理：environment 路必须带合法 credibility；缺失/非法一律降为 general（保守不丢弃）
         if channel == CHANNEL_ENVIRONMENT and credibility not in CREDIBILITY_LEVELS:
@@ -133,14 +144,17 @@ class UnifiedNamespace:
             ts=time.time(),
             credibility=credibility,
             route_holon=route_holon,
+            # P1① 租户快照：显式传入 > 请求上下文（require_auth 已 set_current_tenant）> default
+            tenant_id=tenant_id or get_current_tenant(),
         )
-        self._events.append(ev)
-        if len(self._events) > self._maxlen:
-            self._events = self._events[-self._maxlen:]
-        # 结构化状态上行（gateway/system 路）→ twin_feed
+        # P1⑤ 并发安全：追加 + 订阅者快照在锁内完成；deque(maxlen) 自动环形淘汰
+        with self._lock:
+            self._events.append(ev)
+            handlers = list(self._subscribers.get(ev.channel, []))
+        # 结构化状态上行（gateway/system 路）→ twin_feed（锁外执行，避免 handler 反入总线死锁/长占锁）
         self._route_to_twin(ev)
-        # 广播给订阅者（可选）
-        self._notify(ev)
+        # 广播给订阅者（快照遍历，锁外执行）
+        self._notify(ev, handlers)
         return ev
 
     # 五路便捷入口
@@ -193,10 +207,15 @@ class UnifiedNamespace:
 
     # ---------------- 订阅（可选，轻量）----------------
     def subscribe(self, channel: str, handler: Callable[[UNSEvent], Any]) -> None:
-        self._subscribers.setdefault(channel, []).append(handler)
+        with self._lock:
+            self._subscribers.setdefault(channel, []).append(handler)
 
-    def _notify(self, ev: UNSEvent) -> None:
-        for h in self._subscribers.get(ev.channel, []):
+    def _notify(self, ev: UNSEvent, handlers: list[Callable[[UNSEvent], Any]] | None = None) -> None:
+        # P1⑤ 并发安全：优先用 publish 传入的锁内快照；单独调用时自行取快照
+        if handlers is None:
+            with self._lock:
+                handlers = list(self._subscribers.get(ev.channel, []))
+        for h in handlers:
             try:
                 h(ev)
             except Exception:
@@ -204,23 +223,30 @@ class UnifiedNamespace:
 
     # ---------------- 查询（可查可回溯）----------------
     def query(self, channel: str | None = None, n: int | None = None) -> list[dict]:
-        evs = self._events if channel is None else [e for e in self._events if e.channel == channel]
+        with self._lock:
+            snapshot = list(self._events)
+        evs = snapshot if channel is None else [e for e in snapshot if e.channel == channel]
         if n is not None:
             evs = evs[-n:]
         return [e.to_dict() for e in evs]
 
     def recent(self, n: int = 50) -> list[dict]:
-        return [e.to_dict() for e in self._events[-n:]]
+        with self._lock:
+            snapshot = list(self._events)
+        return [e.to_dict() for e in snapshot[-n:]]
 
     def channel_counts(self) -> dict:
+        with self._lock:
+            snapshot = list(self._events)
         counts: dict[str, int] = {}
-        for e in self._events:
+        for e in snapshot:
             counts[e.channel] = counts.get(e.channel, 0) + 1
         return counts
 
     def clear(self) -> None:
-        self._events.clear()
-        self._subscribers.clear()
+        with self._lock:
+            self._events.clear()
+            self._subscribers.clear()
 
 
 # 进程级单例：import 即存在，纯内存，无需 lifespan 初始化

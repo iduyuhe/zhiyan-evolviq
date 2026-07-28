@@ -173,6 +173,40 @@ class AlertMonitor:
                 fired.append(alert)
         return fired
 
+    # ---------------- ④ 网关 simulated 降级（P1②：不再静默喂假数据） ----------------
+
+    def report_gateway_degraded(self, gateway: str, tenant_id: str = "default",
+                                phase: str = "startup") -> Alert | None:
+        """网关 connect 失败回退 simulated 时显性告警（网关层调用）。
+
+        phase: startup（首连回退）| persistent（升级重试用尽仍 simulated）。
+        运营者必须知道大屏/agent 消费的是仿真数据而非真实产线数据。
+        """
+        alert = Alert(
+            key=f"gateway_degraded:{tenant_id}:{gateway}",
+            kind="gateway_degraded",
+            severity="critical" if phase == "persistent" else "warning",
+            message=(
+                f"网关 {gateway} 处于 simulated 仿真模式（{'升级重试已用尽' if phase == 'persistent' else '真实连接失败已回退'}），"
+                f"当前上行数据为仿真数据，非真实产线数据"
+            ),
+            detail={"gateway": gateway, "tenant_id": tenant_id,
+                    "mode": "simulated", "phase": phase},
+        )
+        return alert if self._fire(alert) else None
+
+    def report_gateway_recovered(self, gateway: str, mode: str,
+                                 tenant_id: str = "default") -> Alert | None:
+        """网关由 simulated 升级为真实连接时发恢复通知（info 级）。"""
+        alert = Alert(
+            key=f"gateway_recovered:{tenant_id}:{gateway}",
+            kind="gateway_recovered",
+            severity="info",
+            message=f"网关 {gateway} 已从 simulated 升级为真实连接（{mode}），上行数据恢复为真实产线数据",
+            detail={"gateway": gateway, "tenant_id": tenant_id, "mode": mode},
+        )
+        return alert if self._fire(alert) else None
+
     # ---------------- ③ 登录失败异常 ----------------
 
     def record_login_failure(self, username: str, ip: str = "") -> Alert | None:
