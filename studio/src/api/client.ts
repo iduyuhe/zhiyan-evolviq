@@ -1251,6 +1251,89 @@ export async function getAgentRecommendations(): Promise<{
   return res.json();
 }
 
+// ============ S3-6 共生进化环（#320，MASTER §3.6） ============
+
+export type FeedbackKind = 'praise' | 'inaccurate' | 'idea' | 'other';
+
+export interface FeedbackStatusItem {
+  tracking_id: string;
+  kind: FeedbackKind;
+  status: string;            // submitted / in_progress / released
+  anonymous: boolean;
+  needs_review: boolean;
+  submitted_at: string;
+  issue_number: number | null;
+  issue_url: string | null;
+  sla_hours: number;
+  sla_deadline: string | null;
+  sla_remaining_hours: number | null;
+  released_version: string | null;
+  released_at: string | null;
+}
+
+export interface GrowthProfile {
+  tenant_id: string;
+  days_active: number;
+  current_circle: 'outer' | 'middle' | 'inner';
+  unlocked_agents: number;
+  total_agents: number;
+  feedback_contributed: number;   // 贡献的进化数
+  ideas_adopted: number;          // 被采纳的想法数
+  next_step: string;
+}
+
+export interface EvolutionNotification {
+  tracking_id: string;
+  date: string;
+  kind: FeedbackKind;
+  version: string;
+  issue_url: string | null;
+  message: string;
+}
+
+/** S3-6 产品内零摩擦反馈入口（脱敏+匿名+建 from-customer Issue） */
+export async function postEnvFeedback(req: {
+  kind: FeedbackKind;
+  text: string;
+  anonymous?: boolean;
+}): Promise<FeedbackStatusItem> {
+  const res = await fetch(`${API_BASE}/environment/feedback`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ kind: req.kind, text: req.text, anonymous: req.anonymous ?? true }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+/** S3-6 本租户反馈进度 + 48h SLA */
+export async function getEnvFeedbackStatus(): Promise<{
+  tenant_id: string;
+  total: number;
+  items: FeedbackStatusItem[];
+}> {
+  const res = await fetch(`${API_BASE}/environment/feedback/status`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+/** S3-6 租户「成长档案」 */
+export async function getEnvGrowthProfile(): Promise<GrowthProfile> {
+  const res = await fetch(`${API_BASE}/environment/growth-profile`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+/** S3-6 「因你而进化」回告 */
+export async function getEnvEvolution(): Promise<{
+  tenant_id: string;
+  notifications: EvolutionNotification[];
+}> {
+  const res = await fetch(`${API_BASE}/environment/evolution`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
 // ============ BOM 上传 × 行情毛利影响（S2-5，#311 信任爬梯③价值跳变） ============
 
 export interface BomItem {

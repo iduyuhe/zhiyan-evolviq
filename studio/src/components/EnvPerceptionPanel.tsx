@@ -25,7 +25,15 @@ import {
   EnvSignal,
   EnvSourceRecommendation,
   postEnvRecommendationFeedback,
+  getEnvFeedbackStatus,
+  getEnvGrowthProfile,
+  getEnvEvolution,
+  postEnvFeedback,
   ConnectivityTestResult,
+  type FeedbackStatusItem,
+  type GrowthProfile,
+  type EvolutionNotification,
+  type FeedbackKind,
 } from '../api/client';
 
 const CRED_LEVELS = [
@@ -281,9 +289,31 @@ export default function EnvPerceptionPanel() {
   const [piCount, setPiCount] = useState(0);
   const [recommendations, setRecommendations] = useState<EnvSourceRecommendation[]>([]);
   const [feedbackCount, setFeedbackCount] = useState(0);
+  // S3-6 共生进化环状态
+  const [symFeedbacks, setSymFeedbacks] = useState<FeedbackStatusItem[]>([]);
+  const [growth, setGrowth] = useState<GrowthProfile | null>(null);
+  const [evolutions, setEvolutions] = useState<EvolutionNotification[]>([]);
+  const [fbKind, setFbKind] = useState<FeedbackKind>('idea');
+  const [fbText, setFbText] = useState('');
+  const [fbMsg, setFbMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [pulling, setPulling] = useState(false);
   const [pullMsg, setPullMsg] = useState('');
+
+  const refreshSymbiosis = useCallback(async () => {
+    try {
+      const [st, gp, ev] = await Promise.all([
+        getEnvFeedbackStatus(),
+        getEnvGrowthProfile(),
+        getEnvEvolution(),
+      ]);
+      setSymFeedbacks(st.items || []);
+      setGrowth(gp || null);
+      setEvolutions(ev.notifications || []);
+    } catch {
+      /* 静默 */
+    }
+  }, []);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -312,9 +342,10 @@ export default function EnvPerceptionPanel() {
 
   useEffect(() => {
     refresh();
+    refreshSymbiosis();
     // S3-1 行为埋点（#315）：打开信号面板 = 一次「查看信号流」（fire-and-forget）
     trackBehavior('signal_view', 'panel', 'env_perception');
-  }, [refresh]);
+  }, [refresh, refreshSymbiosis]);
 
   const onPull = async () => {
     setPulling(true);
@@ -601,6 +632,142 @@ export default function EnvPerceptionPanel() {
                     ) : null}
                   </div>
                 </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* S3-6 共生进化环（#320，§3.6）：反馈入口 + 成长档案 + 因你而进化 */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-semibold text-gray-900">共生进化环</h3>
+          <span className="text-[11px] text-gray-400">你的反馈会推动平台进化</span>
+        </div>
+
+        {/* 反馈入口 */}
+        <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 space-y-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {(['idea', 'inaccurate', 'praise', 'other'] as FeedbackKind[]).map((k) => (
+              <button
+                key={k}
+                className={`text-xs px-2.5 py-1 rounded-full border ${
+                  fbKind === k
+                    ? 'bg-zhiyan-50 border-zhiyan-300 text-zhiyan-700'
+                    : 'border-gray-200 text-gray-500'
+                }`}
+                onClick={() => setFbKind(k)}
+              >
+                {k === 'idea' ? '💡 我有想法' : k === 'inaccurate' ? '👎 不准确' : k === 'praise' ? '👍 有用' : '📝 其他'}
+              </button>
+            ))}
+          </div>
+          <textarea
+            className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 resize-none"
+            rows={2}
+            placeholder="说点什么——这里默认匿名、已脱敏，会转为公开路线图 Issue 推动进化"
+            value={fbText}
+            onChange={(e) => setFbText(e.target.value)}
+          />
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] text-gray-400">默认匿名 · 自动脱敏 · 48h 内必有首次回音</span>
+            <button
+              className="btn-primary text-xs"
+              disabled={!fbText.trim()}
+              onClick={async () => {
+                try {
+                  await postEnvFeedback({ kind: fbKind, text: fbText.trim(), anonymous: true });
+                  setFbText('');
+                  setFbMsg('✅ 已收到！已脱敏并转为公开路线图 Issue，您可在下方追踪进度。');
+                  await refreshSymbiosis();
+                } catch (e) {
+                  setFbMsg('提交失败：' + ((e as Error).message || ''));
+                }
+              }}
+            >
+              提交反馈
+            </button>
+          </div>
+          {fbMsg && <div className="text-[11px] text-gray-500">{fbMsg}</div>}
+        </div>
+
+        {/* 成长档案 */}
+        {growth && (
+          <div className="rounded-xl bg-gradient-to-br from-zhiyan-50 to-white border border-zhiyan-100 px-4 py-3">
+            <div className="text-[11px] text-zhiyan-600 font-medium mb-2">成长档案 · 你和平台一起变强</div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+              <div>
+                <div className="text-lg font-semibold text-gray-800">{growth.days_active}</div>
+                <div className="text-[10px] text-gray-400">使用天数</div>
+              </div>
+              <div>
+                <div className="text-lg font-semibold text-gray-800">
+                  {growth.unlocked_agents}/{growth.total_agents}
+                </div>
+                <div className="text-[10px] text-gray-400">已解锁圈层</div>
+              </div>
+              <div>
+                <div className="text-lg font-semibold text-gray-800">{growth.feedback_contributed}</div>
+                <div className="text-[10px] text-gray-400">贡献的进化</div>
+              </div>
+              <div>
+                <div className="text-lg font-semibold text-gray-800">{growth.ideas_adopted}</div>
+                <div className="text-[10px] text-gray-400">被采纳想法</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 因你而进化回告 */}
+        {evolutions.length > 0 && (
+          <div className="space-y-1.5">
+            {evolutions.map((ev) => (
+              <div
+                key={ev.tracking_id}
+                className="rounded-lg bg-green-50 border border-green-100 px-3 py-2 text-[11px] text-green-800"
+              >
+                🌱 {ev.message}
+                {ev.issue_url && (
+                  <a href={ev.issue_url} target="_blank" rel="noreferrer" className="underline ml-1">
+                    查看 Issue
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 我的反馈进度 + 48h SLA */}
+        {symFeedbacks.length > 0 && (
+          <div className="space-y-1.5">
+            <div className="text-[11px] text-gray-400">我的反馈进度</div>
+            {symFeedbacks.map((f) => (
+              <div key={f.tracking_id} className="rounded-lg border border-gray-200 px-3 py-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-medium text-gray-700">
+                    {f.kind === 'idea' ? '💡 想法' : f.kind === 'inaccurate' ? '👎 不准' : f.kind === 'praise' ? '👍 有用' : '📝 其他'}
+                    {' · '}
+                    {f.status === 'released' ? '已上线' : f.status === 'in_progress' ? '处理中' : '已收到'}
+                  </span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                      f.sla_remaining_hours !== null && f.sla_remaining_hours < 0
+                        ? 'bg-red-50 text-red-600'
+                        : 'bg-blue-50 text-blue-600'
+                    }`}
+                  >
+                    {f.sla_remaining_hours !== null
+                      ? f.sla_remaining_hours >= 0
+                        ? `48h SLA 剩 ${f.sla_remaining_hours}h`
+                        : 'SLA 已超时'
+                      : 'SLA—'}
+                  </span>
+                </div>
+                {f.issue_url && (
+                  <a href={f.issue_url} target="_blank" rel="noreferrer" className="text-[10px] text-zhiyan-600 underline">
+                    GitHub Issue #{f.issue_number}
+                  </a>
+                )}
               </div>
             ))}
           </div>

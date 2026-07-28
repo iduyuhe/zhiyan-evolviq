@@ -24,7 +24,7 @@ import uuid
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from src.common import db
 from src.runtime.models.behavior_event import BehaviorEvent
@@ -156,6 +156,62 @@ class BehaviorStore:
             "events_last_7d": recent7,
             "generated_at": _now().isoformat(),
         }
+
+    async def patch_meta(
+        self,
+        tenant_id: str,
+        event_type: str,
+        object_id: str,
+        patch: dict,
+    ) -> bool:
+        """更新 (tenant, event_type, object_id) 最新一条事件的 meta（合并 patch）。
+
+        用于共生环反馈状态机（submitted→in_progress→released）等需"原地更新"的场景。
+        DB 与内存同步更新；DB 不可达则仅内存生效（与 record 同级韧性）。
+        🔴 严格按 tenant 过滤，绝不跨租户。
+        """
+        if not tenant_id or not event_type or not object_id:
+            return False
+        target = None
+        for ev in reversed(self._events):
+            if (
+                ev.tenant_id == tenant_id
+                and ev.event_type == event_type
+                and ev.object_id == object_id
+            ):
+                target = ev
+                break
+        if target is None:
+            return False
+        cur: dict = {}
+        if target.meta:
+            try:
+                cur = json.loads(target.meta)
+            except Exception:
+                cur = {}
+        cur.update(patch)
+        meta_text = json.dumps(cur, ensure_ascii=False)[:_META_MAX]
+        target.meta = meta_text
+        if db.db_available and db.async_session is not None:
+            try:
+                async with db.async_session() as s:
+                    await s.execute(
+                        text("UPDATE behavior_events SET meta=:m WHERE id=:i"),
+                        {"m": meta_text, "i": target.id},
+                    )
+                    await s.commit()
+            except Exception as e:
+                logger.warning(f"⚠️ 行为事件 meta 更新失败（内存已更新）：{e}")
+        return True
+
+    def first_event_at(self, tenant_id: str) -> str | None:
+        """本租户最早事件时间（ISO），无则返回 None。供成长档案『使用天数』。"""
+        ts = [
+            ev.created_at
+            for ev in self._events
+            if ev.tenant_id == tenant_id and ev.created_at
+        ]
+        return min(ts).isoformat() if ts else None
 
     # ---------- 测试清理 ----------
     def clear_memory(self, tenant_id: str | None = None) -> int:

@@ -18,6 +18,12 @@ S2 v30.5 β 新增（租户订阅规则——「抓取共享、语义隔离」�
     GET    /environment/feed                    租户过滤后的环境信号流（语义隔离）
     GET    /environment/unlock-progress          无感转型三圈解锁进度（+ S3-5 推荐下一步）
     GET    /environment/agent-recommendations    S3-5 行为导航④：推荐下一值得解锁的智能体
+
+S3 v31 γ 新增（共生进化环——§3.6）：
+    POST   /environment/feedback              产品内零摩擦反馈（脱敏+匿名+建 from-customer Issue）
+    GET    /environment/feedback/status        本租户反馈进度 + 48h SLA（仅本租户可见）
+    GET    /environment/growth-profile         租户「成长档案」（使用天数/解锁圈层/贡献进化数）
+    GET    /environment/evolution              「因你而进化」回告（仅与本租户反馈相关）
 """
 
 from __future__ import annotations
@@ -46,6 +52,12 @@ from src.runtime.unlock_map import progress_view
 from src.runtime.usage_meter import usage_meter
 from src.runtime.platform_insight_store import platform_insight_store
 from src.runtime.agent_recommendation import recommend_for_tenant
+from src.runtime.symbiosis_store import (
+    evolution_notifications,
+    feedback_status,
+    growth_profile,
+    submit_feedback,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -431,3 +443,51 @@ async def post_recommendation_feedback(req: RecommendationFeedbackRequest):
         "category": category,
         "adjustments_summary": summary,
     }
+
+
+# ===== S3-6 共生进化环（#320，MASTER §3.6） =====
+
+
+class FeedbackRequest(BaseModel):
+    kind: str = Field(..., description="praise(👍有用) / inaccurate(👎不准) / idea(💡我有想法) / other")
+    text: str = Field(..., min_length=1, max_length=2000, description="反馈内容")
+    anonymous: bool = True  # 默认匿名（§3.6 红线）
+
+
+@router.post("/feedback")
+async def post_feedback(req: FeedbackRequest, u: dict = Depends(require_auth)):
+    """产品内零摩擦反馈入口（§3.6 步1）。
+
+    自动脱敏（剥离邮箱/手机号/租户标识）+ 默认匿名 + 建 GitHub from-customer Issue（待审核）。
+    Issue 创建失败不阻断——反馈已落内网，待运维发布。返回 tracking_id + 48h SLA 计时。
+    🔴 未经脱敏/审核绝不出内网；租户取自 JWT。
+    """
+    view = await submit_feedback(
+        tenant_id=u["tenant_id"],
+        user=u.get("username"),
+        kind=req.kind,
+        text=req.text,
+        anonymous=req.anonymous,
+    )
+    return view
+
+
+@router.get("/feedback/status")
+async def feedback_status_view():
+    """本租户全部反馈进度 + 48h SLA（§3.6 步3 可溯源）。🔴 仅本租户。"""
+    tenant = get_current_tenant()
+    return {"tenant_id": tenant, "total": len(feedback_status(tenant)), "items": feedback_status(tenant)}
+
+
+@router.get("/growth-profile")
+async def growth_profile_view():
+    """租户「成长档案」（§3.6 步4 被陪伴）。🔴 仅本租户可见。"""
+    tenant = get_current_tenant()
+    return growth_profile(tenant)
+
+
+@router.get("/evolution")
+async def evolution_view():
+    """「因你而进化」回告（§3.6 步4）。仅返回与本租户反馈相关、已发布的内容。"""
+    tenant = get_current_tenant()
+    return {"tenant_id": tenant, "notifications": evolution_notifications(tenant)}
