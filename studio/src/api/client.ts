@@ -1218,11 +1218,35 @@ export interface UnlockProgressView {
   total_agents: number;
   next_step: string;
   quota: EnvQuotaView;
+  recommended_next?: AgentRecommendation[];
+}
+
+/** S3-5 行为导航④：推荐下一值得解锁的智能体（无感转型导航器） */
+export interface AgentRecommendation {
+  agent: string;
+  label: string;
+  circle: 'outer' | 'middle' | 'inner';
+  score: number;            // 与关注重点匹配度 [0,1]（仅排序用）
+  value_sentence: string;   // F4 价值句式「你关注的 X，配合 Y，能算出 Z」
+  reasons: string[];        // F4 透明标注：推荐依据
+  locked: boolean;          // True=需完成下一步解锁（总是 True，除非已 inner）
+  source: 'behavior';       // 明示为租户自身行为派生（非共享平台建议）
 }
 
 /** 三圈解锁进度（事实进度 + 下一步说明；F4 纪律：不推销不弹窗，相邻呈现） */
 export async function getUnlockProgress(): Promise<UnlockProgressView> {
   const res = await fetch(`${API_BASE}/environment/unlock-progress`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+/** S3-5 智能体推荐（独立端点；无感转型导航器） */
+export async function getAgentRecommendations(): Promise<{
+  tenant_id: string;
+  current_circle: 'outer' | 'middle' | 'inner';
+  recommended_next: AgentRecommendation[];
+}> {
+  const res = await fetch(`${API_BASE}/environment/agent-recommendations`, { headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }

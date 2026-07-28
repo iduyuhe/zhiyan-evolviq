@@ -8,7 +8,7 @@
  * 铁律：所有请求经 client.ts authHeaders()；渲染在 App 的 ErrorBoundary 内。
  */
 import { useState, useEffect } from 'react';
-import { getUnlockProgress, UnlockProgressView, UnlockCircle, authHeaders, apiUrl } from '../api/client';
+import { getUnlockProgress, UnlockProgressView, UnlockCircle, AgentRecommendation, authHeaders, apiUrl } from '../api/client';
 
 interface AgentMeta {
   id: string;
@@ -175,6 +175,50 @@ export default function UnlockProgressPanel() {
       <div className="rounded-xl bg-blue-50 border border-blue-100 px-4 py-3 text-xs text-blue-800 leading-relaxed">
         <span className="font-semibold">下一步：</span>{view.next_step}
       </div>
+
+      {/* S3-5 行为导航④：为你推荐的下一步（融入三圈视图，相邻呈现；F4 价值句式 + 透明标注） */}
+      {view.recommended_next && view.recommended_next.length > 0 && (
+        <div className="rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 px-4 py-3">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-sm">💡</span>
+            <h4 className="font-semibold text-gray-800 text-sm">为你推荐的下一步</h4>
+            <span className="text-[11px] text-gray-400">基于你最近的使用习惯</span>
+          </div>
+          <div className="space-y-2">
+            {view.recommended_next.map((rec: AgentRecommendation) => {
+              const st = CIRCLE_STYLE[rec.circle] || CIRCLE_STYLE.middle;
+              return (
+                <div
+                  key={rec.agent}
+                  className="rounded-lg bg-white/80 border border-indigo-100 px-3 py-2"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-[13px] text-gray-800 leading-snug font-medium">
+                      {rec.value_sentence}
+                    </p>
+                    <span className={`shrink-0 text-[10px] px-1.5 py-0.5 rounded-full ${st.badge}`}>
+                      {st.icon} {rec.label}
+                    </span>
+                  </div>
+                  <details className="mt-1">
+                    <summary className="text-[11px] text-indigo-500 cursor-pointer select-none">
+                      为什么推荐（透明）
+                    </summary>
+                    <ul className="mt-1 space-y-0.5">
+                      {rec.reasons.map((r, i) => (
+                        <li key={i} className="text-[11px] text-gray-500 leading-snug">· {r}</li>
+                      ))}
+                    </ul>
+                  </details>
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-2 text-[11px] text-gray-400">
+            完成上方「下一步」即可解锁这些智能体——全程无感，不打断你的日常使用。
+          </p>
+        </div>
+      )}
 
       {q && !q.unlimited && (
         <div className="space-y-1.5 pt-1 border-t border-gray-100">

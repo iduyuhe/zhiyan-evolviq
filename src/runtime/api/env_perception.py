@@ -16,6 +16,8 @@ S2 v30.5 β 新增（租户订阅规则——「抓取共享、语义隔离」�
     PUT    /environment/subscriptions/{name}    新建/更新规则（先测试后保存闸门；超免费额度 402）
     DELETE /environment/subscriptions/{name}    删除规则（回落行业默认模板）
     GET    /environment/feed                    租户过滤后的环境信号流（语义隔离）
+    GET    /environment/unlock-progress          无感转型三圈解锁进度（+ S3-5 推荐下一步）
+    GET    /environment/agent-recommendations    S3-5 行为导航④：推荐下一值得解锁的智能体
 """
 
 from __future__ import annotations
@@ -43,6 +45,7 @@ from src.runtime.uns import uns, CHANNEL_ENVIRONMENT
 from src.runtime.unlock_map import progress_view
 from src.runtime.usage_meter import usage_meter
 from src.runtime.platform_insight_store import platform_insight_store
+from src.runtime.agent_recommendation import recommend_for_tenant
 
 logger = logging.getLogger(__name__)
 
@@ -288,7 +291,24 @@ async def unlock_progress():
     tenant = get_current_tenant()
     view = progress_view(tenant)
     view["quota"] = usage_meter.view(tenant)
+    # S3-5 行为导航④（#319）：在当前圈层旁点亮「推荐下一步」（融入三圈视图，相邻呈现）
+    view["recommended_next"] = recommend_for_tenant(tenant).get("recommended_next", [])
     return view
+
+
+@router.get("/agent-recommendations")
+async def agent_recommendations():
+    """S3-5 行为导航④（#319）：推荐下一值得解锁的智能体（无感转型导航器）。
+
+    按租户自身产品内行为（高频使用的智能体 / 关注的情报类目 / 已采纳源类目）派生
+    「关注重点」，映射到三圈地图上的最短价值路径——推荐当前圈层之外（锁定态）的
+    下一圈 agent，价值句式「你关注的 X，配合 Y，{agent} 能算出 Z」。
+
+    F4 透明：每条推荐附 reasons（基于你最近的哪些行为），source=behavior 明示为
+    租户自身行为派生（非共享平台建议）。🔴 严格租户内隔离，绝不跨租户。
+    """
+    tenant = get_current_tenant()
+    return recommend_for_tenant(tenant)
 
 
 @router.get("/source-recommendations")
