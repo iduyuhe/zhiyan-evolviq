@@ -274,6 +274,7 @@ export default function EnvPerceptionPanel() {
   const [freeMax, setFreeMax] = useState(3);
   const [feed, setFeed] = useState<EnvSignal[]>([]);
   const [feedStat, setFeedStat] = useState<{ pool: number; visible: number } | null>(null);
+  const [piCount, setPiCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [pulling, setPulling] = useState(false);
   const [pullMsg, setPullMsg] = useState('');
@@ -292,6 +293,7 @@ export default function EnvPerceptionPanel() {
       setFreeMax(sv.free_max_sources);
       setFeed(fd.signals || []);
       setFeedStat({ pool: fd.pool_size, visible: fd.visible });
+      setPiCount(fd.platform_insight_count || 0);
     } catch {
       /* 静默：ErrorBoundary 兜底渲染错误，网络错误不白屏 */
     } finally {
@@ -367,34 +369,75 @@ export default function EnvPerceptionPanel() {
         ))}
       </section>
 
-      {/* C. 我的环境信号流（语义隔离结果预览） */}
+      {/* C. 我的环境信号流（语义隔离结果预览 + G5 轨道二平台建议） */}
       <section className="card p-4">
         <div className="flex items-center justify-between mb-2">
           <h3 className="font-semibold text-gray-900">我的环境信号流</h3>
           {feedStat && (
             <span className="text-[11px] text-gray-400">
               平台池 {feedStat.pool} 条 → 你可见 {feedStat.visible} 条
+              {piCount > 0 ? ` · 平台建议 ${piCount} 条` : ''}
             </span>
           )}
+        </div>
+        {/* F4 透明图例：真实情报 vs 平台建议两轨绝不混淆 */}
+        <div className="flex flex-wrap items-center gap-2 mb-3 text-[11px]">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-50 text-green-700">
+            🟢 官方情报（真实外部信息）
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-zhiyan-50 text-zhiyan-700">
+            💡 平台建议（来自智衍平台的建议，仅供参考）
+          </span>
         </div>
         {feed.length === 0 ? (
           <p className="text-sm text-gray-400">暂无信号——点「立即拉取」抓取最新外部信息。</p>
         ) : (
-          <div className="space-y-1.5 max-h-72 overflow-y-auto">
-            {[...feed].reverse().map((s, i) => (
-              <div key={s.id || i} className="flex items-start gap-2 text-sm border-b border-gray-50 pb-1.5">
-                <CredBadge c={s.credibility} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-gray-700 truncate">
-                    {String(s.payload?.title || s.payload?.summary || s.payload?.name || JSON.stringify(s.payload || {}).slice(0, 80))}
-                  </p>
-                  <p className="text-[11px] text-gray-400">
-                    {s.source}
-                    {s.ts ? ` · ${new Date(s.ts * 1000).toLocaleString()}` : ''}
-                  </p>
+          <div className="space-y-2 max-h-80 overflow-y-auto">
+            {[...feed].reverse().map((s, i) => {
+              if (s.kind === 'platform_insight') {
+                const based = (s.payload?.based_on as Array<{ title?: string }> | undefined) || [];
+                return (
+                  <div
+                    key={s.id || i}
+                    className="rounded-lg border border-zhiyan-100 border-l-4 border-l-zhiyan-500 bg-zhiyan-50/40 p-2.5"
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-zhiyan-100 text-zhiyan-700 font-medium">
+                        💡 来自智衍平台的建议
+                      </span>
+                    </div>
+                    <p className="text-sm font-medium text-gray-800">
+                      {String(s.payload?.title || '平台建议')}
+                    </p>
+                    <p className="text-[12px] text-gray-600 mt-0.5 leading-relaxed">
+                      {String(s.payload?.content || '')}
+                    </p>
+                    {based.length > 0 && (
+                      <p className="text-[11px] text-zhiyan-600/80 mt-1">
+                        依据：{based.map((b) => b.title).filter(Boolean).slice(0, 1).join('')}
+                      </p>
+                    )}
+                    <p className="text-[11px] text-gray-400 mt-0.5">
+                      {s.ts ? new Date(s.ts * 1000).toLocaleString() : ''}
+                    </p>
+                  </div>
+                );
+              }
+              return (
+                <div key={s.id || i} className="flex items-start gap-2 text-sm border-b border-gray-50 pb-1.5">
+                  <CredBadge c={s.credibility} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-gray-700 truncate">
+                      {String(s.payload?.title || s.payload?.summary || s.payload?.name || JSON.stringify(s.payload || {}).slice(0, 80))}
+                    </p>
+                    <p className="text-[11px] text-gray-400">
+                      {s.source}
+                      {s.ts ? ` · ${new Date(s.ts * 1000).toLocaleString()}` : ''}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>

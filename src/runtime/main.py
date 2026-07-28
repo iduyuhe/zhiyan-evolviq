@@ -92,6 +92,11 @@ async def lifespan(app: FastAPI):
     await feedback_store.init()
     logger.info("🔁 共生进化环反馈存储已初始化（脱敏审核门+48h SLA 看板）")
 
+    # S2 v30.5 β：平台建议存储（#314 G5 轨道二 platform_insight；db 不可用时降级内存态）
+    from src.runtime.platform_insight_store import platform_insight_store
+    await platform_insight_store.init()
+    logger.info("💡 平台建议存储已初始化（G5 轨道二 · 透明标注平台建议）")
+
     # 企业认证：确保超级管理员账号存在（DB 不可用时降级内存态；测试可直接调用）
     from src.runtime.authn.service import authn_service
     await authn_service.ensure_admin()
@@ -204,6 +209,13 @@ async def lifespan(app: FastAPI):
                 logger.info(f"🌐 环境演示种子：{src.name} × 3 条已入 UNS environment 路")
             except Exception as e:
                 logger.warning(f"⚠️ 环境种子 {cls.__name__} 注入失败（不破管）：{e}")
+
+        # G5 轨道二：基于演示环境情报首次派生平台建议（透明标注，共享池）
+        try:
+            generated = await platform_insight_store.generate_from_environment(tenant_id="default")
+            logger.info(f"💡 平台建议派生：{generated} 条（基于演示环境情报）")
+        except Exception as e:
+            logger.warning(f"⚠️ 平台建议派生失败（不破管）：{e}")
 
     yield
     scheduler.stop()

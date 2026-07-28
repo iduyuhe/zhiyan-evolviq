@@ -1,13 +1,14 @@
 """轻量统一事件总线（Unified Namespace, UNS）
 
 六路感知归一接入（与战略文档 §3.3 事件 schema 一致，v30 五路→六路）：
-    channel : gateway | system | human | social | meeting | collab | environment
-    source  : opcua://line-3 | erp://sap/mm | wecom://group-x | env://policy/miit
-    type    : sensor_reading | business_event | tacit_judgment | decision_rationale | collab_message | env_signal
+    channel : gateway | system | human | social | meeting | collab | environment | platform_insight
+    source  : opcua://line-3 | erp://sap/mm | wecom://group-x | env://policy/miit | platform://zhiyan/suggestion
+    type    : sensor_reading | business_event | tacit_judgment | decision_rationale | collab_message | env_signal | platform_insight
     payload : {...结构化字段...}
     entities: [LINE:3, DEV:hyd-105, MAT:CAP-001, SUP:A, EMP:zhang]
     confidence / ts
     credibility : official | authoritative | general —— 仅⑥ environment 路必填（F4 可信治理）
+                platform —— G5 轨道二平台建议专用（透明标注，绝不伪装成官方情报，F4 红线）
 
 职责：
 - 五路信号同 schema 归一入总线，可查可回溯（query / channel_counts / recent）。
@@ -38,6 +39,7 @@ CHANNEL_SOCIAL = "social"
 CHANNEL_MEETING = "meeting"
 CHANNEL_COLLAB = "collab"
 CHANNEL_ENVIRONMENT = "environment"
+CHANNEL_PLATFORM_INSIGHT = "platform_insight"
 
 ALL_CHANNELS = (
     CHANNEL_GATEWAY,
@@ -47,6 +49,7 @@ ALL_CHANNELS = (
     CHANNEL_MEETING,
     CHANNEL_COLLAB,
     CHANNEL_ENVIRONMENT,
+    CHANNEL_PLATFORM_INSIGHT,
 )
 
 # ---- F4 可信治理：credibility 分级（仅 environment 路必填）----
@@ -54,6 +57,8 @@ CRED_OFFICIAL = "official"          # 官方发布（部委/交易所/标准机�
 CRED_AUTHORITATIVE = "authoritative"  # 权威媒体/行业协会 → 进 _needs_review
 CRED_GENERAL = "general"            # 一般来源 → 进 _needs_review
 CREDIBILITY_LEVELS = (CRED_OFFICIAL, CRED_AUTHORITATIVE, CRED_GENERAL)
+# G5 轨道二：智衍平台建议专用可信标签（透明标注，与 official 真实情报严格区分，F4 红线）
+CRED_PLATFORM = "platform"
 
 # 结构化 machine 状态 tag 前缀（前缀猜测模式下路由到 machine holon）
 MACHINE_STATE_PREFIXES = (
@@ -179,6 +184,17 @@ class UnifiedNamespace:
     def publish_environment(self, source, payload, entities=None, type="env_signal", confidence=1.0, credibility=CRED_GENERAL):
         """第⑥路环境感知：外部世界信号（政策/行情/对标等），credibility 必填（F4 可信治理）。"""
         return self.publish(CHANNEL_ENVIRONMENT, source, type, payload, entities, confidence, credibility=credibility)
+
+    def publish_platform_insight(self, source, payload, entities=None, type="platform_insight", confidence=1.0, tenant_id=None):
+        """G5 轨道二：智衍平台基于真实情报生成的建议/解读（透明标注 credibility=platform）。
+
+        与 environment 路（真实外部情报）严格分离——绝不在 platform_insight 通道伪装官方情报（F4 红线）。
+        每条建议的 payload 须带 based_on 透明溯源其依据的真实情报；credibility 固定为 platform。
+        """
+        return self.publish(
+            CHANNEL_PLATFORM_INSIGHT, source, type, payload, entities, confidence,
+            credibility=CRED_PLATFORM, tenant_id=tenant_id,
+        )
 
     # ---------------- 路由：结构化状态 → twin_feed（韧性降级）----------------
     def _route_to_twin(self, ev: UNSEvent) -> None:

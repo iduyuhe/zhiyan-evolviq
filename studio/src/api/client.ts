@@ -983,6 +983,7 @@ export interface EnvSignal {
   payload?: Record<string, any>;
   entities?: string[];
   ts?: number;
+  kind?: string;  // 'intelligence' = 真实外部情报 | 'platform_insight' = 智衍平台建议（G5 轨道二）
 }
 
 export async function getEnvironmentOverview(): Promise<{
@@ -1068,6 +1069,7 @@ export async function getEnvQuota(): Promise<EnvQuotaView> {
 
 export async function getEnvFeed(n = 30): Promise<{
   tenant_id: string; signals: EnvSignal[]; pool_size: number; visible: number;
+  platform_insight_count?: number;
   quota?: { unlimited?: boolean; used?: number; limit?: number; remaining?: number;
     truncated?: number; exhausted?: boolean; upgrade_hint?: string | null };
 }> {

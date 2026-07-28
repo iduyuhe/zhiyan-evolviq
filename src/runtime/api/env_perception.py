@@ -34,6 +34,7 @@ from src.runtime.env_subscription_store import QuotaExceeded, env_subscription_s
 from src.runtime.uns import uns, CHANNEL_ENVIRONMENT
 from src.runtime.unlock_map import progress_view
 from src.runtime.usage_meter import usage_meter
+from src.runtime.platform_insight_store import platform_insight_store
 
 logger = logging.getLogger(__name__)
 
@@ -62,12 +63,24 @@ async def test_source(name: str):
 
 @router.post("/sources/{name}/pull")
 async def pull_source(name: str, limit: int = 10):
-    return await env_manager.pull(name, limit=limit)
+    result = await env_manager.pull(name, limit=limit)
+    # G5 轨道二：拉取真实情报后派生平台建议（去重幂等，透明标注 platform）
+    try:
+        await platform_insight_store.generate_from_environment(tenant_id="default")
+    except Exception as e:
+        logger.warning(f"⚠️ 平台建议派生失败（不破管）：{e}")
+    return result
 
 
 @router.post("/pull")
 async def pull_all(limit: int = 10):
-    return await env_manager.pull_all(limit=limit)
+    result = await env_manager.pull_all(limit=limit)
+    # G5 轨道二：拉取真实情报后派生平台建议（去重幂等，透明标注 platform）
+    try:
+        await platform_insight_store.generate_from_environment(tenant_id="default")
+    except Exception as e:
+        logger.warning(f"⚠️ 平台建议派生失败（不破管）：{e}")
+    return result
 
 
 @router.get("/signals")
@@ -176,13 +189,57 @@ async def tenant_feed(n: int = 50):
 
     免费额度（#309）：当日去重后新信号 ≤ ZHIYAN_FREE_DAILY_SIGNALS（默认 50）。
     超限不 402（避免面板轮询雪崩）——截断下发并在 quota.exhausted 提示升级。
+
+    G5 轨道二（#314）：合并「平台建议」（kind=platform_insight）与真实情报（kind=intelligence）
+    相邻呈现。平台建议由智衍平台基于真实情报派生、透明标注、不计入外部信号日额度。
     """
     tenant = get_current_tenant()
     pool = uns.query(channel=CHANNEL_ENVIRONMENT, n=max(n * 3, 100))
     filtered = env_subscription_store.filter_signals(tenant, pool, _known_source_names())
     allowed, quota = await usage_meter.consume_signals(tenant, filtered[-n:])
-    return {"tenant_id": tenant, "signals": allowed, "pool_size": len(pool),
-            "visible": len(filtered), "quota": quota}
+
+    # 真实情报打 kind=intelligence
+    intel = [{**s, "kind": "intelligence"} for s in allowed]
+
+    # 平台建议（共享池）→ 归一为与信号同形结构，kind=platform_insight
+    insights = platform_insight_store.list_for(tenant_id="default", n=n)
+    insight_items = [
+        {
+            "id": ins["id"],
+            "source": "platform://zhiyan/suggestion",
+            "credibility": "platform",
+            "payload": {
+                "title": ins["title"],
+                "content": ins["content"],
+                "based_on": ins.get("based_on", []),
+            },
+            "entities": [b.get("title", "") for b in ins.get("based_on", []) if isinstance(b, dict)],
+            "ts": ins["ts"],
+            "kind": "platform_insight",
+        }
+        for ins in insights
+    ]
+
+    # 相邻呈现：真实情报 + 平台建议按 ts 倒序合并（平台建议不挤占外部信号日额度）
+    merged = sorted(intel + insight_items, key=lambda x: x.get("ts") or 0, reverse=True)[:n]
+    return {
+        "tenant_id": tenant,
+        "signals": merged,
+        "pool_size": len(pool),
+        "visible": len(filtered),
+        "platform_insight_count": len(insight_items),
+        "quota": quota,
+    }
+
+
+@router.get("/platform-insights")
+async def list_platform_insights(n: int = 50):
+    """G5 轨道二：平台建议列表（智衍平台基于真实情报透明派生，credibility=platform）。
+
+    共享池：对所有租户可见，不含任何租户私有信息。每条带 based_on 透明溯源其依据的真实情报。
+    """
+    items = platform_insight_store.list_for(tenant_id="default", n=n)
+    return {"tenant_id": "default", "count": len(items), "insights": items}
 
 
 @router.get("/quota")
