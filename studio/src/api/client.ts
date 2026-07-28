@@ -1086,6 +1086,32 @@ export async function pullEnvSources(limit = 10): Promise<Record<string, any>> {
   return res.json();
 }
 
+// ============ S3-1 行为埋点（#315）============
+
+/**
+ * 行为埋点上报（fire-and-forget）：任何失败都静默吞掉，绝不影响 UI 主流程。
+ * 🔴 隐私边界：只上报事件类型 + 轻量对象标识，不上报业务数据/PII。
+ */
+export function trackBehavior(
+  eventType: string,
+  objectKind?: string,
+  objectId?: string,
+  meta?: Record<string, unknown>,
+): void {
+  try {
+    void fetch(`${API_BASE}/behavior/event`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({
+        event_type: eventType,
+        object_kind: objectKind ?? null,
+        object_id: objectId ?? null,
+        meta: meta ?? null,
+      }),
+    }).catch(() => { /* 静默：埋点失败≠业务失败 */ });
+  } catch { /* 静默 */ }
+}
+
 // ============ 无感转型三圈解锁进度（S2-3，#310） ============
 
 export interface UnlockCircle {

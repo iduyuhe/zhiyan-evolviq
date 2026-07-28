@@ -59,3 +59,4 @@ scripts/gen_cover_risk_gov.py
 # ===================== Local frontend config =====================
 studio/vite.local.ts
 outputs/
+_sync.bundle

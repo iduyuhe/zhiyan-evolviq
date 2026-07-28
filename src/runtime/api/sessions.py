@@ -6,11 +6,32 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
 from src.runtime.agent.engine import AgentEngine
+from src.runtime.behavior_store import behavior_store
 from src.runtime.persistence import get_session as db_get_session, list_sessions as db_list_sessions
 from src.runtime.api.deps import get_tenant
 from src.runtime.usage_meter import UsageExceeded, usage_meter
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
+
+
+async def _track_session_start(tenant: str, mode: str, goal: str, agent: str | None = None) -> None:
+    """S3-1 行为埋点：agent 会话起点钩子（#315）。fire-and-forget，绝不阻断主流程。"""
+    await behavior_store.record(
+        tenant_id=tenant,
+        event_type="agent_session",
+        object_kind="agent",
+        object_id=agent or mode,
+        meta={"mode": mode, "goal": (goal or "")[:80]},
+    )
+
+
+def _routed_agent(engine: AgentEngine, session_id: str) -> str | None:
+    """从引擎会话里取路由到的 agent 名（结构不确定时安全返回 None）。"""
+    try:
+        info = engine.get_session(session_id) or {}
+        return info.get("agent")
+    except Exception:
+        return None
 
 
 async def _meter_insight(tenant: str) -> None:
@@ -55,6 +76,7 @@ async def quick_check(req: CreateSessionRequest, tenant: str = Depends(get_tenan
     engine = get_engine()
     session_id = str(uuid.uuid4())
     plan = await engine.plan(session_id, req.goal, req.auth_boundary_id, tenant_id=tenant)
+    await _track_session_start(tenant, "quick_check", req.goal, _routed_agent(engine, session_id))
     result = await engine.execute(session_id, tenant_id=tenant)
     return {
         "tenant_id": tenant,
@@ -71,6 +93,7 @@ async def create_session(req: CreateSessionRequest, tenant: str = Depends(get_te
     engine = get_engine()
     session_id = str(uuid.uuid4())
     plan = await engine.plan(session_id, req.goal, req.auth_boundary_id, tenant_id=tenant)
+    await _track_session_start(tenant, "session", req.goal, _routed_agent(engine, session_id))
     return {
         "tenant_id": tenant,
         "session_id": session_id,
@@ -122,6 +145,7 @@ async def create_multi_agent_session(req: CreateSessionRequest, tenant: str = De
     engine = get_engine()
     session_id = str(uuid.uuid4())
     plan = await engine.plan_multi(session_id, req.goal, req.auth_boundary_id, tenant_id=tenant)
+    await _track_session_start(tenant, "multi_agent", req.goal)
     return {
         "tenant_id": tenant,
         "session_id": session_id,

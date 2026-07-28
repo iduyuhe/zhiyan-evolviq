@@ -56,24 +56,24 @@ async def _tenant_admin_token(username: str, tenant_id: str) -> str:
 # ---------- 脱敏管道 ----------
 
 class TestDesensitize:
-    def test_strips_tenant_name_and_email(self):
+    async def test_strips_tenant_name_and_email(self):
         out = desensitize("上海杜特企业管理咨询有限公司 联系 duyuhe@dute.com", "上海杜特企业管理咨询有限公司")
         assert "上海杜特企业管理咨询有限公司" not in out
         assert "duyuhe@dute.com" not in out
         assert "〔租户〕" in out
         assert "〔邮箱〕" in out
 
-    def test_strips_phone_and_bank(self):
+    async def test_strips_phone_and_bank(self):
         out = desensitize("手机13800138000 卡号6222021234567890123")
         assert "13800138000" not in out
         assert "6222021234567890123" not in out
         assert "〔手机〕" in out and "〔卡号〕" in out
 
-    def test_empty_returns_empty(self):
+    async def test_empty_returns_empty(self):
         assert desensitize(None) == ""
         assert desensitize("") == ""
 
-    def test_idcard_redacted(self):
+    async def test_idcard_redacted(self):
         out = desensitize("身份证 11010119900307123X")
         assert "11010119900307123X" not in out
         assert "〔证件号〕" in out

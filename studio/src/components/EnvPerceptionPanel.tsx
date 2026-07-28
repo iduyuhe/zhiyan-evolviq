@@ -18,6 +18,7 @@ import {
   deleteEnvSubscription,
   getEnvFeed,
   pullEnvSources,
+  trackBehavior,
   EnvSourceStatus,
   EnvSubscription,
   EnvSignal,
@@ -301,11 +302,16 @@ export default function EnvPerceptionPanel() {
     }
   }, []);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => {
+    refresh();
+    // S3-1 行为埋点（#315）：打开信号面板 = 一次「查看信号流」（fire-and-forget）
+    trackBehavior('signal_view', 'panel', 'env_perception');
+  }, [refresh]);
 
   const onPull = async () => {
     setPulling(true);
     setPullMsg('');
+    trackBehavior('signal_pull', 'panel', 'env_perception');
     try {
       await pullEnvSources(10);
       setPullMsg('✅ 已拉取全部源');

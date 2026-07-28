@@ -21,6 +21,7 @@ from src.runtime.api import connectivity as connectivity_api  # 配置 UI 连通
 from src.runtime.api import env_perception as env_perception_api  # 环境感知第⑥路（v30.0 α）
 from src.runtime.api import bom as bom_api  # BOM 上传+毛利影响测算（S2-5 #311）
 from src.runtime.api import feedback as feedback_api  # 共生进化环反馈入口（S2-6 #313）
+from src.runtime.api import behavior as behavior_api  # S3-1 行为埋点基座（#315）
 # v30.0：隐式导入注册 UNS environment 路订阅者（import 即注册，无 lifespan 依赖）
 import src.runtime.env_sources  # noqa: F401  管理器单例
 import src.runtime.env_perception  # noqa: F401  分级门管道
@@ -95,6 +96,10 @@ async def lifespan(app: FastAPI):
     # S2 v30.5 β：平台建议存储（#314 G5 轨道二 platform_insight；db 不可用时降级内存态）
     from src.runtime.platform_insight_store import platform_insight_store
     await platform_insight_store.init()
+
+    # S3-1 v31 γ：行为埋点基座（#315；为推荐层1-4 与共生环供血；db 不可用时降级内存态）
+    from src.runtime.behavior_store import behavior_store
+    await behavior_store.init()
     logger.info("💡 平台建议存储已初始化（G5 轨道二 · 透明标注平台建议）")
 
     # 企业认证：确保超级管理员账号存在（DB 不可用时降级内存态；测试可直接调用）
@@ -287,6 +292,7 @@ app.include_router(connectivity_api.router, dependencies=_AUTH_DEPS)  # 配置 U
 app.include_router(env_perception_api.router)  # 环境感知第⑥路（v30.0 α）— 路由自带 Depends(require_auth)
 app.include_router(bom_api.router)  # BOM 上传+毛利影响（S2-5 #311）— 路由自带 Depends(require_auth)
 app.include_router(feedback_api.router)  # 共生进化环反馈入口（S2-6 #313）— 路由自带 Depends(require_auth)
+app.include_router(behavior_api.router)  # S3-1 行为埋点基座（#315）— 路由自带 Depends(require_auth)
 
 
 if __name__ == "__main__":
