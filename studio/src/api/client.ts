@@ -942,3 +942,117 @@ export async function addDataSource(
   return res.json();
 }
 
+
+// ============ 环境感知第⑥路（S2 v30.5 β 租户订阅规则） ============
+
+export interface EnvSourceStatus {
+  name: string;
+  kind: string;
+  label: string;
+  credibility: string;
+  enabled: boolean;
+  mode: string;          // live | simulated
+  last_mode?: string | null;
+  last_pull_ts?: number | null;
+  error?: string | null;
+}
+
+export interface EnvSubscription {
+  id: string | null;
+  tenant_id: string;
+  source_name: string;
+  enabled: boolean;
+  credibility_min: string;
+  keywords_include: string[];
+  keywords_exclude: string[];
+  poll_interval_sec: number;
+  is_default?: boolean;
+}
+
+export interface EnvSubscriptionsView {
+  tenant_id: string;
+  subscriptions: EnvSubscription[];
+  enabled_count: number;
+  free_max_sources: number;
+}
+
+export interface EnvSignal {
+  id?: string;
+  source?: string;
+  credibility?: string;
+  payload?: Record<string, any>;
+  entities?: string[];
+  ts?: number;
+}
+
+export async function getEnvironmentOverview(): Promise<{
+  sources: EnvSourceStatus[];
+  signal_count: number;
+  review: Record<string, number>;
+}> {
+  const res = await fetch(`${API_BASE}/environment`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function testEnvSource(name: string): Promise<ConnectivityTestResult & { name?: string }> {
+  const res = await fetch(`${API_BASE}/environment/sources/${name}/test`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function listEnvSubscriptions(): Promise<EnvSubscriptionsView> {
+  const res = await fetch(`${API_BASE}/environment/subscriptions`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+/** 保存订阅规则。后端「先测试后保存」闸门：测试失败返回 409（可 force），超免费额度返回 402。 */
+export async function saveEnvSubscription(
+  sourceName: string,
+  body: {
+    enabled: boolean;
+    credibility_min: string;
+    keywords_include: string[];
+    keywords_exclude: string[];
+    poll_interval_sec: number;
+    force?: boolean;
+  },
+): Promise<{ status: string; subscription: EnvSubscription; test: ConnectivityTestResult | null }> {
+  const res = await fetch(`${API_BASE}/environment/subscriptions/${sourceName}`, {
+    method: 'PUT', headers: authHeaders(), body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    const err = new Error(text) as Error & { status?: number };
+    err.status = res.status;
+    throw err;
+  }
+  return res.json();
+}
+
+export async function deleteEnvSubscription(
+  sourceName: string,
+): Promise<{ status: string; source_name: string; fallback: string }> {
+  const res = await fetch(`${API_BASE}/environment/subscriptions/${sourceName}`, {
+    method: 'DELETE', headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function getEnvFeed(n = 30): Promise<{
+  tenant_id: string; signals: EnvSignal[]; pool_size: number; visible: number;
+}> {
+  const res = await fetch(`${API_BASE}/environment/feed?n=${n}`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function pullEnvSources(limit = 10): Promise<Record<string, any>> {
+  const res = await fetch(`${API_BASE}/environment/pull?limit=${limit}`, {
+    method: 'POST', headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}

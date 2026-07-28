@@ -29,6 +29,7 @@ import TenantSwitcher from './components/TenantSwitcher';
 import TenantManagement from './components/TenantManagement';
 import WritebackPanel from './components/WritebackPanel';
 import ConnectivityPanel from './components/ConnectivityPanel';
+import EnvPerceptionPanel from './components/EnvPerceptionPanel';
 import { createSession, approveSession, quickCheck, authHeaders } from './api/client';
 import type { Session, ExecutionResult } from './api/client';
 import Login from './components/Login';
@@ -459,7 +460,7 @@ export default function App() {
           {tab === 'twin' && <TwinDashboard />}
           {tab === 'writeback' && <WritebackPanel />}
           {tab === 'tenant' && <TenantManagement />}
-          {tab === 'connect' && <ConnectivityPanel />}
+          {tab === 'connect' && (<><EnvPerceptionPanel /><ConnectivityPanel /></>)}
         </main>
       )}
 
