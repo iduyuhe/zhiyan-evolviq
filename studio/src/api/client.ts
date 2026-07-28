@@ -1496,3 +1496,44 @@ export async function escalateFeedback(fbId: string): Promise<{
   return res.json();
 }
 
+// ============ S3-7 体外感知大屏（#321，第⑥路环境感知全息化） ============
+
+export interface ExternalSourceStatus {
+  name: string;
+  kind: string;
+  label: string;
+  credibility: string;
+  enabled: boolean;
+  mode: string;
+  last_mode?: string | null;
+  last_pull_ts?: number | null;
+  error?: string | null;
+}
+
+export interface ExternalRecentSignal {
+  id: string | null;
+  source: string | null;
+  credibility: string | null;
+  category: string | null;
+  title: string;
+  ts: number | null;
+}
+
+export interface ExternalPerceptionView {
+  signal_count: number;
+  category_distribution: Record<string, number>;
+  credibility_distribution: Record<string, number>;
+  category_labels: Record<string, string>;
+  credibility_labels: Record<string, string>;
+  sources: ExternalSourceStatus[];
+  review: { pending: number; approved: number; rejected: number; total: number };
+  recent_signals: ExternalRecentSignal[];
+}
+
+/** 孪生大屏「体外感知」视图数据（第⑥路环境感知全息聚合） */
+export async function getTwinExternalPerception(): Promise<ExternalPerceptionView> {
+  const res = await fetch(`${API_BASE}/twin/external-perception`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+

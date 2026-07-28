@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { authHeaders, apiUrl } from '../api/client';
+import { authHeaders, apiUrl, getTwinExternalPerception } from '../api/client';
+import type { ExternalPerceptionView } from '../api/client';
 
 interface DashboardData {
   uns: { channel_counts: Record<string, number>; recent_events: any[]; total_events: number };
@@ -80,16 +81,23 @@ const CHANNEL_ICONS: Record<string, string> = {
 
 export default function TwinDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
+  const [external, setExternal] = useState<ExternalPerceptionView | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   const fetchData = useCallback(async () => {
     try {
-      const r = await fetch(apiUrl('/twin/dashboard'), { headers: authHeaders() });
-      if (r.ok) {
-        setData(await r.json());
-        setLastUpdated(new Date());
+      const [rDash, rExt] = await Promise.all([
+        fetch(apiUrl('/twin/dashboard'), { headers: authHeaders() }),
+        getTwinExternalPerception(),
+      ]);
+      if (rDash.ok) {
+        setData(await rDash.json());
       }
+      if (rExt) {
+        setExternal(rExt);
+      }
+      setLastUpdated(new Date());
     } catch {
       /* ignore */
     } finally {
@@ -199,6 +207,121 @@ export default function TwinDashboard() {
         <StatCard icon="📊" label="KG 待审批" value={kg?.drafts || 0} sub={`${kg?.corrections || 0} 纠错待审`} color="bg-violet-50" />
         <StatCard icon="🔄" label="后果校验" value={con?.stats.total_consequences || 0} sub={`${((con?.stats.match_rate || 0) * 100).toFixed(0)}% 合规率`} color="bg-emerald-50" />
         <StatCard icon="🧠" label="经验记录" value={exp?.total_records || 0} sub={`${exp?.outcomes || 0} 后果反馈`} color="bg-amber-50" />
+      </div>
+
+      {/* 体外感知（第⑥路环境感知）=== */}
+      <div className="card border-l-4 border-l-sky-500 bg-sky-50/40">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-semibold text-gray-800">
+            🛰️ 体外感知 · 第⑥路环境感知
+            <span className="ml-2 text-[10px] text-gray-400 font-normal">封闭系统 → 物理世界开放系统</span>
+          </h3>
+          <span className="text-[10px] text-gray-400">
+            {external?.signal_count || 0} 体外信号 · {external?.sources?.length || 0} 官方源
+          </span>
+        </div>
+
+        {/* 体外感知总览卡 */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <StatCard icon="🛰️" label="体外信号总量" value={external?.signal_count || 0} sub="UNS environment 路" color="bg-sky-50" />
+          <StatCard icon="🏛️" label="官方源" value={external?.sources?.length || 0} sub="政策/行情/对标" color="bg-indigo-50" />
+          <StatCard icon="🔍" label="待审信号" value={external?.review?.pending || 0} sub="非官方需人工锚定" color="bg-amber-50" />
+          <StatCard icon="🛡️" label="可信度分级" value={Object.keys(external?.credibility_distribution || {}).length} sub="官方为锚" color="bg-emerald-50" />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* 三官方源健康 */}
+          <div className="card bg-white">
+            <h4 className="text-xs font-semibold text-gray-700 mb-3">🏛️ 三官方源健康</h4>
+            {external?.sources && external.sources.length > 0 ? (
+              <div className="space-y-2">
+                {external.sources.map((s) => (
+                  <div key={s.name} className="flex items-center gap-3 p-2 rounded-lg bg-gray-50 border border-gray-100">
+                    <span className={`w-2 h-2 rounded-full ${s.enabled ? 'bg-green-500' : 'bg-red-400'}`} />
+                    <span className="text-xs font-medium text-gray-700 w-24 truncate">{s.label || s.name}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                      s.mode === 'live' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'
+                    }`}>{s.mode === 'live' ? '实时' : '演示'}</span>
+                    <span className="text-[10px] text-gray-400 ml-auto">
+                      {s.last_pull_ts ? `拉取 ${new Date(s.last_pull_ts * 1000).toLocaleTimeString('zh-CN')}` : '未拉取'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-400 text-center py-6">环境源管理器尚未初始化</p>
+            )}
+          </div>
+
+          {/* 六维感知覆盖 */}
+          <div className="card bg-white">
+            <h4 className="text-xs font-semibold text-gray-700 mb-3">📡 六维感知覆盖</h4>
+            {external && Object.keys(external.category_distribution).length > 0 ? (
+              <div className="space-y-2.5">
+                {Object.entries(external.category_distribution)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([cat, cnt]) => (
+                    <TwoColorBar
+                      key={cat}
+                      value={cnt}
+                      total={Math.max(...Object.values(external.category_distribution))}
+                      label={external.category_labels?.[cat] || cat}
+                      colorA="bg-sky-500"
+                      colorB="bg-gray-200"
+                    />
+                  ))}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-400 text-center py-6">暂无体外信号，配置真实源或手动拉取即可见</p>
+            )}
+          </div>
+        </div>
+
+        {/* 可信度分级 + 最近体外信号流 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+          <div className="card bg-white">
+            <h4 className="text-xs font-semibold text-gray-700 mb-3">🛡️ 可信度分级分布（F4 治理）</h4>
+            {external && Object.keys(external.credibility_distribution).length > 0 ? (
+              <div className="space-y-2.5">
+                {Object.entries(external.credibility_distribution)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([cred, cnt]) => (
+                    <TwoColorBar
+                      key={cred}
+                      value={cnt}
+                      total={Math.max(...Object.values(external.credibility_distribution))}
+                      label={external.credibility_labels?.[cred] || cred}
+                      colorA="bg-emerald-500"
+                      colorB="bg-gray-200"
+                    />
+                  ))}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-400 text-center py-6">暂无分级数据</p>
+            )}
+          </div>
+
+          <div className="card bg-white">
+            <h4 className="text-xs font-semibold text-gray-700 mb-3">📨 最近体外信号</h4>
+            <div className="max-h-44 overflow-y-auto space-y-1">
+              {(external?.recent_signals || []).map((s, i) => (
+                <div key={s.id || i} className="flex items-center gap-2 text-[11px] p-1.5 rounded bg-gray-50">
+                  <span className={`px-1 py-0.5 rounded text-[9px] font-medium ${
+                    s.credibility === 'official' ? 'bg-emerald-100 text-emerald-700' :
+                    s.credibility === 'authoritative' ? 'bg-blue-100 text-blue-700' :
+                    s.credibility === 'platform' ? 'bg-violet-100 text-violet-700' : 'bg-gray-100 text-gray-600'
+                  }`}>{external?.credibility_labels?.[s.credibility || ''] || s.credibility || '—'}</span>
+                  <span className="text-gray-300">·</span>
+                  <span className="text-gray-500 truncate max-w-[70px]">{external?.category_labels?.[s.category || ''] || s.category || s.source}</span>
+                  <span className="text-gray-600 truncate flex-1">{s.title || '（无标题）'}</span>
+                </div>
+              ))}
+              {(external?.recent_signals || []).length === 0 && (
+                <p className="text-xs text-gray-400 text-center py-4">暂无体外信号</p>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* 网关状态 + 通道分布 === */}
