@@ -32,6 +32,7 @@ from src.runtime.env_perception import env_review
 from src.runtime import env_subscription_store as _sub_mod
 from src.runtime.env_subscription_store import QuotaExceeded, env_subscription_store
 from src.runtime.uns import uns, CHANNEL_ENVIRONMENT
+from src.runtime.usage_meter import usage_meter
 
 logger = logging.getLogger(__name__)
 
@@ -170,9 +171,28 @@ async def delete_subscription(source_name: str):
 
 @router.get("/feed")
 async def tenant_feed(n: int = 50):
-    """租户可见环境信号流：平台信号池 × 本租户订阅规则（语义隔离）。"""
+    """租户可见环境信号流：平台信号池 × 本租户订阅规则（语义隔离）× 日额度计量。
+
+    免费额度（#309）：当日去重后新信号 ≤ ZHIYAN_FREE_DAILY_SIGNALS（默认 50）。
+    超限不 402（避免面板轮询雪崩）——截断下发并在 quota.exhausted 提示升级。
+    """
     tenant = get_current_tenant()
     pool = uns.query(channel=CHANNEL_ENVIRONMENT, n=max(n * 3, 100))
     filtered = env_subscription_store.filter_signals(tenant, pool, _known_source_names())
-    return {"tenant_id": tenant, "signals": filtered[-n:], "pool_size": len(pool),
-            "visible": len(filtered)}
+    allowed, quota = await usage_meter.consume_signals(tenant, filtered[-n:])
+    return {"tenant_id": tenant, "signals": allowed, "pool_size": len(pool),
+            "visible": len(filtered), "quota": quota}
+
+
+@router.get("/quota")
+async def tenant_quota():
+    """当前租户免费额度视图（源数 + 日信号 + 月解读；#310 解锁进度视图消费）。"""
+    tenant = get_current_tenant()
+    view = usage_meter.view(tenant)
+    names = _known_source_names()
+    view["metrics"]["env_sources"] = {
+        "used": env_subscription_store.enabled_count(tenant, names),
+        "limit": None if view["unlimited"] else _sub_mod.FREE_MAX_SOURCES,
+        "period": "static",
+    }
+    return view

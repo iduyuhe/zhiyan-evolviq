@@ -1041,8 +1041,35 @@ export async function deleteEnvSubscription(
   return res.json();
 }
 
+export interface EnvQuotaMetric {
+  used: number;
+  limit: number | null;      // null = 不限量（信任爬梯③已达 / default 租户）
+  remaining?: number | null;
+  period: string;
+}
+
+export interface EnvQuotaView {
+  tenant_id: string;
+  unlimited: boolean;
+  upgrade_hint: string | null;
+  metrics: {
+    daily_signals: EnvQuotaMetric;
+    monthly_insights: EnvQuotaMetric;
+    env_sources: EnvQuotaMetric;
+  };
+}
+
+/** 免费额度视图（源数/日信号/月解读）——#310 解锁进度视图消费 */
+export async function getEnvQuota(): Promise<EnvQuotaView> {
+  const res = await fetch(`${API_BASE}/environment/quota`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
 export async function getEnvFeed(n = 30): Promise<{
   tenant_id: string; signals: EnvSignal[]; pool_size: number; visible: number;
+  quota?: { unlimited?: boolean; used?: number; limit?: number; remaining?: number;
+    truncated?: number; exhausted?: boolean; upgrade_hint?: string | null };
 }> {
   const res = await fetch(`${API_BASE}/environment/feed?n=${n}`, { headers: authHeaders() });
   if (!res.ok) throw new Error(await res.text());

@@ -75,6 +75,11 @@ async def lifespan(app: FastAPI):
     await env_subscription_store.init()
     logger.info("🌐 环境订阅规则存储已初始化（抓取共享、语义隔离）")
 
+    # S2 v30.5 β：免费额度计量器（#309，日信号/月解读；db 不可用时降级内存态）
+    from src.runtime.usage_meter import usage_meter
+    await usage_meter.init()
+    logger.info("📊 免费额度计量器已初始化（日信号/月解读）")
+
     # 企业认证：确保超级管理员账号存在（DB 不可用时降级内存态；测试可直接调用）
     from src.runtime.authn.service import authn_service
     await authn_service.ensure_admin()

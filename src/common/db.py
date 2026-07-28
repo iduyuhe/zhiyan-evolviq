@@ -67,7 +67,7 @@ async def init_db() -> bool:
     if engine is None:
         configure_db()
     # 确保领域模型类已注册到 Base.metadata（否则 create_all 建不出表）
-    from src.runtime.models import agent_session, env_subscription, supply_chain, tenant  # noqa: F401
+    from src.runtime.models import agent_session, env_subscription, supply_chain, tenant, tenant_usage  # noqa: F401
     from src.runtime.authn import models as _authn_models  # noqa: F401  (注册 users 表)
     # 1) 先试配置的目标库
     try:

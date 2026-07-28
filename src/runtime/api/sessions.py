@@ -8,8 +8,21 @@ from pydantic import BaseModel
 from src.runtime.agent.engine import AgentEngine
 from src.runtime.persistence import get_session as db_get_session, list_sessions as db_list_sessions
 from src.runtime.api.deps import get_tenant
+from src.runtime.usage_meter import UsageExceeded, usage_meter
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
+
+
+async def _meter_insight(tenant: str) -> None:
+    """免费额度：agent 解读计量（#309 S2-1b）。
+
+    三个规划入口各计 1 次（/sessions、/quick-check、/multi-agent）；
+    超限 402 + 信任爬梯③升级文案。default 租户/已接内部数据源租户免计量。
+    """
+    try:
+        await usage_meter.consume_insight(tenant)
+    except UsageExceeded as e:
+        raise HTTPException(status_code=402, detail=str(e))
 
 
 class CreateSessionRequest(BaseModel):
@@ -38,6 +51,7 @@ def get_engine() -> AgentEngine:
 @router.post("/quick-check")
 async def quick_check(req: CreateSessionRequest, tenant: str = Depends(get_tenant)):
     """一键快速检查（跳过规划预览，直接执行）"""
+    await _meter_insight(tenant)
     engine = get_engine()
     session_id = str(uuid.uuid4())
     plan = await engine.plan(session_id, req.goal, req.auth_boundary_id, tenant_id=tenant)
@@ -53,6 +67,7 @@ async def quick_check(req: CreateSessionRequest, tenant: str = Depends(get_tenan
 @router.post("")
 async def create_session(req: CreateSessionRequest, tenant: str = Depends(get_tenant)):
     """创建Agent执行会话——人输入目标，Agent开始规划"""
+    await _meter_insight(tenant)
     engine = get_engine()
     session_id = str(uuid.uuid4())
     plan = await engine.plan(session_id, req.goal, req.auth_boundary_id, tenant_id=tenant)
@@ -103,6 +118,7 @@ async def create_multi_agent_session(req: CreateSessionRequest, tenant: str = De
     - 单 Agent (`/sessions`)：route_goal() → 单一 Agent 生成 plan
     - 多 Agent (`/sessions/multi-agent`)：GoalDecomposer → OrchestratorPlan → 多 Agent 并行规划
     """
+    await _meter_insight(tenant)
     engine = get_engine()
     session_id = str(uuid.uuid4())
     plan = await engine.plan_multi(session_id, req.goal, req.auth_boundary_id, tenant_id=tenant)
