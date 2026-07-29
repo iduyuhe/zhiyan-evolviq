@@ -19,7 +19,9 @@ from src.agents.base import BaseAgent
 logger = logging.getLogger(__name__)
 
 # 🔴 真实锚定名片段（与测试 / 各 agent 匿名铁律完全一致）
-LEAK_TOKENS = ["中兴", "000063", "ZTE", "zte"]
+# 2026-07-29 腿 B 首客 P3 扩展：第 2 案例（半导体·case_semicon_2026）真名片段一并封禁
+LEAK_TOKENS = ["中兴", "000063", "ZTE", "zte",
+               "中芯", "688981", "00981", "SMIC", "smic"]
 
 
 class ComplianceReviewerAgent(BaseAgent):
@@ -38,6 +40,15 @@ class ComplianceReviewerAgent(BaseAgent):
         ir = await industry_research_agent.analyze("合规自检：通讯行业研究案例推演")
         checks.append(self._check_leak("industry_research", ir, violations))
         checks.append(self._check_research_case_discipline(ir, violations))
+
+        # 1.5) 🆕 腿 B 首客 P3：半导体案例 + 试点管线（场景 A）零泄漏 + 纪律复核
+        ir2 = await industry_research_agent.analyze(
+            "合规自检：半导体行业研究案例推演（设备健康/能耗孪生试点）",
+            case_id="case_semicon_2026",
+        )
+        checks.append(self._check_leak("industry_research(semicon)", ir2, violations))
+        checks.append(self._check_research_case_discipline(ir2, violations))
+        checks.append(self._check_pilot_ring_discipline(ir2, violations))
 
         # 2) 案例库教学双版边界
         from src.agents.case_curator.agent import case_curator_agent
@@ -102,6 +113,33 @@ class ComplianceReviewerAgent(BaseAgent):
                 "detail": ";".join(bad),
             })
         return {"check": "research_case_discipline", "target": "outer_ring", "passed": ok}
+
+    def _check_pilot_ring_discipline(self, ir: dict, violations: list) -> dict:
+        """🆕 腿 B 首客 P3：试点管线（pilot_ring）research_case 纪律复核。
+
+        场景 agent（pm_maintenance/energy_carbon）在 research_case 模式：
+        actions_taken 恒空（不落工单/任务）+ mode 打标正确。
+        """
+        pilot = ir.get("pilot_ring", {})
+        bad: list[str] = []
+        if not pilot:
+            bad.append("pilot_ring 缺失（试点场景未挂接）")
+        for ag, r in pilot.items():
+            if not isinstance(r, dict):
+                continue
+            if r.get("mode") != "research_case":
+                bad.append(f"{ag}:mode={r.get('mode')}")
+            acts = r.get("actions_taken")
+            if acts not in (None, [], ""):
+                bad.append(f"{ag}:actions_taken 非空（研究案例不得落工单/任务）")
+        ok = not bad
+        if not ok:
+            violations.append({
+                "check": "pilot_ring_discipline",
+                "target": "pilot_ring",
+                "detail": ";".join(bad),
+            })
+        return {"check": "pilot_ring_discipline", "target": "pilot_ring", "passed": ok}
 
     def _check_dual_version_boundary(self, dual: dict, violations: list) -> dict:
         bad: list[str] = []

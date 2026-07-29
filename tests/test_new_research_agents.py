@@ -71,12 +71,17 @@ async def test_case_curator_list_and_teaching_dual_version():
     assert dual["status"] == "completed"
     assert dual["dual_version_count"] >= 1
     # 🔴 external 视图严禁含真名；internal 视图可含
+    seen_ids = set()
     for d in dual["dual_versions"]:
         ext = json.dumps(d["teaching_external"], ensure_ascii=False)
         for tok in LEAK_TOKENS:
             assert tok not in ext, f"❌ teaching_external 外泄真实锚定名 {tok!r}"
-        intv = json.dumps(d["teaching_internal"], ensure_ascii=False)
-        assert "case_telecom_2026" in intv  # internal 视图含 case_id（不含真名片段即可）
+        # internal 视图与 external 同 case_id 且含 real_anchor（双版对称）
+        assert d["teaching_internal"]["case_id"] == d["teaching_external"]["case_id"]
+        assert d["teaching_internal"].get("real_anchor")
+        seen_ids.add(d["teaching_internal"]["case_id"])
+    # 多案例时代（2026-07-29 起）：通讯首例必在，其余案例并存
+    assert "case_telecom_2026" in seen_ids
 
 
 # ===== 4. 4 外圈 agent 支持 mode=research_case =====

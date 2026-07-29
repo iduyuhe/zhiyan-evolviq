@@ -83,11 +83,26 @@ class IndustryResearchAgent(BaseAgent):
                 logger.warning(f"⚠️ 外圈 {ag} 推演失败（不破管）：{e}")
                 outer[ag] = {"status": "skipped", "error": str(e)}
 
+        # 3.5) 🆕 腿 B 首客 P3（2026-07-29 杜总定调）：案例带 pilot_scenario 时调度试点
+        # 场景 agent（如场景 A=pm_maintenance/energy_carbon），同样 research_case 纪律。
+        pilot_scenario = (case or {}).get("pilot_scenario")
+        pilot = {}
+        if pilot_scenario:
+            for ag in pilot_scenario.get("agents", []):
+                try:
+                    pilot[ag] = await execute_by_agent(
+                        ag, f"{self.anon_label}试点场景推演（{pilot_scenario.get('label', '')}）：{goal}",
+                        mode="research_case", case_id=self.case_id,
+                    )
+                except Exception as e:  # 单 agent 失败不破管
+                    logger.warning(f"⚠️ 试点 {ag} 推演失败（不破管）：{e}")
+                    pilot[ag] = {"status": "skipped", "error": str(e)}
+
         # 4) 对齐 real_anchor 校准（内部）——输出仍匿名
         calibration = self._calibrate(profile, outer)
 
         # 5) 汇总（严格净化，绝不外泄真实锚定名）
-        return {
+        result = {
             "status": "completed",
             "mode": "research_case",
             "case_id": self.case_id,
@@ -110,6 +125,22 @@ class IndustryResearchAgent(BaseAgent):
             "derived_insights": self._verify_insights(self._disclosure_facts, self._derived_insights),
             "disclosure_facts_ref": self._anon_facts_ref(self._disclosure_facts),
         }
+        # 🆕 腿 B 首客 P3：试点场景块（含钩子说明；杜总铁律①=外部接口只建钩子不实测）
+        if pilot_scenario:
+            result["pilot_scenario"] = {
+                "scenario": pilot_scenario.get("scenario"),
+                "label": pilot_scenario.get("label"),
+                "decided_at": pilot_scenario.get("decided_at"),
+            }
+            result["pilot_ring"] = {k: self._sanitize(v) for k, v in pilot.items()}
+            result["pilot_hooks"] = {
+                # 网关接口就位（simulated 模式），现场接入后自动切换真实数据源
+                "gateway_mode": "simulated",
+                # 北极星埋点已挂接（record_decision_realization），ZHIYAN_DEMO_DATA=0 后真实率起跳
+                "north_star": "record_decision_realization ready（待现场 ZHIYAN_DEMO_DATA=0 起跳）",
+            }
+        # 🔴 匿名铁律最后一道防线：全量递归擦洗（ANON_SCRUB_MAP，覆盖 SMIC/中芯等一切真名片段）
+        return self._scrub(result)
 
     def _build_anon_profile(self, disclosure, benchmark, policy, industry: str = "通讯设备 / 信息通信") -> dict:
         return {
@@ -160,6 +191,29 @@ class IndustryResearchAgent(BaseAgent):
         result["mode"] = "research_case"
         result.pop("agent", None)  # 防止与外层 agent 键冲突（外层统一由 router 补写）
         return result
+
+    @classmethod
+    def _scrub(cls, obj):
+        """🔴 匿名铁律最后一道防线：递归擦洗一切外发字符串中的真名片段。
+
+        消费 case_curator.ANON_SCRUB_MAP（长 token 在前防子串错洗），覆盖
+        中兴/中芯/SMIC/股票代码等全部真实锚定名；仅处理 str，不动数值/布尔。
+        """
+        from src.agents.case_curator.agent import ANON_SCRUB_MAP
+
+        def _scrub_val(v):
+            if isinstance(v, str):
+                for token, repl in ANON_SCRUB_MAP:
+                    if token in v:
+                        v = v.replace(token, repl)
+                return v
+            if isinstance(v, dict):
+                return {_scrub_val(k): _scrub_val(x) for k, x in v.items()}
+            if isinstance(v, (list, tuple)):
+                return [_scrub_val(x) for x in v]
+            return v
+
+        return _scrub_val(obj)
 
     def _verify_insights(self, facts: dict, insights: list) -> list:
         """对每条研究结论做事实一致性自检：key_figures 是否都能在披露事实中找到依据。

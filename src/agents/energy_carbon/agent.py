@@ -41,12 +41,25 @@ class EnergyCarbonAgent(BaseAgent):
 - 数据驱动：排放因子采用区域电网公开均值，可审计可追溯
 """
 
-    async def analyze(self, goal: str, tenant_id: str = "default") -> dict:
+    async def analyze(self, goal: str, tenant_id: str = "default",
+                      mode: str = "tenant", case_id: str = None, **kwargs) -> dict:
+        """能源碳分析。
+
+        mode=research_case（腿 B 首客 P3 场景 A，2026-07-29 杜总定调）：
+        🔴 私域/公开边界红线：research_case 不读租户孪生流（twin_context 跳过，
+        用种子基线推演），actions_taken 恒空（不生成节能任务/不写租户记忆）。
+        """
         logger.info(f"[EnergyCarbon Agent] Analyzing: {goal[:60]}...")
 
         lines = await self.tools.get_energy_list()
         # ---- 阶段1下半场：消费 twin_context 实时孪生镜像（韧性降级）----
-        twin = await self._merge_twin_context(lines, tenant_id)
+        # 🔴 research_case 模式跳过租户孪生（私域/公开边界红线），恒用种子基线
+        if mode == "tenant":
+            twin = await self._merge_twin_context(lines, tenant_id)
+        else:
+            twin = {"enabled": False, "fresh": False, "source": None,
+                    "updated_at": None, "lines": {}, "real_time_fields": [],
+                    "skipped_reason": "research_case 模式不读租户孪生流（私域/公开边界红线）"}
         # 合并后重算汇总（事实锚点：仅读镜像覆盖种子，不改写种子源）
         summary = self.tools.compute_summary(lines)
 
@@ -62,17 +75,24 @@ class EnergyCarbonAgent(BaseAgent):
         intensity_gap = round(summary["intensity_per_10k"] - summary["target_intensity"], 3) if isinstance(summary["intensity_per_10k"], (int, float)) else None
 
         actions_taken = []
-        # 授权内行动：对低绿电(<15%)高耗能环节生成节能任务（自动）
+        actions_proposed = []  # research_case 推演建议（actions_taken 匿名模式恒空）
+        # 授权内行动：对低绿电(<15%)高耗能环节生成节能任务（tenant 模式自动执行）
         for ln in lines:
             if ln["green_ratio"] < 15:
-                task = await self.tools.create_saving_task(f"提升{ln['name']}绿电比例")
-                actions_taken.append({
+                act = {
                     "type": "create_saving_task",
                     "detail": f"为 {ln['name']}（绿电 {ln['green_ratio']}%）生成节能降碳任务",
                     "line_id": ln["line_id"],
                     "confidence": 0.82,
-                    "status": "auto_executed",
-                })
+                }
+                if mode == "tenant":
+                    await self.tools.create_saving_task(f"提升{ln['name']}绿电比例")
+                    act["status"] = "auto_executed"
+                    actions_taken.append(act)
+                else:
+                    # 🔴 research_case 纪律：不落任务、不写租户记忆，仅保留推演建议
+                    act["status"] = "proposed_only"
+                    actions_proposed.append(act)
 
         recommendations = self._generate_recommendations(lines, summary, opportunities, twin)
 
@@ -87,7 +107,7 @@ class EnergyCarbonAgent(BaseAgent):
             f"识别节能降碳机会 {len(opportunities)} 项，潜在降碳 {total_saving_co2} tCO2"
         )
 
-        return {
+        out = {
             "status": "completed",
             "summary": summary_text,
             "total_energy_kwh": summary["total_energy_kwh"],
@@ -105,6 +125,12 @@ class EnergyCarbonAgent(BaseAgent):
             # 阶段1下半场：实时孪生融合块（含 real_time_* 字段，供前端/决策读取）
             "twin_context": twin,
         }
+        if mode != "tenant":
+            out["actions_proposed"] = actions_proposed
+            out["mode"] = mode
+            out["case_id"] = case_id
+            out["note"] = "研究案例模式(research_case)：能耗数据为基准占位，不落任务/不读租户孪生"
+        return out
 
     async def _merge_twin_context(self, seed_lines: list[dict], tenant_id: str) -> dict:
         """扫描 MACHINE holon 孪生体，将实时能耗值覆盖种子基线，返回融合块。

@@ -17,7 +17,25 @@ logger = logging.getLogger(__name__)
 
 CASE_STORE_PATH = os.path.join(os.path.dirname(__file__), "cases.json")
 
-# 🔴 单案例种子（杜总 2026-07-29 确认仅做 1 行业 1 公司：通讯·中兴通讯）
+# 🔴 匿名擦洗映射（研究案例外发前统一擦洗；长 token 在前，防子串错洗）
+# 所有 real_anchor 相关真名/代码片段 → 匿名替代；industry_research._sanitize 消费。
+ANON_SCRUB_MAP = [
+    ("中兴通讯", "某某通讯公司"),
+    ("中兴", "某通讯厂商"),
+    ("000063", "***"),
+    ("ZTE", "***"),
+    ("zte", "***"),
+    ("中芯国际", "某某半导体公司"),
+    ("中芯", "某半导体厂"),
+    ("688981", "***"),
+    ("00981", "***"),
+    ("SMIC", "FAB-X"),
+    ("smic", "fab-x"),
+]
+
+# 🔴 案例种子（先有后优；2026-07-29 杜总两批定调：
+#   ①通讯·中兴通讯（研究案例首例）
+#   ②半导体·中芯国际（P3 首客试点，场景 A=设备健康/能耗孪生））
 # real_anchor 仅内部可见；subject_anon 对外呈现。
 DEFAULT_CASES = [
     {
@@ -115,7 +133,112 @@ DEFAULT_CASES = [
                 "key_figures": ["阶段性承压", "占整体 24.6%"],
             },
         ],
-    }
+    },
+    {
+        "case_id": "case_semicon_2026",
+        "subject_anon": "某某半导体公司（研究案例·公开披露）",
+        "industry": "半导体 / 集成电路晶圆代工",
+        "real_anchor": "中芯国际（688981.SH / 00981.HK）",  # 🔴 内部锚定，仅 internal 视图
+        "pilot_scenario": {
+            "scenario": "A",
+            "label": "设备健康 / 能耗孪生",
+            "agents": ["pm_maintenance", "energy_carbon"],
+            "decided_at": "2026-07-29",
+            "note": "P3 首客试点场景（杜总定调）；按铁律接口就位不实测，真实数据接入后 ZHIYAN_DEMO_DATA=0 起跳。",
+        },
+        "recommended_interfaces": [
+            "industry_research",
+            "pm_maintenance",
+            "energy_carbon",
+            "executive_cockpit",
+            "supply_chain",
+            "compliance_q",
+            "cost_analysis",
+        ],
+        "teaching_notes_anon": (
+            "对外以匿名案例呈现，演示「研究案例范式」在半导体晶圆代工标杆企业上推演 "
+            "设备健康 / 能耗孪生（P3 首客试点场景 A），并叠加战略 / 供应链 / 合规 / 成本四维。"
+        ),
+        "teaching_notes_internal": (
+            "内部锚定中芯国际(688981.SH)公开披露，用于校准设备健康/能耗孪生试点推演；"
+            "真实公司名仅在本视图出现，对外一律匿名。"
+        ),
+        "status": "active",
+        "updated_at": "2026-07-29",
+        "disclosure_facts": {
+            "source": "2025 年年度报告（2026-03-26 披露；证券时报 / 公司公告交叉核对）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "营业总收入", "value": "673.23 亿元", "yoy": "+16.49%"},
+                {"metric": "归母净利润", "value": "50.41 亿元", "yoy": "+36.29%"},
+                {"metric": "扣非归母净利润", "value": "41.24 亿元", "yoy": "+55.9%"},
+                {"metric": "销售收入（国际财务报告准则）", "value": "93.27 亿美元", "yoy": "+16.2%（创历史新高）"},
+                {"metric": "毛利率（IFRS 口径）", "value": "21.0%", "yoy": "同比 +3.0 个百分点（折旧大幅增长背景下）"},
+                {"metric": "年平均产能利用率", "value": "93.5%", "yoy": "同比 +8 个百分点"},
+                {"metric": "四季度产能利用率", "value": "95.7%", "yoy": "8 英寸超满载、12 英寸接近满载"},
+                {"metric": "月产能（折合 8 英寸标准逻辑）", "value": "105.9 万片", "yoy": "较上年末 +11.1 万片"},
+                {"metric": "全年出货总量", "value": "约 970 万片", "yoy": "—"},
+                {"metric": "资本开支", "value": "81.0 亿美元", "yoy": "高于年初预期（客户需求强劲 + 设备交付时间延长）"},
+                {"metric": "研发投入", "value": "55.19 亿元", "yoy": "占销售收入 8.2%"},
+                {"metric": "晶圆收入应用结构", "value": "消费电子 43.2% / 智能手机 23.1% / 工业与汽车 11.0%", "yoy": "—"},
+                {"metric": "工业与汽车晶圆收入", "value": "同比增长超六成", "yoy": "汽车产业链加速切换"},
+                {"metric": "消费电子晶圆收入", "value": "同比增长超三成", "yoy": "消费政策带动 + 出口增长"},
+                {"metric": "中国区收入占比", "value": "85%", "yoy": "产业链在地化切换贯穿全年"},
+                {"metric": "晶圆收入尺寸结构", "value": "12 英寸 77% / 8 英寸 23%", "yoy": "—"},
+                {"metric": "行业地位", "value": "全球纯晶圆代工第二；中国大陆集成电路制造业领导者", "yoy": "—"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "equipment",
+                "claim": "产能利用率高位运行使设备近乎零冗余，非计划停机边际代价被显著放大——设备健康预测维护是该产能结构下 ROI 最直接的数字化场景。",
+                "rationale": "年平均产能利用率 93.5%（同比 +8 个百分点），四季度 95.7% 且 8 英寸超满载；满载状态下每小时停机都是直接产出损失，预测维护价值随利用率非线性上升。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["93.5%", "95.7%", "同比 +8 个百分点"],
+            },
+            {
+                "dimension": "equipment",
+                "claim": "巨额资本开支叠加设备交付周期延长，存量设备寿命管理与备件前置采购价值上升——新产能补充受外部约束，既有设备 uptime 就是产出天花板。",
+                "rationale": "资本开支 81.0 亿美元且高于年初预期，部分原因即设备交付时间延长；交付不确定环境下，让在役设备多跑一小时的价值高于常态。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["81.0 亿美元", "设备交付时间延长"],
+            },
+            {
+                "dimension": "energy",
+                "claim": "百万片级月产能规模下，单片能耗的微小优化即放大为显著成本项；能耗孪生（产线级实时能耗镜像 + 碳强度）是毛利率承压期的可控降本杠杆。",
+                "rationale": "月产能 105.9 万片、全年出货约 970 万片；晶圆制造是高能耗行业，规模效应使 kWh/片 的优化直接进入毛利率（21.0%）敏感区间。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["105.9 万片", "约 970 万片", "21.0%"],
+            },
+            {
+                "dimension": "strategy",
+                "claim": "净利增速显著高于营收增速，经营杠杆主要来自利用率提升——'效率驱动盈利'结构使设备综合效率(OEE)类指标上升为一级经营指标。",
+                "rationale": "归母净利 +36.29% 远超营收 +16.49%，公司自述业绩驱动因素为晶圆销售量增加与产能利用率上升（93.5%）；效率指标与盈利的传导链条清晰。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["+36.29%", "+16.49%", "93.5%"],
+            },
+            {
+                "dimension": "cost",
+                "claim": "毛利率在折旧大幅增长背景下逆势提升，说明折旧是最大成本压力源——设备资产利用最大化（健康度维持 + 停机减少）是对冲折旧压力的直接手段。",
+                "rationale": "毛利率 21.0%、同比 +3.0 个百分点，且明确标注'折旧大幅增长背景下'；重资产模式中折旧刚性，唯有产出爬坡与设备可用率能摊薄。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["21.0%", "同比 +3.0 个百分点"],
+            },
+            {
+                "dimension": "compliance",
+                "claim": "产业链在地化与外部设备供应不确定性并存，设备生命周期延长策略与供应合规管理将长期并行。",
+                "rationale": "中国区收入占比 85%、在地化切换贯穿全年；同时设备交付时间延长暴露外部供应不确定性，既有设备的健康管理兼具经营与合规韧性双重意义。",
+                "assertion_type": "predictive",
+                "value_judgment": "high",
+                "key_figures": ["85%"],
+            },
+        ],
+    },
 ]
 
 
@@ -143,10 +266,16 @@ class CaseCuratorAgent(BaseAgent):
             json.dump(cases, f, ensure_ascii=False, indent=2)
 
     def _ensure_seed(self):
-        """案例库为空时写入单案例种子（先有后优，只做 1 行业 1 公司）。"""
+        """案例库为空时写入种子；已有存量时按 case_id 增量补齐缺失的默认案例（升级路径）。"""
         cases = self._load()
         if not cases:
             self._save(DEFAULT_CASES)
+            return
+        # 升级路径：生产存量 cases.json 可能只含旧案例，补齐新增默认案例
+        known = {c.get("case_id") for c in cases}
+        missing = [c for c in DEFAULT_CASES if c["case_id"] not in known]
+        if missing:
+            self._save(cases + missing)
 
     async def analyze(self, goal: str) -> dict:
         self._ensure_seed()
@@ -239,6 +368,7 @@ class CaseCuratorAgent(BaseAgent):
                 "industry": c["industry"],
                 "recommended_interfaces": c.get("recommended_interfaces", []),
                 "teaching_notes_anon": c.get("teaching_notes_anon", ""),
+                "pilot_scenario": c.get("pilot_scenario"),  # 匿名安全：仅场景描述，无真名
                 "status": c.get("status", "active"),
                 "updated_at": c.get("updated_at", ""),
             },

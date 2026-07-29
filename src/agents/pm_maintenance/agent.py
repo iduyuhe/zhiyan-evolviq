@@ -48,8 +48,14 @@ class PMAgent(BaseAgent):
 - 维修优先级：安全 > 质量 > 效率 > 成本
 """
 
-    async def analyze(self, goal: str) -> dict:
-        """分析设备维护需求"""
+    async def analyze(self, goal: str, mode: str = "tenant", case_id: str = None, **kwargs) -> dict:
+        """分析设备维护需求。
+
+        mode=research_case（腿 B 首客 P3 场景 A，2026-07-29 杜总定调）：
+        研究案例匿名推演——设备数据作基准占位，actions_taken 恒空（不写租户作用域
+        记忆/不生成工单），推演建议保留在 actions_proposed 供范式发动机消费。
+        🔴 匿名铁律：外发经 industry_research._sanitize 统一擦洗（ANON_SCRUB_MAP）。
+        """
         logger.info(f"[PM Agent] Analyzing: {goal[:60]}...")
 
         all_equipments = await self.tools.get_equipment_list()
@@ -114,13 +120,22 @@ class PMAgent(BaseAgent):
                 })
 
         summary = f"检查了{len(results)}台核心设备，发现{len(alerts)}项维护需求，生成{len(actions_taken)}个建议动作"
-        return {
+        out = {
             "status": "completed",
             "summary": summary,
             "equipments": results,
             "alerts": alerts,
             "actions_taken": actions_taken,
         }
+        # 🔴 research_case 纪律：actions_taken 恒空（不写租户作用域记忆/不落工单），
+        # 推演建议移入 actions_proposed 供范式发动机消费。
+        if mode != "tenant":
+            out["actions_proposed"] = actions_taken
+            out["actions_taken"] = []
+            out["mode"] = mode
+            out["case_id"] = case_id
+            out["note"] = "研究案例模式(research_case)：设备数据为基准占位，不落工单/不写租户记忆"
+        return out
 
     def _compute_health(self, parts: list[dict], sensors: dict) -> float:
         """可复现的设备健康评分：部件寿命均值(70%权重) + 传感器偏差惩罚(30%权重)"""
