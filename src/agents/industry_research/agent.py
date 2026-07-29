@@ -36,6 +36,9 @@ class IndustryResearchAgent(BaseAgent):
         self.anon_label = ANON_LABEL
         # 🔴 真实锚定仅存内部变量，绝不进任何外发字段（结果 dict 中不得出现）
         self._real_anchor = REAL_ANCHOR
+        # 研究案例真实锚定推演层（腿 A 实证：消费真实公开披露，非 mock 工厂数据）
+        self._disclosure_facts = None
+        self._derived_insights = []
 
     async def analyze(self, goal: str, case_id: str = None, **kwargs) -> dict:
         logger.info(f"[IndustryResearch] {goal[:60]}...")
@@ -52,6 +55,9 @@ class IndustryResearchAgent(BaseAgent):
             industry = case.get("industry", "通讯设备 / 信息通信")
             # 🔴 真实锚定仅存内部变量，绝不进任何外发字段
             self._real_anchor = case.get("real_anchor") or REAL_ANCHOR
+            # 腿 A 实证：从案例库加载真实公开披露与专家级研究结论
+            self._disclosure_facts = case.get("disclosure_facts")
+            self._derived_insights = case.get("derived_insights", [])
         else:
             industry = "通讯设备 / 信息通信"
 
@@ -100,6 +106,9 @@ class IndustryResearchAgent(BaseAgent):
                 "benchmark": len(benchmark),
                 "policy": len(policy),
             },
+            # 腿 A 实证：真实锚定推演层（消费真实公开披露，非 mock 工厂 KPI）
+            "derived_insights": self._verify_insights(self._disclosure_facts, self._derived_insights),
+            "disclosure_facts_ref": self._anon_facts_ref(self._disclosure_facts),
         }
 
     def _build_anon_profile(self, disclosure, benchmark, policy, industry: str = "通讯设备 / 信息通信") -> dict:
@@ -126,9 +135,18 @@ class IndustryResearchAgent(BaseAgent):
             notes.append("合规推演与全球市场准入风险主题可对应")
         if outer.get("cost_analysis", {}).get("status") == "completed":
             notes.append("成本推演与毛利结构改善主题可对应")
+        # 腿 A 实证：真实锚定推演层已产出并经事实一致性自检的结论
+        verified_list = self._verify_insights(self._disclosure_facts, self._derived_insights)
+        verified = [i for i in verified_list if i.get("verified")]
+        if verified:
+            notes.append(f"真实锚定推演层产出 {len(verified)} 条经事实一致性自检的研究结论（消费真实公开披露）")
+        base = 0.4 + 0.1 * len(notes)
+        if verified:
+            base = max(base, 0.5 + 0.1 * len(verified))
         return {
             "alignment_notes": notes,
-            "confidence": round(0.4 + 0.1 * len(notes), 2),
+            "confidence": round(min(base, 0.95), 2),
+            "verified_insight_count": len(verified),
         }
 
     @staticmethod
@@ -142,6 +160,39 @@ class IndustryResearchAgent(BaseAgent):
         result["mode"] = "research_case"
         result.pop("agent", None)  # 防止与外层 agent 键冲突（外层统一由 router 补写）
         return result
+
+    def _verify_insights(self, facts: dict, insights: list) -> list:
+        """对每条研究结论做事实一致性自检：key_figures 是否都能在披露事实中找到依据。
+
+        🔴 匿名铁律：仅基于案例内部 disclosure_facts 校验，不外泄真实锚定名。
+        """
+        if not insights:
+            return []
+        fact_blob = ""
+        if facts:
+            fact_blob = " ".join(
+                f.get("metric", "") + " " + f.get("value", "") + " "
+                + (f.get("yoy") or "") + " " + (f.get("share") or "")
+                for f in facts.get("facts", [])
+            )
+        out = []
+        for ins in insights:
+            ins = dict(ins)
+            missing = [k for k in ins.get("key_figures", []) if k not in fact_blob]
+            ins["verified"] = len(missing) == 0
+            ins["unverified_figures"] = missing
+            out.append(ins)
+        return out
+
+    def _anon_facts_ref(self, facts: dict) -> dict | None:
+        """外发仅给披露来源/年份/指标数摘要（绝不带可识别真名的细节）。"""
+        if not facts:
+            return None
+        return {
+            "source": facts.get("source"),
+            "fiscal_year": facts.get("fiscal_year"),
+            "fact_count": len(facts.get("facts", [])),
+        }
 
 
 industry_research_agent = IndustryResearchAgent()
