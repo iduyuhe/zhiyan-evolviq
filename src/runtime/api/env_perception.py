@@ -148,7 +148,8 @@ class SubscriptionRequest(BaseModel):
 
 
 def _known_source_names() -> list[str]:
-    return [s["name"] for s in env_manager.list()]
+    # 仅返回对租户开放订阅的源（tenant_facing=True）；平台级研究源（如 disclosure）不进租户视图/不占免费额度
+    return [s["name"] for s in env_manager.list() if s.get("tenant_facing", True)]
 
 
 @router.get("/subscriptions")

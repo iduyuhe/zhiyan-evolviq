@@ -27,6 +27,7 @@ class EnvSourceBase:
     kind: str = "environment"   # policy | market | benchmark
     label: str = "环境源"
     credibility: str = "official"  # F4：首批三类源均为官方（官方为锚）
+    tenant_facing: bool = True   # 是否对租户开放订阅（False=平台级研究源，不占免费额度）
 
     def __init__(self) -> None:
         self.enabled: bool = True  # 公开信息源无需凭证，默认启用
@@ -126,6 +127,7 @@ class EnvSourceBase:
             "kind": self.kind,
             "label": self.label,
             "credibility": self.credibility,
+            "tenant_facing": self.tenant_facing,
             "enabled": self.enabled,
             "mode": "live" if self._live_url() else "simulated",
             "last_mode": self._last_mode,

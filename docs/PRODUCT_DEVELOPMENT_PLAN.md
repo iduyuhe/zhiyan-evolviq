@@ -4,6 +4,8 @@
 > 承接：`STRATEGY_SYSTEM_ROADMAP.md`（路线 A 原生赋能者）· `STRATEGIC_CONSOLIDATION.md`（战略收口）· `PRODUCT_LANDING_PLAN.md`（产品落地蓝图）· `COMPETITIVENESS_MATURITY_SYNTHESIS.md`（二十强 CCI）
 > 铁律延续：韧性降级 / 事实锚点（只调指令不改写业务数字）/ 人审护栏 / 分段开源
 
+> ⚠️ **文档状态（2026-07-29 收口）**：本文为 2026-07-26「聊透阶段」产物，内容滞后至 v23，且其上位引用（`STRATEGY_SYSTEM_ROADMAP.md`、`STRATEGIC_CONSOLIDATION.md`）均已降级为历史背景。本文**降级为历史背景**（Tier 3，见 `docs/INDEX.md`）。**当前唯一执行总纲 = `MASTER_EXECUTION_PLAN.md`**（v1.4，覆盖至 v31 S3 收口），开发优先级以 MASTER §3 阶段详案为准。S1/S2/S3 真实验收数字见 `S2_STAGE_REPORT.md` / `S3_STAGE_REPORT.md`。
+
 ---
 
 ## 0. 战略锚点（为什么是这个顺序）

@@ -1,0 +1,156 @@
+<section style="font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;max-width:680px;margin:0 auto;padding:0 4px;">
+
+<p style="margin:0 0 16px;"><img src="http://mmbiz.qpic.cn/mmbiz_jpg/W18eEzianaXOlDawKxIBD44noPiaKYqouuzMlCFhuygbNiambzEMl4tnP5AAypic4dXvjgrkv2szm5yBhLMVRQO3Q24wiaNXqCniaicQWRVMZQay4s/0?from=appmsg" style="width:100%;border-radius:6px;" /></p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">两天，两个阶段的收口，一条真实飞轮的诞生。这是智衍 EvolvIQ「智衍工业智能体互联平台」在 2026 年 7 月 28 日至 29 日交出的答卷：S2「无感转型」信任爬梯阶段生产收口、外部真实用户首次触发共生进化环并 48 小时内全闭环、S3「越用越懂你」智能推荐六层全部落地。我们不说空话，所有结论都用生产环境的真实测试数字与公开 Issue 说话。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">把这两天放进更大的时间轴里看，它的意义会更清楚：S1 阶段我们打下了六路感知、三主义闭环、网关、UNS、隐性捕获、蓝弧、自进化与环境感知的地基；S2 让企业以最低摩擦「无感」地用上智能体；S3 则让系统随使用而自我进化。两天之内连续收口 S2 与 S3 两个重量级阶段，同时被真实用户「打断」并完成 48 小时闭环，这种密度在智衍的节奏里并不常见，却恰好浓缩了「交付—验证—进化」这个飞轮的全貌。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">这一篇，是写给所有关心工业智能化落地的人看的——无论你是企业决策者、IT 负责人，还是开发者与生态伙伴。你会看到一套系统如何从不成熟的「能用」，走向「可信、透明、且会随你使用而进化」。更重要的是，你会看到一个常被行业挂在嘴边却极少被验证的词——「共生进化」，第一次在真实生产环境里跑通，并被一条公开的 GitHub Issue 永远记录下来。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">先把背景说清楚，否则后面的技术细节会显得像空中楼阁。工业企业的现实是：ERP、MES、WMS 这些系统已经跑了十几年，沉淀了最真实的业务数据，也背负了最沉重的改造风险。任何一家企业都不可能为了上一个「智能体」就把既有系统推倒重来——那不是转型，是自杀。我们的路线 A「原生赋能者」定位，恰恰是不推倒：在既有系统之上叠加一层「实时决策脑＋全息真相源」，让 ERP 退居执行回写与审计的角色，而智能体掌握原生决策权与原生全息沉淀权。两天里发生的一切，都是为了让这个定位从 PPT 走进生产环境。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">为什么是这两天？因为它们恰好是「自我承诺」与「外部验证」的黄金交叉点。S2 收口，是我们对自己交付能力的承诺；外部用户 @xingswxingsw 的 7 条真实缺陷，是真实世界对我们可靠性的验证；S3 六层落地，是把「越用越懂你」从概念变成机制。更巧的是，48 小时闭环外部反馈这件事，本身就成了我们「48 小时 SLA」纪律的第一次实战压力测试——我们不是先定规则再碰运气，而是边被真实用户打脸、边用自己定的规则把脸捡回来。</p>
+
+<p style="background:#f1f5f9;border-left:4px solid #2563eb;padding:16px 18px;font-style:italic;color:#475569;font-size:15px;line-height:1.8;margin:0 0 18px;">"我们不想把 AI 包装成无所不能的魔法。我们想让它成为一个可被验证、可被审计、且愿意听你说话的同事。"</p>
+
+<p style="font-size:19px;font-weight:bold;color:#0f172a;border-left:4px solid #2563eb;padding-left:12px;margin:26px 0 12px;">一、S2 收口：从「能用」到「可信」</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">S2 阶段的定位，是「无感转型」的信任爬梯。它的核心思想朴素却克制：不推倒企业既有的 ERP、MES 系统，而是叠加一层智能体能力，让企业以最低摩擦、最低信任风险的方式，先尝到工业智能体的价值，再逐步解锁更深的能力。这套三圈解锁模型，外圈免费、中圈付费、内圈私有化，价值驱动而非推销——外圈 4 个 agent 只消费公开的环境信号，中圈 4 个需要企业接一个内部数据源或上传一份 BOM 才解锁，内圈 12 个则是私有化部署的全部能力。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">7 月 28 日，S2 完成全阶段三件套验收——这是我们对每一个里程碑的铁律：① 全量回归测试零失败；② 双入口冒烟门禁通过（核心入口与边缘 HTTPS 入口前端均不白屏）；③ 一页汇报落档，并把执行计划 MASTER 标记为已完成。三条缺一不可，任何一条不过，阶段就不算收口。这不是形式主义，而是把「可交付」的定义从「我写完了」改成「生产环境证明它能跑」。</p>
+
+<table style="width:100%;border-collapse:collapse;margin:0 0 14px;font-size:14px;">
+  <tr style="background:#2563eb;color:#fff;">
+    <td style="padding:8px 10px;font-weight:bold;">验收维度</td>
+    <td style="padding:8px 10px;font-weight:bold;text-align:center;">S2 收口结果</td>
+  </tr>
+  <tr style="background:#f8fafc;"><td style="padding:8px 10px;color:#334155;">全量 pytest 回归</td><td style="padding:8px 10px;text-align:center;color:#2563eb;font-weight:bold;">344 passed，0 failed</td></tr>
+  <tr><td style="padding:8px 10px;color:#334155;">前端 tsc 类型检查</td><td style="padding:8px 10px;text-align:center;color:#475569;">0 错误</td></tr>
+  <tr style="background:#f8fafc;"><td style="padding:8px 10px;color:#334155;">双入口冒烟门禁</td><td style="padding:8px 10px;text-align:center;color:#2563eb;font-weight:bold;">[PASS] 前端不会白屏</td></tr>
+  <tr><td style="padding:8px 10px;color:#334155;">生产 E2E 复核</td><td style="padding:8px 10px;text-align:center;color:#475569;">pull 派生 8 条平台建议，F4 违规 0</td></tr>
+</table>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">S2 真正落地的，不是某个炫技功能，而是一整套可信机制的骨架。比如「信任爬梯③」的单一语义源被严格收敛：只要企业接了第一个内部数据源（网关配置非空），或者上传了第一份 BOM，就自动跳到中圈并免限额——解锁、额度、BOM 三个子系统永远不可能自相矛盾。再比如「免费额度计量」对平台与演示租户豁免，对真实租户严格计数，日信号超限只截断不报错、月解读超限才升舱提示，既防面板轮询雪崩，又守住了商业边界。还有 BOM×行情的毛利影响测算：把原材料行情信号与 BOM 物料做双向包含匹配，按数量×单价折算影响额，企业上传第一份 BOM 的第一秒，就能在面板上看到价值跳变——信任爬梯③的「价值驱动解锁」第一次有了可感知的样板。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">最值得一写的，是 S2-6 把「杜特第 0 号用户」确定性开通了——上海杜特企业管理咨询有限公司（dute 租户）正式入驻，团队账号与权限体系一并就位。这意味着共生进化环第一次有了真实的企业内测对象，而不只是我们自己人在自娱自乐。反馈入口（👍/👎/💡）连同脱敏管道、48 小时 SLA 看板、审核门一并上线，红线写得很死：未经脱敏＋审核，任何客户反馈都绝不出内网，且默认匿名。权限设计也经过了推敲：提交反馈任意登录用户即可，看板与审核仅租户管理员或超管可见，角色比较统一大写处理。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">S2 还顺手收口了一个容易被忽略的「G5 轨道二」细节：平台建议（platform_insight）与真实情报（intelligence）走两条严格分离的通道，前者 credibility 标记为 platform，由真实环境情报规则化派生并透明溯源，内容级去重避免重复拉取重复生成。前端用蓝色左边框＋蓝色徽标「来自智衍平台的建议」明确区分两轨，保证用户永远分得清「这是官方情报」还是「这是我们基于情报给你的建议」——F4 透明纪律在这里第一次被产品化。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">把这套机制放进一个具体的企业旅程里，会更好懂。假设一家机械加工厂刚注册，它先落在外圈：每天免费收到政策、行情、对标三类公开信号，决策看板能看到「原材料铜价本周上行 3%」这类结论，零成本、零风险。当厂长觉得「这东西有点用」，他上传了一份 BOM——系统立刻算出「你这张 BOM 受铜价上行影响，预计毛利收窄 1.2 个百分点」，并自动跳到中圈、免限额。再往后，他接了第一个内部数据源（比如 ERP 的订单），系统开始把公开信号与他的真实订单对照，给出「这单该接还是该缓」的实时建议。整个过程没有一次「推倒重来」，每一次解锁都对应一个看得见的价值跳变。这就是「无感转型」四个字落地后的样子。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">值得强调的是，三圈解锁不只是一种功能分级，更是一种商业伦理：价值驱动解锁，绝不推销。外圈 4 个 agent 纯消费公开环境信号，企业不花一分钱就能验证「这东西对我有没有用」；只有当企业自己上传了 BOM、接了数据源，系统才顺势解锁中圈、内圈——是企业的行动触发了价值，而不是我们的销售话术。解锁本身还会被记录为「解锁进度」视图，企业随时看得见自己走到了哪一层、下一步值不值得走。这种「先证明价值、再谈付费」的克制，在工业软件里相当罕见，却是「无感转型」能真正落地的根基：信任不是求来的，是一次次小的价值跳变攒出来的。</p>
+
+<p style="font-size:19px;font-weight:bold;color:#0f172a;border-left:4px solid #2563eb;padding-left:12px;margin:26px 0 12px;">二、第一次真实被打断：共生进化环的实战首秀</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">7 月 28 日傍晚，一件意料之外又情理之中的事发生了。GitHub 用户 @xingswxingsw 在我们的开源仓库连续提了 7 条真实缺陷（Issue #44–#50）。这不是我们自己人建的占位 good-first-issue，而是平台上线以来<strong style="color:#2563eb;">第一个来自外部的真实用户反馈</strong>。共生进化环，在还没被我们主动运营的时候，就被真实世界推着转了起来。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">我们做了个关键治理决策，值得记一笔：面对外部反馈，不擅自直接进生产改代码。先逐条拉 Issue 比对源码、验真，经授权才动手。这看似慢，却是「可信」二字的底线——我们不能因为有人提了 bug，就慌不择路地改生产环境。最终核验：#44、#47、#48、#49 为真且紧急（其中 #49 监控页必崩、#48 登录态必崩，直接踩中我们的白屏战略底线）；#45、#46、#50 为真但可排期。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">这里说一个技术细节，它后来成了我们部署流程的教训。修复这批 P0 时，服务器走 paramiko 做 git reset 加 docker compose build，但漏了 up -d——镜像 Build 完了，容器却仍跑着旧镜像。我们补了 up -d 才真正生效。这条「build 后必须 up -d」被写进了团队记忆，因为白屏铁律下，任何「以为上线了其实没上」的错觉都是不可接受的。同样被记住的，还有验证管道本身的坑：curl 管道 grep 会因 SIGPIPE 误报，改用 Python urllib 拉取并数水印命中次数才靠谱。</p>
+
+<p style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px 18px;font-size:15px;color:#1e40af;line-height:1.8;margin:0 0 14px;">修复的 4 个 P0 缺陷（commit 995910d）：<br/>• #49 监控页契约不兼容，前端直接 .map 必崩 → 兼容新旧契约。<br/>• #48 登录态字段未解包，display_name 取不到 → 解包修复。<br/>• #47 隐性捕获记录缺 agent 键，治理面板恒 500 → 改安全取值。<br/>• #44 安装脚本变量缺 ZHIYAN_ 前缀，新用户配置全静默降级 → 补齐前缀并加警示注释。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">随后用户拍板「修完剩余 3 个彻底闭环」，让 7 条外部反馈一次性清零。第二批修复同样干脆：#45 把过期的 DeepSeek 模型名迁移到 V4（并在推理时显式开启思考模式，否则退化为非推理，丧失推理能力）；#46 把前端 19 处硬编码 /api/ 全量 apiUrl() 化，支持子路径部署，grep 零残留；#50 修复顶栏溢出挤出退出按钮的布局 bug（把 max-w-3xl 放宽并补 min-w-0 与 overflow-x-auto 横向滚动）。全量测试回到 360 passed 零回归，tsc 0 错误。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">真正的闭环，不止于代码。我们在 48 小时 SLA 内，对每条 Issue 先发「已确认＋修复中」的 triage 评论，部署后再发「已修复＋commit＋验证」评论并致谢 @xingswxingsw，最后 close。7 条真实缺陷全部 state=closed，开源仓库零未决真实缺陷。生态飞轮从 N=0 转到了 N=1——「因你而进化」四个字，第一次被真实用户亲手写进我们的版本历史。这件事的战略意义，远比修几个 bug 大：它证明了我们反复宣讲的「开放换引力」不是口号，而是能被一个外部贡献者真实触发、真实流转、真实回告的机制。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">这里还有个诚实的更正：最初文档把外部反馈数误记为「8 条」，经 API 逐条核验后纠正为 7 条（#44–#50，4+3=7）。我们宁可多花一步去核实数字，也不让宣传稿里的「战果」掺水。对一家把「透明」写进产品纪律的公司来说，连自己的汇报都该经得起审计。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">这次被打断，还留下一个方法论层面的收获：我们验证了「先验真、再授权、后动手」的治理节奏在真实高压下可行。面对 7 条外部缺陷，团队没有被「赶紧修」的焦虑带偏，而是逐条比对源码、区分紧急与可排期、经授权才动生产。这种节奏看似慢了几个小时，却换来了「零误修、零越权、零雪崩」。它将被固化为我们应对所有外部反馈的标准动作——因为当生态飞轮真正转起来、外部反馈从 1 变成 100 时，能救我们的不是反应速度，而是这套可被复制的纪律。</p>
+
+<p style="font-size:19px;font-weight:bold;color:#0f172a;border-left:4px solid #2563eb;padding-left:12px;margin:26px 0 12px;">三、S3 智能推荐六层：让系统越用越懂你</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">外部反馈清零的同一天，S3「v31 γ 智能推荐＋共生进化环闭环」主线正式启动，并在 7 月 29 日完成全部六层交付。S3 的灵魂只有一个：让工业智能体随企业使用而自我进化，且每个进化动作都透明、可撤销、可审计。它没有引入任何黑箱模型，全部基于一套「行为事件池」的纯函数打分——这意味着任何一次推荐都可以被回放、被解释、被追责。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">这个架构选择值得多说一句。很多推荐系统依赖一个中心化的、跨租户训练的庞大模型，好处是「聪明」，坏处是黑箱、难解释、且天然诱惑着把 A 客户的数据用在 B 客户身上。我们反其道而行：推荐逻辑全部是纯函数，输入（行为池快照＋画像）确定，输出（打分＋理由）就确定，不依赖任何隐藏状态；而行为数据严格锁在本租户内。结果是，S3 的「智能」不是从别人的数据里偷来的，而是从你自己的使用里长出来的——这既守住了隐私，又让每一条推荐都带得上「为什么」的理由。对工业企业而言，「可解释」往往比「更聪明」更重要，因为决策背后是真实的订单、真实的产线、真实的人。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">S3-1 打地基：行为埋点基座。新增 behavior_events 通用事件池，租户内隔离、DB 韧性降级、重启可恢复。所有后续推荐层与共生环都从这口池子取水，没有第二张表、没有双写——这是「单点真相」纪律的第一块砖。前端在信号查看、信号拉取、会话起点等处埋点，trackBehavior() 静默失败不阻断业务。隐私红线同时落地：画像仅存于本租户，无跨租户个体粒度端点，元数据截断 400 字符不存任何 PII。这一步的代价是额外的 9 个专项测试，但它换来了整个 S3 可信的地基。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">S3-2 做降噪：相关性打分。信号不再一股脑推给所有人，而是按信号×租户画像的关联度打分，高相关优先推给对应 agent，低相关被 suppressed 但保留透明理由。官方高可信度信号保底不被压制（官方 credibility 是保底分）。这一步让「信息过载」第一次有了系统级的答案——企业每天面对 50 条环境信号，系统替你挑出最该看的 9 条，并告诉你「为什么挑这几条」。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">S3-3 做源推荐（γ1）：系统根据你过去的行为画像、BOM 物料关键词、行业属性，推荐你值得订阅的信息源。比如你 BOM 里有硅、铜、锂，系统就推断你该关注原材料行情；你的行业变量指向安全生产，就推荐政策源。注意交互纪律——推荐出来是 draft，经人审才订阅，绝不「一键全开」；额度满则提示信任爬梯③。每条推荐都附人话理由，比如「行业属性默认关注」「你的 BOM 物料指向原材料行情」。纯函数设计保证了它可测、可回放，10 个测试用例覆盖了兴趣派生、推荐打分、透明理由、API 集成。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">为了让「越用越懂你」不抽象，举一个端到端的例子。某租户最初只订阅了政策源，系统从它的行为池发现：它频繁查看「原材料行情」类信号、BOM 里反复出现「电工钢」。S3-2 降噪先把行情信号的 relevance 打分拉高，推给 procurement_manage 与 cost_analysis；S3-3 顺势在「为你推荐的信息源」里给出「建议订阅原材料行情源」，理由写明「你的 BOM 物料指向原材料行情，且你已多次查看该类信号」。租户管理员点「订阅」（draft 人审），额度未满直接生效。两周后该租户驳回了两条「行业对标」推荐，S3-4 立刻把对标类推荐度压到 0.12 并标注可撤销。再到某天它解锁了 bom_selector，S3-5 在解锁进度旁提示「你关注成本与行情，配合已解锁的 BOM，rd_npi 智能体能帮你算新品物料成本」——一条由行为驱动的、不打断的下一步引导就此完成。这条链路里没有一个黑箱，每一步都能在管理面板里被看见、被撤销、被审计。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">S3-4 让反馈闭环：采纳／驳回反哺。如果你驳回了某类推荐，系统把它压到地板值 0.12 并明确标记「你曾驳回此主题推荐，已下调推荐度（可撤销）」——它不会静默消失，你随时能撤销。如果采纳，该类目推荐度上调 0.15（封顶 1.0）。这套机制与我们的「蓝弧后果回流」同构，租户隔离经 API 级测试验证（A 驳回绝不影响 B）。它复用了 S3-1 同一口事件池，只是新增了一个薄聚合层，没有第二个真相源。这是「单点真相」纪律被反复兑现的证据。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">S3-5 是无感转型导航器（行为导航④）：它按你自己的产品内行为，推荐下一个值得解锁的智能体，并融入三圈解锁视图。它说人话——「你关注的 X，配合 Y，Z 智能体能算出 W」，并标注「为什么推荐（透明）」「完成上方下一步即可解锁」。不弹窗、不打断、不推销，只是安静地陪你往前走一步。AGENT_VALUE_MAP 里写了 16 个非外圈 agent 的 serves_categories 与价值句式素材，纯函数无跨租户副作用，严格租户内隔离。这一步把「无感转型」从口号变成产品内的真实陪伴。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">S3-6 是共生进化环的正式闭环（§3.6）：产品内零摩擦反馈 → 脱敏审核门 → GitHub from-customer Issue → 48 小时 SLA → 成长档案 →「因你而进化」回告。这一步把第二部分的实战经验，沉淀成了永久机制。symbiosis_store 负责提交反馈（脱敏＋默认匿名＋建 Issue，失败不阻断内网闭环）、查询反馈状态（含 48h SLA 计时）、生成成长档案（使用天数／解锁圈层／贡献进化数／被采纳想法数）、记录进化回告。behavior_store 同步加了 patch_meta 状态机原地更新与 first_event_at 使用天数统计。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">S3-7 是体外感知大屏：在孪生大屏新增第⑥路环境感知全息区块，把「封闭系统→物理世界开放系统」的信号（政策法规、原材料行情、行业智能化对标）全息化为可消费的聚合视图——三官方源健康、六维感知覆盖、可信度分级（F4 治理可视化）、非官方审核队列、最近体外信号流。它在源管理器或审核队列不可达时，优雅降级返回空结构，绝不破管。标签映射为中文大屏友好名，5 秒自动刷新，空数据优雅降级。这是「韧性降级」纪律在大屏层的兑现。</p>
+
+<table style="width:100%;border-collapse:collapse;margin:0 0 14px;font-size:14px;">
+  <tr style="background:#2563eb;color:#fff;">
+    <td style="padding:8px 10px;font-weight:bold;">S3 层</td>
+    <td style="padding:8px 10px;font-weight:bold;text-align:center;">落点 commit</td>
+    <td style="padding:8px 10px;font-weight:bold;">关键交付</td>
+  </tr>
+  <tr style="background:#f8fafc;"><td style="padding:8px 10px;color:#334155;">S3-1 行为埋点基座</td><td style="padding:8px 10px;text-align:center;color:#475569;">78b7ce9</td><td style="padding:8px 10px;color:#334155;">behavior_events 事件池＋画像 API</td></tr>
+  <tr><td style="padding:8px 10px;color:#334155;">S3-2 相关性降噪</td><td style="padding:8px 10px;text-align:center;color:#475569;">21ab780</td><td style="padding:8px 10px;color:#334155;">信号×画像打分，低相关 suppressed</td></tr>
+  <tr style="background:#f8fafc;"><td style="padding:8px 10px;color:#334155;">S3-3 源推荐</td><td style="padding:8px 10px;text-align:center;color:#475569;">0bad380</td><td style="padding:8px 10px;color:#334155;">行为＋BOM＋行业→推荐信息源</td></tr>
+  <tr><td style="padding:8px 10px;color:#334155;">S3-4 采纳驳回反哺</td><td style="padding:8px 10px;text-align:center;color:#475569;">26012fb</td><td style="padding:8px 10px;color:#334155;">reject 压底可撤销／adopt 上调</td></tr>
+  <tr style="background:#f8fafc;"><td style="padding:8px 10px;color:#334155;">S3-5 行为导航④</td><td style="padding:8px 10px;text-align:center;color:#475569;">234d410</td><td style="padding:8px 10px;color:#334155;">三圈最短价值路径推荐</td></tr>
+  <tr><td style="padding:8px 10px;color:#334155;">S3-6 共生进化环</td><td style="padding:8px 10px;text-align:center;color:#475569;">fb5314e</td><td style="padding:8px 10px;color:#334155;">反馈→Issue #51→48h SLA→回告</td></tr>
+  <tr style="background:#f8fafc;"><td style="padding:8px 10px;color:#334155;">S3-7 体外感知大屏</td><td style="padding:8px 10px;text-align:center;color:#475569;">e795a45</td><td style="padding:8px 10px;color:#334155;">孪生大屏第⑥路环境感知</td></tr>
+</table>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">验收数字是一条干净的上升曲线：S2 收口 344 → S3-1 353 → S3-2 373 → S3-3 383 → S3-4 394 → S3-5 406 → S3-6 413 → S3-7 419。净增 75 个测试，全量零回归，前端 tsc 0 错误，双入口冒烟门禁全过。每一个数字背后，都是对应功能在生产环境被逐一 E2E 实跑过，而非停留在单元测试的温室里。我们沉淀了 e2e_s3_*.py 一串脚本，覆盖源推荐、反哺、行为导航、共生环、体外感知——它们不是一次性验证，而是可复用的回归武器。这条曲线本身也是一种承诺：每次新增能力，都以「不破坏已有能力」为前提，回归测试只增不减。</p>
+
+<p style="font-size:19px;font-weight:bold;color:#0f172a;border-left:4px solid #2563eb;padding-left:12px;margin:26px 0 12px;">四、破 N=0：生产实证第一条公开反馈</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">如果说 @xingswxingsw 的 7 条 Issue 是「外界推着我们转」，那么 S3-6 上线的那一刻，我们自己的系统第一次主动把一条客户反馈，自动脱敏、匿名、经审核门，转成了公开的 GitHub from-customer Issue——编号 #51。这是共生进化环在生产环境的首条实证，也是生态 N=0 的正式破冰。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">这条机制的关键，不在「能建 Issue」，而在「守得住红线」。反馈提交即过脱敏管道，剥离邮箱、手机号、租户标识；默认匿名；必须经 needs_review 审核门，未经脱敏＋审核绝不出内网。成长档案只对本租户可见，使用天数从首次事件算起，贡献进化数与被采纳想法数被如实记录。48 小时 SLA 计时公开透明，进度徽章与 Issue 链接直接呈现在产品内。产品内的「共生进化环」区，集反馈入口（💡想法／👎不准／👍有用）、成长档案卡（4 指标）、因你而进化回告、我的反馈进度（48h SLA 徽章＋Issue 链接）于一体。隐私红线经测试验证：脱敏剥离 PII、租户隔离、成长档案仅本租户。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">举一个成长档案的具体样子，方便理解它为什么重要。某租户登录后看到：使用天数 32 天、已解锁圈层「中圈」、贡献进化数 1（即它提的那条反馈被采纳并进了产品）、被采纳想法数 1。旁边「因你而进化」回告写着：「你在 7 月 29 日提的『监控页在空数据时崩溃』，已在 commit 995910d 修复并上线，感谢你让智衍更稳。」这条回告不是群发模板，而是与该租户的反馈、对应 Issue、对应 commit 一一绑定。它把「客户是产品的共建者」从口号变成可感知的事实——你不再是一个被收割的账号，而是一个被记住、被致谢、被标注「因你而进化」的共建者。这种关系，是任何广告都买不来的生态黏性。</p>
+
+<p style="background:#f1f5f9;border-left:4px solid #2563eb;padding:16px 18px;font-style:italic;color:#475569;font-size:15px;line-height:1.8;margin:0 0 18px;">"飞轮转起来的标志，不是我们说了什么，而是第一个真实用户被听见、被记住、并看见自己的声音改变了产品。"</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">这印证了我们在战略文档里反复强调的一点：生态引力 N，是护城河的真源。而 N 的起点，就是敢于让客户反馈真实流动、真实可见、真实回告。从 N=0 到 N=1，再到与蓝弧闭环同构的自进化飞轮，这条路我们走出了第一步，且每一步都有生产数字为证。更妙的是，这条生产实证与蓝弧闭环（后果回流认知层）同构——企业的反馈改进产品，产品的改进又反过来服务企业，形成双向增强，而非单向索取。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">支撑这一切能「在生产环境跑」的，是一套常被忽视却至关重要的部署骨架。我们采用核心入口＋边缘 HTTPS 入口的双入口架构：核心 43 机跑 runtime 与 studio，边缘 115 机通过受限密钥 SSH 隧道回源 API，Let's Encrypt 证书自动续期。每一次上线，先 commit 取 git HEAD 做前端水印，再 vite build，再 edge_sync_release.py 只传 release 并切软链（不动 nginx／证书，失败自动回切），最后 _push_sync --deploy 重建容器。双入口冒烟门禁（smoke_check.py）验证入口含骨架屏、bundle 走 gzip、API health 200，未过即视为部署失败须回滚。换句话说，从代码到用户屏幕的每一步，都有自动化的「可信闸门」，而不是靠人肉盯。这也是为什么外部反馈 #48、#49 能在修复后迅速、安全地回到生产——流水线本身就是防线。</p>
+
+<p style="font-size:19px;font-weight:bold;color:#0f172a;border-left:4px solid #2563eb;padding-left:12px;margin:26px 0 12px;">五、设计纪律与六条红线</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">两天高密度交付，能稳稳落地而非翻车，靠的不是运气，是六条写进代码的纪律红线。它们不性感，却是「工业级」与「玩具级」的分水岭。我们愿意把它们摊开来说，因为透明本身也是产品的一部分。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 8px;"><strong style="color:#2563eb;">1. 隐私租户隔离</strong>：行为画像仅存于本租户、仅用于本租户推荐，绝不跨租户聚合到个体可识别粒度。contextvar 租户上下文单一真相源，外加 API 级对抗测试（A 的行为不进 B 的推荐、A 的反馈不进 B 的档案）。这不止是合规，更是对「你的数据只服务于你」的承诺。</p>
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 8px;"><strong style="color:#2563eb;">2. F4 透明标注贯穿</strong>：每条推荐、降噪、反哺调整都附人话理由，绝不伪装。平台建议与真实情报相邻呈现，蓝色左边框＋蓝色徽标明确区分，F4 违规计数为 0。用户有权知道「为什么这条推给我」，这是智能体可信的前提。</p>
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 8px;"><strong style="color:#2563eb;">3. 单点真相</strong>：S3-2～S3-6 全部复用 S3-1 的 behavior_events 事件池，无独立表、无双写；打分全为纯函数，可测、可回放、可审计。当系统只有一个真相源，调试与追责才不会陷入「哪个表为准」的泥潭。</p>
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 8px;"><strong style="color:#2563eb;">4. 数据出内网红线</strong>：客户反馈未经脱敏＋审核（needs_review）绝不出内网，默认匿名。这是与「生态飞轮」同等重要的底线，二者不可偏废——开放是为了引力，但开放绝不能以泄露客户隐私为代价。</p>
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 8px;"><strong style="color:#2563eb;">5. 白屏战略底线</strong>：所有新前端组件包在 ErrorBoundary 内，每次部署必过 smoke_check 双入口门禁。白屏＝对外通信中断，优先于任何新功能——这是杜总定下的铁律，也是工业系统「永远在线」的基本尊重。</p>
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;"><strong style="color:#2563eb;">6. 韧性降级</strong>：外部依赖（PG／Neo4j／网关／审核队列）不可达时自动回退，聚合端点返回空结构不破管。驱动延迟 import 放进 connect()，组件 handler 内做幂等自初始化守卫。系统可以少算，但不能崩。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">这六条里，最容易被忽视、却最致命的是第 5 条。外部反馈 #48、#49 恰恰证明：一个未解包的字段、一个不兼容的契约，就能让登录态或监控页直接白屏。我们把「白屏＝战略断联」刻进部署流水线，每次上线前自动验证入口 HTML 含骨架屏、App 外层有 ErrorBoundary、动态 chunk 加载失败自动整页重载一次。这不是过度防御，而是对「用户打开页面却看到一片空白」这一最坏体验的零容忍。同样地，第 6 条让我们在外部依赖抖动时，仍能优雅返回空结构——工业现场的网络环境远比机房恶劣，韧性不是锦上添花，是生死线。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">把这六条红线翻译成工业客户的语言，就是三句话：你的数据只服务于你，不会变成别人的训练料；你看得到的每一条建议，都讲得清来历，不会被平台悄悄伪装成「官方情报」；系统就算在糟糕的网络与依赖抖动下，也宁可少算、绝不崩给你看。这三句话听着朴素，却是大量工业客户迟迟不敢上云、不敢上智能体的真正顾虑。我们用写进代码的纪律，而不是销售话术，来接住这份顾虑。这或许就是「工业级」三个字最朴素的注脚。</p>
+
+<p style="font-size:19px;font-weight:bold;color:#0f172a;border-left:4px solid #2563eb;padding-left:12px;margin:26px 0 12px;">六、下一步：飞轮往哪里转</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">主线三阶段（S1 地基、S2 无感转型、S3 智能推荐）已全部收口。指针不会停，下一程清晰可辨：P 协同线推进社交通道密钥接入与首客落地，让外圈 4 个 agent 基于公开信号产出「准且有价值」的结论；北极星指标「决策实时化率」从 0% 起跳埋点；S3 效果回看（建议两周后）用推荐采纳率、驳回率、解锁转化漏斗的首批数据，验证 γ 层自进化是否真的转起来。杜特第 0 号用户的内测运营，也将成为第一批真实转化数据的来源。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">最后说清楚，这套东西到底为谁而生。对企业决策者，它意味着不用再赌一次「推倒重来」式的数字化，而是用免费外圈先看到价值、再用一份 BOM 解锁真实算力的渐进路径；对 IT 负责人，它意味着租户隔离、权限分层、韧性降级都已写进代码并经测试验证，不用自己从头造轮子；对开发者与生态伙伴，它意味着 Apache 全开源、行为事件池纯函数可回放、共生进化环公开可见——你提的一条 Issue，真的会改产品，并收到「因你而进化」的回告。这三重身份，恰好对应我们护城河模型里的「成熟度 M、自主可控 A、网络引力 N」：先把能力做真，再把主权做满，最后用开放把引力做出来。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">我们清醒地知道，推荐的「自度量、自进化」飞轮，此刻才刚转动。转化数据需要种子租户持续使用来积累——这是诚实的边界，不是谦虚的修辞。但机制已经就位、红线已经写死、生产已经实证。剩下的，是时间与客户，会替我们回答那个最终问题：一个工业智能体，能否真的越用越懂你。而我们相信，当第一条公开 Issue #51 安静地躺在仓库里时，答案已经写了一半。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">如果要把这两天的成果和市面上常见的「工业大模型」「智能体平台」拉开距离，差异其实只有一句话：我们把「可信」做成了可被验证的工程事实，而不是营销形容词。别人讲「智能」，我们讲 419 个回归测试与零白屏门禁；别人讲「自主」，我们讲租户隔离的对抗测试与数据出内网的审核门；别人讲「进化」，我们讲一条真实用户的 Issue 如何在 48 小时内被听见、被修复、被回告。这不是说我们比谁强，而是说我们选了一条更难但更诚实的路——把每一个漂亮词，都翻译成代码里的一道红线、测试里的一条断言、部署里的一道门禁。这条路慢，但它经得起审计，也经得起真实用户的打脸。</p>
+
+<p style="font-size:15px;color:#334155;line-height:1.9;margin:0 0 14px;">把两天的成果压成一句话：我们用 344→419 个回归测试、零白屏的双入口门禁、一条 48 小时内清零的外部反馈闭环、和一条破冰生态 N=0 的公开 Issue #51，证明了「无感转型」与「共生进化」不是 PPT 词汇，而是能在生产环境被反复验证的工程事实。主线三阶段全部收口，指针已切到生态协同与北极星起跳的下一程。剩下的故事，要由真实客户的真实使用来写——而我们，已经把让客户「被听见、被记住、被回告」的机制，永久地焊进了产品里。</p>
+
+<p style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:18px;font-size:15px;color:#1e40af;line-height:1.9;margin:0 0 14px;letter-spacing:0.3px;">两天，344→419 个测试，7 条外部缺陷 48 小时清零，1 条公开 Issue #51 破冰生态 N=0。<br/>不夸当下，敢亮天花板；用开源换引力，用引力换标准，用标准换主权。</p>
+
+<p style="font-size:13px;color:#999;line-height:2;margin:0 0 8px;">📎 参考来源</p>
+<p style="font-size:13px;color:#999;line-height:2;margin:0 0 16px;">1. 智衍 EvolvIQ 工作日志 2026-07-28、2026-07-29（S2／S3 阶段交付与部署记录）<br/>2. 阶段验收汇报 docs/S2_STAGE_REPORT.md、docs/S3_STAGE_REPORT.md<br/>3. 总执行计划 docs/MASTER_EXECUTION_PLAN.md（主线 S1／S2／S3 收口标记）<br/>4. 公开 GitHub 仓库 github.com/iduyuhe/zhiyan-evolviq（Issue #44–#51 真实闭环记录）</p>
+
+<p style="font-size:14px;color:#2563eb;font-weight:bold;margin:24px 0 12px;text-align:center;">全链路闭环生态</p>
+<p style="text-align:center;margin:0 0 20px;"><img src="http://mmbiz.qpic.cn/mmbiz_png/W18eEzianaXMicGd15WGFdTuXwcqvq1SVqRA4UImxyD6OhUbOdYYjWpITTgqLjzSpHHbyCDwOj1eYLrr5dlv9fZ613SbCQXBX6FGAndrl6ewA/0?from=appmsg" style="max-width:100%;border-radius:8px;" /></p>
+
+<p style="text-align:center;margin:0 0 20px;"><img src="http://mmbiz.qpic.cn/mmbiz_gif/W18eEzianaXM8ZeaJRxLPwPPHHjOoFn0pnXp27mNalBe8x2jibqsUibCzSRrJKsIdaX7SCKs0icDALyBLMdpZvvrU75wMm6A2fZBIPIrtGbLsoQ/0?from=appmsg" style="max-width:100%;border-radius:8px;" /></p>
+
+<section style="margin-top:20px;padding:15px 20px;background:#f8f8f8;border-left:3px solid #ccc;border-radius:4px;">
+  <p style="font-size:12px;color:#999;line-height:1.8;margin:0;">⚠️ 免责声明：本文内容基于公开信息整理，仅供行业交流参考，不构成任何投资建议或商业决策依据。文中观点仅代表作者个人立场，与所述机构无关。如涉及版权问题，请联系我们处理。</p>
+</section>
+
+</section>

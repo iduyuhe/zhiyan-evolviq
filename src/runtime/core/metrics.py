@@ -136,6 +136,50 @@ class MetricsStore:
             })
         return out
 
+    # ---- 北极星指标：决策实时化率 ----
+    def record_decision_realization(self, decision_id: str, realized: bool, real_time: bool, tenant: str = "default"):
+        """记录一次「决策实时化」事件（北极星指标原料）。
+
+        realized：该决策是否被系统实时支撑（外部信号 × 内部数据即时触达）
+        real_time：是否为真实租户数据（False = DEMO_DATA 演示态，不计入北极星真实率）
+        真实率仅统计 real_time=True 的事件；DEMO 数据单独给出演示率，二者不混入。
+        """
+        rec = {
+            "decision_id": decision_id,
+            "realized": realized,
+            "real_time": real_time,
+            "is_demo": not real_time,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "kind": "decision_realization",
+        }
+        self._records.append(rec)
+        self._persist("decision_realization", None, f"决策实时化: {'是' if realized else '否'}",
+                      payload=rec, tenant=tenant)
+
+    def north_star_report(self) -> dict:
+        """北极星指标报告：决策实时化率。
+
+        仅真实租户数据（real_time=True）计入真实率；当前生产 ZHIYAN_DEMO_DATA=1，
+        真实率待 P3 首客接入真实数据后从 0% 起跳（接口已就位，不做 live 实测）。
+        """
+        events = [r for r in self._records if r.get("kind") == "decision_realization"]
+        real = [e for e in events if e.get("real_time")]
+        demo = [e for e in events if not e.get("real_time")]
+        real_total = len(real)
+        real_realized = sum(1 for e in real if e["realized"])
+        demo_total = len(demo)
+        demo_realized = sum(1 for e in demo if e["realized"])
+        return {
+            "decision_realization_rate_real": round(real_realized / real_total, 3) if real_total else None,
+            "decision_realization_count_real": real_total,
+            "decision_realization_rate_demo": round(demo_realized / demo_total, 3) if demo_total else 0.0,
+            "decision_realization_count_demo": demo_total,
+            "demo_data_active": bool(demo_total and not real_total),
+            "target_mvp": 0.4,
+            "target_steady": 0.85,
+            "note": "real 率基于真实租户数据；当前生产 DEMO_DATA=1，真实率待 P3 首客 ZHIYAN_DEMO_DATA=0 起跳。",
+        }
+
 
 # 全局单例
 metrics = MetricsStore()

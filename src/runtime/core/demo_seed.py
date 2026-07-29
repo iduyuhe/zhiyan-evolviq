@@ -86,6 +86,21 @@ def seed_demo_data() -> dict:
             summary["interventions"] += 1
 
     summary["agents"] = len(spec.get("agents", []))
+    # 3) 北极星演示信号：决策实时化（DEMO_DATA 态，real_time=False 不计入真实率）
+    _dr_total = 0
+    _dr_realized = 0
+    for a in spec.get("agents", []):
+        n = max(1, int(a.get("total", 0)) // 10)  # 约 1/10 动作产生一次决策实时化事件
+        for i in range(n):
+            realized = (i % 5 != 0)  # 演示态约 80% 实时化
+            metrics.record_decision_realization(
+                decision_id=f"demo-dr-{a['agent']}-{i}",
+                realized=realized,
+                real_time=False,
+            )
+            _dr_total += 1
+            _dr_realized += 1 if realized else 0
+    summary["decision_realization_demo"] = {"total": _dr_total, "realized": _dr_realized}
     summary["loaded"] = True
     logger.info(f"🎬 演示效果信号已注入：{summary}")
     return summary

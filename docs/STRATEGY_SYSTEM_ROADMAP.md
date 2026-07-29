@@ -5,6 +5,8 @@
 > 关联文档：`HOLOGRAPHIC_INFO_SOURCE_ARCHITECTURE.md`（架构备忘录 v1.0，本文件的上位战略与落地分解）
 > 定位：对内指导实现、对外讲产品的**总纲**。回答三件事——我们站在哪（战略）、体系长什么样（框架）、先做什么（规划）。
 
+> ⚠️ **文档状态（2026-07-29 收口）**：本文为 2026-07-25「聊透阶段」产物，内容滞后至 v23，且自称「总纲」已与 `MASTER_EXECUTION_PLAN.md`（v1.4，覆盖至 v31 S3 收口）冲突。本文**降级为历史背景**（Tier 3，见 `docs/INDEX.md`），仅作追溯。**当前唯一执行总纲 = `MASTER_EXECUTION_PLAN.md`**，冲突以 MASTER 为准。S1/S2/S3 真实成果见 `S2_STAGE_REPORT.md` / `S3_STAGE_REPORT.md`。
+
 ---
 
 ## 〇、一句话主张（战略级）

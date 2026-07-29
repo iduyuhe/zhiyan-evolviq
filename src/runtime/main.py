@@ -205,8 +205,9 @@ async def lifespan(app: FastAPI):
         from src.runtime.env_sources.policy_source import PolicySource
         from src.runtime.env_sources.market_source import MarketSource
         from src.runtime.env_sources.benchmark_source import BenchmarkSource
+        from src.runtime.env_sources.disclosure_source import DisclosureSource
 
-        for cls in (PolicySource, MarketSource, BenchmarkSource):
+        for cls in (PolicySource, MarketSource, BenchmarkSource, DisclosureSource):
             try:
                 src = cls()
                 for sig in src._simulated_samples(3):

@@ -25,3 +25,9 @@ async def effect_report():
     report["interventions"] = intervention_queue.stats()
     report["boundaries_active"] = sum(1 for b in authorization.list() if b.enabled)
     return report
+
+
+@router.get("/north-star")
+async def north_star():
+    """北极星指标：决策实时化率（real 率基于真实租户，demo 率来自演示种子）"""
+    return metrics.north_star_report()
