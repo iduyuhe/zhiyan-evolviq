@@ -68,9 +68,9 @@ class TestDisclosureSourceAnonymizedExternal:
         assert src.status().get("internal_only") is False
         # 对外标签为匿名"某某通讯公司"
         assert "某某" in src.label
-        # 内部锚定变量存在（默认空，待杜总指定真实公司后填充）——且绝不进 status()（防外泄）
+        # 内部锚定变量已填真实公司（杜总 2026-07-29 确认=中兴通讯）——且仅内部持有，绝不进 status()（防外泄）
         assert hasattr(src, "real_anchor")
-        assert src.real_anchor == ""
+        assert src.real_anchor == "中兴通讯（000063.SZ）"
         assert "real_anchor" not in src.status(), "真实锚定公司名不得经 status() 外泄"
 
     def test_publishes_to_shared_channel_only(self):

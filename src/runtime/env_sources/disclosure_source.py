@@ -5,7 +5,7 @@
 实质上内部锚定一家真实上市公司（real_anchor）做公开数据推演。
 
 live 模式：settings.env_disclosure_url 配置交易所/公告聚合 JSON 后自动升级（外部接口，按用户铁律不做 live 实测）。
-simulated 模式：确定性演示样本（匿名化，不含真实公司名；real_anchor 给定后可对齐该真实公司公开披露节奏）。
+simulated 模式：确定性演示样本（匿名化，不含真实公司名；real_anchor=中兴通讯（000063.SZ）已锚定，样本已对齐其公开披露主题：运营商集采中标 / 自研半导体器件 / 全球市场准入与合规）。
 
 消费方：外圈 4 agent（executive_cockpit 战略画像 / supply_chain 供应链 / procurement_manage 采购对标 /
 compliance_q 合规）——对外以匿名"某某通讯公司"呈现于孪生大屏体外感知 / /environment 信号与源列表。
@@ -35,7 +35,7 @@ class DisclosureSource(EnvSourceBase):
     credibility = "official"
     tenant_facing = False   # 平台级研究案例源，不进租户订阅视图/不占免费额度
     internal_only = False  # 🔴 研究案例模式：对外匿名呈现（非 internal_only），真实锚定仅存 real_anchor
-    real_anchor: str = ""  # 🔴 内部锚定真实上市公司（由杜总指定后填充）；绝不进入外发 payload
+    real_anchor: str = "中兴通讯（000063.SZ）"  # 🔴 内部锚定真实上市公司（杜总 2026-07-29 确认）；绝不进入外发 payload/status
 
     def _live_url(self) -> str:
         try:
@@ -61,28 +61,30 @@ class DisclosureSource(EnvSourceBase):
         return [o for o in out if o["title"]]
 
     def _simulated_samples(self, limit: int) -> list[dict]:
+        # 对齐 中兴通讯（000063.SZ）公开披露主题：运营商集采中标 / 自研半导体器件 / 全球市场准入与合规
         samples = [
             {
-                "title": "中标某城市轨道交通通信系统集成项目（演示）",
-                "content": "公司公告中标某城市轨道交通通信系统集成项目，合同金额约 X 亿元，"
-                           "预计对当年营收产生正向贡献，交付周期 18 个月。",
+                "title": "中标某运营商 5G 规模集采项目（演示）",
+                "content": "公司公告中标某运营商 5G 规模集采项目，合同金额约 X 亿元，"
+                           "预计对当年营收产生正向贡献，交付周期 18 个月；市场份额领先。",
                 "category": "disclosure",
-                "entities": ["DISC:轨道交通装备", "KPI:中标金额", "SUP:城轨"],
+                "entities": ["DISC:运营商集采", "KPI:中标金额", "KPI:营收", "SUP:运营商"],
                 "url": "https://www.sse.com.cn/（演示样本）",
             },
             {
-                "title": "关于原材料价格波动的风险提示公告（演示）",
-                "content": "公司提示铜、铝等大宗原材料占成本比重较高，近期价格上行将阶段性挤压毛利，"
-                           "已通过锁价与替代料验证对冲部分风险。",
+                "title": "关于自研芯片及半导体器件取得进展的公告（演示）",
+                "content": "公司披露自研基带/射频/交换芯片等半导体器件取得阶段性进展，"
+                           "核心器件自供率提升，有望降低对外部供应链依赖并改善毛利结构。",
                 "category": "disclosure",
-                "entities": ["DISC:原材料", "KPI:毛利", "RAW:铜", "RAW:铝"],
+                "entities": ["DISC:自研半导体", "KPI:毛利", "RAW:芯片", "SUP:供应链"],
                 "url": "https://www.sse.com.cn/（演示样本）",
             },
             {
-                "title": "入选国家级专精特新「小巨人」企业名单（演示）",
-                "content": "公司入选新一批国家级专精特新「小巨人」企业，将在研发补贴与招投标评分上获得政策支持。",
+                "title": "关于全球市场准入与供应链合规的风险提示公告（演示）",
+                "content": "公司提示部分海外市场准入与供应链合规存在不确定性，"
+                           "已通过多区域产能布局与合规体系建设对冲相关风险，持续关注政策变化。",
                 "category": "disclosure",
-                "entities": ["DISC:专精特新", "POLICY:小巨人", "KPI:政策补贴"],
+                "entities": ["DISC:合规", "POLICY:市场准入", "SUP:供应链", "RAW:地缘政治"],
                 "url": "https://www.sse.com.cn/（演示样本）",
             },
         ]
