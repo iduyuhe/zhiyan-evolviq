@@ -116,6 +116,15 @@
 
 每个研究案例 = `{行业, 匿名标签, real_anchor(内部), 公开披露主题, 推荐接口清单(供同行业客户入驻时驱动接口推荐), 校准记录}`。详见 `docs/ENTERPRISE_PROFILE_SCHEMA.md`。
 
+### 七、范式发动机与案例库本体（Agent 落地，2026-07-29 Phase 1）
+
+原 20 个 agent 全为「内部运营型」（制造执行/供应链/经营战略/需求），无专职研究案例编排者。范式突破后补齐四类职能缺口，Phase 1 实装：
+
+- **`industry_research`（范式发动机）**：拉取 `CHANNEL_ENVIRONMENT` 的 disclosure/benchmark/policy 信号 → 建匿名「某某X公司」画像 → 调度 4 外圈 agent(research_case 模式)推演 → 对齐 real_anchor 出校准报告。结果严格不外泄真实锚定名（real_anchor 仅存内部变量）。
+- **`case_curator`（案例库活体本体）**：拥有案例库，列/汇总案例、挂 `recommended_interfaces`、生成教学双版（对外匿名 / 对内真名）。首例种子 = 通讯·`case_telecom_2026`（real_anchor=中兴通讯，仅 internal 视图）。
+- **4 外圈 agent 加 `mode`**：`executive_cockpit`/`supply_chain`/`compliance_q`/`cost_analysis` 的 `analyze()` 加 `mode: tenant|research_case` + `case_id`；research_case 模式不写租户作用域记忆（原子行动恒空），数据作基准占位。
+- **后续相位（待触发）**：Phase 2 企业入驻实例化→`enterprise_onboarding`；Phase 3 多案例规模化→`compliance_reviewer` 合规闸门；行业对标推演(⑤)先并入 `industry_research` 不单列。
+
 ---
 
 ## 2. 全景：三条线并行结构

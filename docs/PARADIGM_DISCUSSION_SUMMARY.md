@@ -90,4 +90,15 @@
 
 ---
 
+## 六、Phase 1 代码落地（2026-07-29 杜总拍板执行「听取你的推荐，按你的推荐走」）
+
+原 20 个 agent 全为内部运营型，范式突破后审计确认四类职能缺口（发动机/活体本体/实例化执行者/合规闸门）。Phase 1 实装，commit `f3a158a`：
+
+- **新增 `industry_research`（范式发动机）**：`src/agents/industry_research/agent.py`。拉 CHANNEL_ENVIRONMENT 的 disclosure/benchmark/policy → 匿名画像 → 调度 4 外圈 agent(research_case)推演 → 对齐 real_anchor 校准；结果严格不外泄真名（real_anchor 仅内部变量）。
+- **新增 `case_curator`（案例库本体）**：`src/agents/case_curator/agent.py` + `cases.json` 种子。列/汇总案例、挂 `recommended_interfaces`、生成教学双版(对外匿名/对内真名)；首例 `case_telecom_2026`（real_anchor=中兴通讯，仅 internal 视图）。
+- **4 外圈 agent 加 `mode`**：`executive_cockpit`/`supply_chain`/`compliance_q`/`cost_analysis` 的 `analyze()` 加 `mode: tenant|research_case` + `case_id`；research_case 模式不写租户作用域记忆(原子行动恒空)。
+- **router**：注册表 20→22，补触发词与 docstring。
+- **测试**：`tests/test_new_research_agents.py`(8 passed) + 全量 435 passed 零回归。
+- **Phase 2/3 待触发**：企业入驻实例化→`enterprise_onboarding`；多案例规模化→`compliance_reviewer` 合规闸门；行业对标推演(⑤)先并入 `industry_research` 不单列。
+
 *本文件为讨论收口稿，确认后相关内容将并入 `docs/MASTER_EXECUTION_PLAN.md` 作为战略总纲顶层范式。未确认前不落地任何产品代码改动。*
