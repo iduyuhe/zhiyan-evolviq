@@ -39,6 +39,10 @@ data/vault.key
 data/credential_vault.json
 data/enterprise_profiles.json
 
+# ===================== GitHub token（仅本地，绝不明文入库） =====================
+# 🔴 安全红线：真实 GitHub PAT 只许放这里（gitignored），绝不进提交历史
+scripts/_deploy/.gh_token
+
 # ===================== Logs =====================
 *.log
 logs/

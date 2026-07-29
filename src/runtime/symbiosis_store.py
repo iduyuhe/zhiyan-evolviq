@@ -39,7 +39,8 @@ SLA_HOURS = 48
 
 # GitHub 配置（复用 v29.9 生态飞轮范式：urllib + Bearer token）
 GH_REPO = os.getenv("ZHIYAN_GH_REPO", "iduyuhe/zhiyan-evolviq")
-GH_TOKEN = os.getenv("GH_TOKEN") or "***REMOVED***"
+# 🔴 安全红线：GitHub token 仅允许来自环境变量，绝不明文硬编码（泄露即被 GitHub 拦截推送）
+GH_TOKEN = os.getenv("GH_TOKEN")
 GH_API = "https://api.github.com"
 GH_LABEL = "from-customer"
 
@@ -63,6 +64,9 @@ def _gh_create_issue(title: str, body: str) -> dict | None:
     import urllib.error
     import urllib.request
 
+    if not GH_TOKEN:
+        logger.warning("GH_TOKEN 未设置，跳过 GitHub Issue 创建（反馈仍存内网，待配置后发布）")
+        return None
     url = f"{GH_API}/repos/{GH_REPO}/issues"
     payload = {"title": title, "body": body, "labels": [GH_LABEL]}
     data = json.dumps(payload).encode()
