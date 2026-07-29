@@ -67,8 +67,8 @@ router = APIRouter(prefix="/environment", tags=["environment"], dependencies=[De
 @router.get("")
 async def environment_overview():
     counts = uns.channel_counts()
-    # 🔴 过滤 internal_only 源（如 disclosure 上铁实证）：仅内部研究实测，不对外暴露
-    sources = [s for s in env_manager.list() if not s.get("internal_only", False)]
+    # 研究案例模式（§3.7）：disclosure 以匿名"某某通讯公司"对外呈现，含入源清单
+    sources = env_manager.list()
     return {
         "sources": sources,
         "signal_count": counts.get(CHANNEL_ENVIRONMENT, 0),
@@ -78,8 +78,8 @@ async def environment_overview():
 
 @router.get("/sources")
 async def list_sources():
-    # 🔴 过滤 internal_only 源（如 disclosure 上铁实证）：仅内部研究实测，不对外暴露
-    sources = [s for s in env_manager.list() if not s.get("internal_only", False)]
+    # 研究案例模式（§3.7）：disclosure 以匿名"某某通讯公司"对外呈现，含入源清单
+    sources = env_manager.list()
     return {"sources": sources}
 
 
@@ -152,12 +152,8 @@ class SubscriptionRequest(BaseModel):
 
 
 def _known_source_names() -> list[str]:
-    # 仅返回对租户开放订阅的源（tenant_facing=True 且非 internal_only）；平台级研究源（如 disclosure 上铁实证）
-    # 不进租户视图/不占免费额度/不对外暴露
-    return [
-        s["name"] for s in env_manager.list()
-        if s.get("tenant_facing", True) and not s.get("internal_only", False)
-    ]
+    # 仅返回对租户开放订阅的源（tenant_facing=True）；平台级研究案例源（如 disclosure）不进租户视图/不占免费额度
+    return [s["name"] for s in env_manager.list() if s.get("tenant_facing", True)]
 
 
 @router.get("/subscriptions")

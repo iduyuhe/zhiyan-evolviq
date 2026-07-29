@@ -112,8 +112,8 @@ async def external_perception():
     韧性降级：env_manager / env_review 不可达时返回空结构，不破管。
     """
     try:
-        # 🔴 过滤 internal_only 源（如 disclosure 上铁实证）：仅内部研究实测，绝不出现在外界可见的孪生大屏
-        sources = [s for s in env_manager.list() if not s.get("internal_only", False)]
+        # 研究案例模式（§3.7）：disclosure 以匿名"某某通讯公司"对外呈现，含入孪生大屏体外感知视图
+        sources = env_manager.list()
     except Exception:
         sources = []
 

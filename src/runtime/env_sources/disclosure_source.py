@@ -1,15 +1,17 @@
-"""环境源④：上市企业公告披露（官方披露，credibility=official）
+"""环境源④：上市企业公告披露（官方披露，credibility=official）——「研究案例」模式（§3.7）
 
-🔴 内部研究实测专用源（上铁通信实证，§3.7）：仅内部研究与实测，不做对外宣传，绝不成为外界可见的公开服务。
+🔴 研究案例模式（2026-07-29 杜总定调）：不等签约客户，直接以区域行业标杆上市企业（公开数据可获取）
+为研究案例对象。对外以「某某行业·某某客户·某某公司」匿名呈现（本例简化为"某某通讯公司"），
+实质上内部锚定一家真实上市公司（real_anchor）做公开数据推演。
 
 live 模式：settings.env_disclosure_url 配置交易所/公告聚合 JSON 后自动升级（外部接口，按用户铁律不做 live 实测）。
-simulated 模式：确定性演示样本（以轨道交通通信设备类上市公司公开披露方向为蓝本，仅演示用，不点名）。
-消费方：仅平台内部研究链路（executive_cockpit 战略画像 / supply_chain 供应链 / compliance_q 合规，均走内部通道）。
-用途：支撑「上铁通信研究型实证（§3.7）」——纯公开信号 → 企业经营画像 → 准且有价值的决策结论。
+simulated 模式：确定性演示样本（匿名化，不含真实公司名；real_anchor 给定后可对齐该真实公司公开披露节奏）。
 
-隔离铁律：发布到独立内部通道 CHANNEL_ENVIRONMENT_INTERNAL（非 CHANNEL_ENVIRONMENT 共享池），
-所有客户面消费方（孪生大屏体外感知 / /environment/signals / 平台建议派生 / BOM 毛利测算 / agents 环境消费）
-只查 CHANNEL_ENVIRONMENT，天然读不到此源 —— 确保上铁实证数据不出现在任何外界可见界面。
+消费方：外圈 4 agent（executive_cockpit 战略画像 / supply_chain 供应链 / procurement_manage 采购对标 /
+compliance_q 合规）——对外以匿名"某某通讯公司"呈现于孪生大屏体外感知 / /environment 信号与源列表。
+
+🔴 匿名铁律：真实公司名/代码仅存 real_anchor（内部变量/研究笔记），绝不进入外发 payload
+（CHANNEL_ENVIRONMENT / 孪生大屏 / /environment 任何接口均不得含真名）。
 
 F4 可信治理：credibility=official（官方披露为锚）。
 韧性铁律：任何网络/解析失败静默回退 simulated 样本，绝不阻断。
@@ -29,10 +31,11 @@ logger = logging.getLogger(__name__)
 class DisclosureSource(EnvSourceBase):
     name = "disclosure"
     kind = "disclosure"
-    label = "上市企业公告披露（官方披露·内部研究）"
+    label = "某某通讯公司（研究案例·公开披露）"
     credibility = "official"
-    tenant_facing = False   # 平台级研究源（上铁实证用），不进租户订阅视图/不占免费额度
-    internal_only = True    # 🔴 仅内部研究与实测，不对外宣传、非外界可见公开服务——发布到独立内部通道
+    tenant_facing = False   # 平台级研究案例源，不进租户订阅视图/不占免费额度
+    internal_only = False  # 🔴 研究案例模式：对外匿名呈现（非 internal_only），真实锚定仅存 real_anchor
+    real_anchor: str = ""  # 🔴 内部锚定真实上市公司（由杜总指定后填充）；绝不进入外发 payload
 
     def _live_url(self) -> str:
         try:
@@ -85,14 +88,17 @@ class DisclosureSource(EnvSourceBase):
         ]
         return samples[:limit]
 
-    # ---- 发布：🔴 走内部通道 CHANNEL_ENVIRONMENT_INTERNAL（与 CHANNEL_ENVIRONMENT 共享池严格分离）----
+    # ---- 发布：走共享通道 CHANNEL_ENVIRONMENT（对外匿名"某某通讯公司"呈现）----
     def publish_signal(self, signal: dict) -> Any:
         try:
             from src.runtime.uns import uns
 
             payload = dict(signal)
+            # 🔴 匿名铁律：剥离任何可能携带真实公司名的字段，仅留匿名展示所需
+            payload.pop("real_anchor", None)
+            payload.pop("company", None)
             entities = payload.pop("entities", [])
-            ev = uns.publish_environment_internal(
+            ev = uns.publish_environment(
                 source=f"env://{self.kind}/{self.name}",
                 payload=payload,
                 entities=entities,
@@ -102,5 +108,5 @@ class DisclosureSource(EnvSourceBase):
             )
             return ev.id
         except Exception as e:
-            logger.warning(f"⚠️ [{self.name}] 发布内部通道失败（不破管）：{e}")
+            logger.warning(f"⚠️ [{self.name}] 发布共享通道失败（不破管）：{e}")
             return None

@@ -1,11 +1,13 @@
-"""上铁通信实证（§3.7）内部隔离专项测试（杜总铁律：只做内部研究与实测，不对外宣传、非外界可见公开服务）
+"""研究案例模式（§3.7）专项测试（杜总定调：对外匿名"某某通讯公司"，内部锚定真实上市公司）
 
-覆盖硬性隔离是否生效：
-1. DisclosureSource 标记 internal_only=True
-2. DisclosureSource 发布走独立内部通道 CHANNEL_ENVIRONMENT_INTERNAL，绝不进 CHANNEL_ENVIRONMENT 共享池
-3. 孪生大屏体外感知视图 sources 不含 disclosure；recent_signals 不含 disclosure 标题
-4. /environment/signals（客户面）不含 disclosure 信号
-5. _known_source_names（租户订阅视图）不含 disclosure
+覆盖研究案例模式是否正确落地：
+1. DisclosureSource 标记 internal_only=False（对外匿名呈现，非内部-only）
+2. DisclosureSource 发布走共享通道 CHANNEL_ENVIRONMENT（对外可见），绝不进内部通道 CHANNEL_ENVIRONMENT_INTERNAL
+3. 🔴 匿名铁律：发布 payload 绝不携带真实公司名（real_anchor/company 字段被剥离）
+4. 孪生大屏体外感知视图 sources 含 disclosure（匿名"某某通讯公司"）；recent_signals 含 disclosure 标题
+5. /environment/signals（客户面）含 disclosure 信号
+6. /environment/sources 含 disclosure
+7. _known_source_names（租户订阅视图）不含 disclosure（tenant_facing=False，不占免费额度）
 """
 
 import os
@@ -57,17 +59,22 @@ async def _client(app):
     return AsyncClient(transport=t, base_url="http://t")
 
 
-class TestDisclosureSourceInternalOnly:
-    def test_internal_only_flag(self):
-        # 1. 源标记 internal_only=True
-        assert DisclosureSource.internal_only is True
+class TestDisclosureSourceAnonymizedExternal:
+    def test_not_internal_only(self):
+        # 1. 研究案例模式：对外匿名呈现（非 internal_only）
+        assert DisclosureSource.internal_only is False
         src = DisclosureSource()
-        assert src.internal_only is True
-        # status() 透出该字段
-        assert src.status().get("internal_only") is True
+        assert src.internal_only is False
+        assert src.status().get("internal_only") is False
+        # 对外标签为匿名"某某通讯公司"
+        assert "某某" in src.label
+        # 内部锚定变量存在（默认空，待杜总指定真实公司后填充）——且绝不进 status()（防外泄）
+        assert hasattr(src, "real_anchor")
+        assert src.real_anchor == ""
+        assert "real_anchor" not in src.status(), "真实锚定公司名不得经 status() 外泄"
 
-    def test_publishes_to_internal_channel_only(self):
-        # 2. 发布走内部通道，不进共享池
+    def test_publishes_to_shared_channel_only(self):
+        # 2. 发布走共享通道，绝不进内部通道
         src = DisclosureSource()
         sid = src.publish_signal({
             "title": "中标某城市轨道交通通信系统集成项目（演示）",
@@ -76,62 +83,85 @@ class TestDisclosureSourceInternalOnly:
             "entities": ["DISC:轨道交通装备"],
         })
         assert sid is not None
-        internal = uns.query(channel=CHANNEL_ENVIRONMENT_INTERNAL, n=100)
         shared = uns.query(channel=CHANNEL_ENVIRONMENT, n=100)
-        assert len(internal) == 1, "disclosure 必须进内部通道"
-        assert internal[0]["payload"]["title"].startswith("中标")
-        assert len(shared) == 0, "disclosure 绝不进 CHANNEL_ENVIRONMENT 共享池"
-        # ALL_CHANNELS 含内部通道
+        internal = uns.query(channel=CHANNEL_ENVIRONMENT_INTERNAL, n=100)
+        assert len(shared) == 1, "disclosure 必须进 CHANNEL_ENVIRONMENT 共享池（对外匿名可见）"
+        assert shared[0]["payload"]["title"].startswith("中标")
+        assert len(internal) == 0, "disclosure 绝不进内部通道"
+        # 内部通道常量仍保留（供可选内部研究校验）
         assert CHANNEL_ENVIRONMENT_INTERNAL in ALL_CHANNELS
 
+    def test_real_anchor_stripped_from_payload(self):
+        # 3. 🔴 匿名铁律：真实公司名绝不进外发 payload
+        src = DisclosureSource()
+        src.real_anchor = "上海铁路通信有限公司"  # 模拟内部锚定真实公司
+        sid = src.publish_signal({
+            "title": "某上市公司公告（演示）",
+            "content": "x",
+            "category": "disclosure",
+            "entities": [],
+            "real_anchor": "上海铁路通信有限公司",  # 即使误带，也必须被剥离
+            "company": "上海铁路通信有限公司",
+        })
+        assert sid is not None
+        shared = uns.query(channel=CHANNEL_ENVIRONMENT, n=100)
+        payload = shared[0]["payload"]
+        assert "real_anchor" not in payload, "真实锚定公司名不得外泄"
+        assert "company" not in payload, "真实公司名不得外泄"
+        assert "上海铁路通信" not in str(payload), "payload 不得含真实公司名"
+        # 源对象内部仍持有 real_anchor（内部研究用，不对外）
+        assert src.real_anchor == "上海铁路通信有限公司"
 
-class TestCustomerFacingExcludesDisclosure:
+
+class TestCustomerFacingShowsAnonymizedDisclosure:
     @pytest.mark.asyncio
-    async def test_twin_sources_exclude_disclosure(self, app):
-        # 3a. 孪生大屏 sources 不含 disclosure
+    async def test_twin_sources_include_disclosure(self, app):
+        # 4a. 孪生大屏 sources 含 disclosure（匿名"某某通讯公司"）
         async with await _client(app) as c:
             d = (await c.get("/twin/external-perception")).json()
             names = {s["name"] for s in d["sources"]}
-            assert "disclosure" not in names, "孪生大屏不得暴露上铁实证源"
+            assert "disclosure" in names, "孪生大屏应匿名呈现研究案例源"
             assert {"policy", "market", "benchmark"}.issubset(names)
+            disc = next(s for s in d["sources"] if s["name"] == "disclosure")
+            assert "某某" in disc["label"]
 
     @pytest.mark.asyncio
-    async def test_twin_signals_exclude_disclosure(self, app):
-        # 3b. 孪生大屏 recent_signals 不含 disclosure 标题
+    async def test_twin_signals_include_disclosure(self, app):
+        # 4b. 孪生大屏 recent_signals 含 disclosure 标题
         DisclosureSource().publish_signal({
-            "title": "上铁实证内部信号（不得外泄）",
+            "title": "某某通讯公司公告（对外匿名）",
             "content": "x", "category": "disclosure", "entities": [],
         })
         uns.publish_environment("policy", {"title": "政策P1", "category": "policy"}, credibility=CRED_OFFICIAL)
         async with await _client(app) as c:
             d = (await c.get("/twin/external-perception")).json()
             titles = {s["title"] for s in d["recent_signals"]}
-            assert "上铁实证内部信号（不得外泄）" not in titles
-            assert len(d["recent_signals"]) >= 1  # 政策信号可见
+            assert "某某通讯公司公告（对外匿名）" in titles
+            assert len(d["recent_signals"]) >= 1
 
     @pytest.mark.asyncio
-    async def test_environment_signals_exclude_disclosure(self, app):
-        # 4. /environment/signals 不含 disclosure 信号
+    async def test_environment_signals_include_disclosure(self, app):
+        # 5. /environment/signals 含 disclosure 信号
         DisclosureSource().publish_signal({
-            "title": "上铁实证内部信号（不得外泄）",
+            "title": "某某通讯公司公告（对外匿名）",
             "content": "x", "category": "disclosure", "entities": [],
         })
         uns.publish_environment("market", {"title": "行情M1", "category": "market"}, credibility=CRED_OFFICIAL)
         async with await _client(app) as c:
             d = (await c.get("/environment/signals")).json()
             titles = {s["payload"].get("title") for s in d["signals"]}
-            assert "上铁实证内部信号（不得外泄）" not in titles
+            assert "某某通讯公司公告（对外匿名）" in titles
             assert "行情M1" in titles
 
     @pytest.mark.asyncio
-    async def test_environment_sources_exclude_disclosure(self, app):
-        # 客户面 /environment/sources 不含 disclosure
+    async def test_environment_sources_include_disclosure(self, app):
+        # 6. 客户面 /environment/sources 含 disclosure
         async with await _client(app) as c:
             d = (await c.get("/environment/sources")).json()
             names = {s["name"] for s in d["sources"]}
-            assert "disclosure" not in names
+            assert "disclosure" in names
 
     def test_known_source_names_excludes_disclosure(self):
-        # 5. 租户订阅视图不含 disclosure
+        # 7. 租户订阅视图不含 disclosure（tenant_facing=False，不占免费额度）
         from src.runtime.api.env_perception import _known_source_names
         assert "disclosure" not in _known_source_names()
