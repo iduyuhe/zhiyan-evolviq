@@ -40,8 +40,8 @@ class ExecutiveCockpitAgent(BaseAgent):
 - 经营导向：每一行动都有量化依据，不凭空建议
 """
 
-    async def analyze(self, goal: str) -> dict:
-        logger.info(f"[Executive Agent] Analyzing: {goal[:60]}...")
+    async def analyze(self, goal: str, mode: str = "tenant", case_id: str = None) -> dict:
+        logger.info(f"[Executive Agent] Analyzing: {goal[:60]}... (mode={mode})")
 
         kpi = await self.tools.get_kpi_dashboard()
         budgets = await self.tools.get_budget_utilization()
@@ -58,15 +58,17 @@ class ExecutiveCockpitAgent(BaseAgent):
 
         actions_taken = []
         # 授权内行动：对超预算部门生成改善行动项
-        for b in overspend:
-            task = await self.tools.create_action_item(b["dept"], f"超预算 {b['variance']} 万元，{b['note']}")
-            actions_taken.append({
-                "type": "create_action_item",
-                "detail": f"为 {b['dept']}（超预算 {b['variance']} 万元，{b['note']}）生成改善任务",
-                "dept": b["dept"],
-                "confidence": 0.82,
-                "status": "auto_executed",
-            })
+        # 🔴 研究案例模式(research_case)下不写租户作用域记忆/行动（匿名推演，数据仅作基准占位）
+        if mode == "tenant":
+            for b in overspend:
+                task = await self.tools.create_action_item(b["dept"], f"超预算 {b['variance']} 万元，{b['note']}")
+                actions_taken.append({
+                    "type": "create_action_item",
+                    "detail": f"为 {b['dept']}（超预算 {b['variance']} 万元，{b['note']}）生成改善任务",
+                    "dept": b["dept"],
+                    "confidence": 0.82,
+                    "status": "auto_executed",
+                })
 
         recommendations = self._generate_recommendations(kpi, budgets, production, prod_pct, overspend, actions_taken)
 
@@ -92,6 +94,10 @@ class ExecutiveCockpitAgent(BaseAgent):
             # v30.0 α：环境感知上下文（政策+标杆，含来源溯源）
             "env_signals": env_strategic,
             "env_signal_count": env.get("count", 0),
+            # 研究案例模式透传（research_case 下 actions_taken 恒为空，不污染租户）
+            "mode": mode,
+            "case_id": case_id,
+            **({"note": "研究案例模式(research_case)：经营数据为基准占位，不写租户作用域记忆；真实锚定仅内部可见"} if mode != "tenant" else {}),
         }
 
     def _generate_recommendations(self, kpi, budgets, production, prod_pct, overspend, actions_taken) -> list:

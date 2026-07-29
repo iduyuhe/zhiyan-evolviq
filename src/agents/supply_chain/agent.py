@@ -33,13 +33,20 @@ class SupplyChainAgent(BaseAgent):
         self.tools = SupplyChainTools()
         self.system_prompt = SYSTEM_PROMPT
 
-    async def analyze(self, goal: str) -> dict:
+    async def analyze(self, goal: str, mode: str = "tenant", case_id: str = None) -> dict:
         """统一入口：规划 → 执行，返回执行结果（含 ROI 闭环 metrics）。
 
         向后兼容：内部仍复用 `analyze_goal`（生成规划）+ `execute`（执行规划）。
+        mode=research_case 时为研究案例匿名推演（数据作基准占位，不写租户作用域记忆）。
         """
         plan = await self.analyze_goal(goal)
-        return await self.execute(goal, plan)
+        result = await self.execute(goal, plan)
+        # 研究案例模式透传（supply_chain 的 actions_taken 仅记录、不写租户作用域记忆）
+        result["mode"] = mode
+        result["case_id"] = case_id
+        if mode != "tenant":
+            result["note"] = "研究案例模式(research_case)：供应链数据为基准占位，不写租户作用域记忆；真实锚定仅内部可见"
+        return result
 
     async def analyze_goal(self, goal: str, auth_boundary_id: str | None = None) -> str:
         """

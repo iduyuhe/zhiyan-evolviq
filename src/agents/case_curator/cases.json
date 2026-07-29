@@ -1,0 +1,19 @@
+[
+  {
+    "case_id": "case_telecom_2026",
+    "subject_anon": "某某通讯公司（研究案例·公开披露）",
+    "industry": "通讯设备 / 信息通信",
+    "real_anchor": "中兴通讯（000063.SZ）",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」如何在通讯行业标杆企业推演 战略 / 供应链 / 合规 / 成本四维，并对外匿名、对内真名双版教学。",
+    "teaching_notes_internal": "内部锚定中兴通讯(000063.SZ)公开披露，用于校准行业研究推演；真实公司名仅在本视图出现，对外一律匿名。",
+    "status": "active",
+    "updated_at": "2026-07-29"
+  }
+]

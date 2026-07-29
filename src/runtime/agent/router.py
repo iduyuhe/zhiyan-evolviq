@@ -1,6 +1,6 @@
 """多Agent路由引擎——根据用户目标自动分派到合适的Agent
 
-当前Agent阵容（16个）：
+当前Agent阵容（22个）：
 1. 供应链Agent (supply_chain) — 物料齐套检查、缺料预警、替代推荐
 2. 设备维护Agent (pm_maintenance) — 设备健康诊断、预测维护
 3. 良率分析Agent (yield_analysis) — 晶圆良率分析、缺陷定位
@@ -21,6 +21,8 @@
 18. 经营驾驶舱Agent (executive_cockpit) — 经营KPI看板、预算执行、产出追踪
 19. 研发新产导入Agent (rd_npi) — NPI项目全生命周期、里程碑、批量试产
 20. 采购与供应商管理Agent (procurement_manage) — 供应商绩效、合同管理、采购策略
+21. 行业研究Agent (industry_research) — 研究案例范式发动机：选标杆→匿名画像→调度外圈4 agent推演→对齐真实锚定校准
+22. 案例库策展Agent (case_curator) — 案例库活体本体：列/汇总案例、挂推荐接口、生成教学双版(对外匿名/对内真名)
 """
 
 import importlib
@@ -57,6 +59,9 @@ AGENT_REGISTRY: dict[str, tuple[str, str]] = {
     # 经营决策大脑（P4 企业级）
     "rd_npi": ("src.agents.rd_npi.agent", "npi_agent"),
     "procurement_manage": ("src.agents.procurement_manage.agent", "procurement_agent"),
+    # 研究案例范式（§3.7，2026-07-29 杜总定调）：发动机 + 案例库本体
+    "industry_research": ("src.agents.industry_research.agent", "industry_research_agent"),
+    "case_curator": ("src.agents.case_curator.agent", "case_curator_agent"),
 }
 
 
@@ -105,6 +110,10 @@ ROUTING_RULES = [
     (["供应商绩效", "合同到期", "竞价", "srm", "战略采购", "供应商管理", "供应商评审", "长协", "供应商评分", "供应商品质", "供应商业绩"], "procurement_manage"),
     # 良率分析Agent触发词（放最后，作为宽泛兜底）
     (["良率", "yield", "缺陷", "defect", "质量", "quality", "颗粒", "污染", "合格率", "不良"], "yield_analysis"),
+    # 行业研究Agent触发词（研究案例范式发动机；置于兜底之前，靠专属复合词截获）
+    (["研究案例", "行业研究", "标杆企业", "案例推演", "范式发动机", "industry research", "benchmark study", "匿名画像"], "industry_research"),
+    # 案例库策展Agent触发词（案例库本体；靠案例库/策展/教学双版/推荐接口等专属词截获）
+    (["案例库", "策展", "教学双版", "推荐接口", "案例汇总", "case curator", "教学素材"], "case_curator"),
 ]
 
 
@@ -131,14 +140,17 @@ def get_agent(agent_name: str):
     return getattr(module, singleton_name)
 
 
-async def execute_by_agent(agent_name: str, goal: str) -> dict:
+async def execute_by_agent(agent_name: str, goal: str, **kwargs) -> dict:
     """调用指定 Agent 执行——统一走 BaseAgent.analyze(goal) 契约。
 
     所有 Agent（含历史上使用 analyze_goal+execute 的 supply_chain、
     使用 trace 的 quality_trace）都已提供 analyze() 适配器，因此这里
     不再需要为每个 Agent 写分支，注册表 + 统一调用即可。
+
+    **kwargs 透传给 agent.analyze()，用于研究案例模式(mode=research_case, case_id=...)
+    等扩展参数（不支持的 Agent 会忽略未识别的关键字）。
     """
     agent = get_agent(agent_name)
-    result = await agent.analyze(goal)
+    result = await agent.analyze(goal, **kwargs)
     result["agent"] = agent_name
     return result

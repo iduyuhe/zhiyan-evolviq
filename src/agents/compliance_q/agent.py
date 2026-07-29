@@ -40,8 +40,8 @@ class ComplianceAgent(BaseAgent):
 - 不臆造数字：所有数字来自种子/QMS/GRC 系统（事实锚点）
 """
 
-    async def analyze(self, goal: str) -> dict:
-        logger.info(f"[Compliance Agent] Analyzing: {goal[:60]}...")
+    async def analyze(self, goal: str, mode: str = "tenant", case_id: str = None) -> dict:
+        logger.info(f"[Compliance Agent] Analyzing: {goal[:60]}... (mode={mode})")
 
         certs = await self.tools.get_certifications()
         audits = await self.tools.get_audit_findings()
@@ -55,16 +55,18 @@ class ComplianceAgent(BaseAgent):
 
         actions_taken = []
         # 授权内行动：对高严重度未关闭的审核发现自动创建 CAPA
-        critical_open = [a for a in audits if a["status"] == "open" and a["severity"] == "high"]
-        for f in critical_open:
-            task = await self.tools.create_capa(f["finding_id"], f["title"])
-            actions_taken.append({
-                "type": "create_capa",
-                "detail": f"对审核发现 {f['finding_id']}（{f['title']}）生成 CAPA 整改任务",
-                "finding_id": f["finding_id"],
-                "confidence": 0.85,
-                "status": "auto_executed",
-            })
+        # 🔴 研究案例模式(research_case)下不写租户作用域记忆/行动（匿名推演，数据仅作基准占位）
+        if mode == "tenant":
+            critical_open = [a for a in audits if a["status"] == "open" and a["severity"] == "high"]
+            for f in critical_open:
+                task = await self.tools.create_capa(f["finding_id"], f["title"])
+                actions_taken.append({
+                    "type": "create_capa",
+                    "detail": f"对审核发现 {f['finding_id']}（{f['title']}）生成 CAPA 整改任务",
+                    "finding_id": f["finding_id"],
+                    "confidence": 0.85,
+                    "status": "auto_executed",
+                })
 
         recommendations = self._generate_recommendations(certs, audits, regs, summary, actions_taken)
 
@@ -90,6 +92,10 @@ class ComplianceAgent(BaseAgent):
             # v30.0 α：环境感知上下文（政策信号，含来源溯源）
             "env_signals": env_policy,
             "env_signal_count": env.get("count", 0),
+            # 研究案例模式透传（research_case 下 actions_taken 恒为空，不污染租户）
+            "mode": mode,
+            "case_id": case_id,
+            **({"note": "研究案例模式(research_case)：合规数据为基准占位，不写租户作用域记忆；真实锚定仅内部可见"} if mode != "tenant" else {}),
         }
 
     def _generate_recommendations(self, certs, audits, regs, summary, actions_taken) -> list:
