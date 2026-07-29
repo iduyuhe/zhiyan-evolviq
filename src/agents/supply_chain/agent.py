@@ -40,7 +40,7 @@ class SupplyChainAgent(BaseAgent):
         mode=research_case 时为研究案例匿名推演（数据作基准占位，不写租户作用域记忆）。
         """
         plan = await self.analyze_goal(goal)
-        result = await self.execute(goal, plan)
+        result = await self.execute(goal, plan, mode=mode)
         # 研究案例模式透传（supply_chain 的 actions_taken 仅记录、不写租户作用域记忆）
         result["mode"] = mode
         result["case_id"] = case_id
@@ -66,7 +66,7 @@ class SupplyChainAgent(BaseAgent):
         logger.info(f"✅ Plan generated ({len(plan_md)} chars)")
         return plan_md
 
-    async def execute(self, goal: str, plan: str) -> dict:
+    async def execute(self, goal: str, plan: str, mode: str = "tenant") -> dict:
         """
         执行已确认的规划，产出齐套率 ROI 闭环结果。
 
@@ -97,6 +97,7 @@ class SupplyChainAgent(BaseAgent):
 
         # Step 5: 在授权范围内生成缓解行动（确认开放PO / 催交延期PO / 锁定替代料）
         actions_taken = []
+        actions_proposed = []  # 推演建议（research_case 也保留，仅 actions_taken 在匿名模式下清空）
         alternatives_found = []
         overrides: dict[str, int] = {}  # material_code -> 追加可用量（行动落地后）
 
@@ -112,7 +113,7 @@ class SupplyChainAgent(BaseAgent):
             # 杠杆1：确认开放PO（自主——本就是我方已下达订单，确认交期即可纳入承诺供应）
             open_qty = c["open_qty"]
             if open_qty > 0:
-                actions_taken.append({
+                actions_proposed.append({
                     "type": "confirm_po",
                     "material": code,
                     "name": c["name"],
@@ -125,7 +126,7 @@ class SupplyChainAgent(BaseAgent):
             # 杠杆2：紧急催交延期PO（待批——加急产生溢价，需人决策）
             delayed_qty = c["delayed_qty"]
             if delayed_qty > 0:
-                actions_taken.append({
+                actions_proposed.append({
                     "type": "expedite_po",
                     "material": code,
                     "name": c["name"],
@@ -148,7 +149,7 @@ class SupplyChainAgent(BaseAgent):
                 alt = alts[0]
                 lock_qty = residual
                 status = "pending_approval" if lock_qty > max_lock else "auto_locked"
-                actions_taken.append({
+                actions_proposed.append({
                     "type": "lock_alternative",
                     "material": code,
                     "name": c["name"],
@@ -161,6 +162,10 @@ class SupplyChainAgent(BaseAgent):
 
             if added > 0:
                 overrides[code] = added
+
+        # 🔴 research_case（匿名推演）模式：不写租户作用域记忆 / 不记录已采取行动，
+        # actions_taken 恒空；推演建议仍保留在 actions_proposed 供范式发动机消费。
+        actions_taken = actions_proposed if mode == "tenant" else []
 
         # Step 6: 行动落地后重算齐套（承诺齐套率）—— 价值闭环的核心
         post_checks = self._run_supply_check(bom, inventory, pos, overrides=overrides)
@@ -217,6 +222,7 @@ class SupplyChainAgent(BaseAgent):
                 for c in post_checks
             ],
             "actions_taken": actions_taken,
+            "actions_proposed": actions_proposed,
             "alternatives_found": alternatives_found,
             "warning": self._generate_warnings(post_checks),
             # v30.0 α：环境信号上下文（行情信号融入供应链分析，含来源溯源）

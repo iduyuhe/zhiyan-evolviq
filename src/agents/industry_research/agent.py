@@ -37,8 +37,23 @@ class IndustryResearchAgent(BaseAgent):
         # 🔴 真实锚定仅存内部变量，绝不进任何外发字段（结果 dict 中不得出现）
         self._real_anchor = REAL_ANCHOR
 
-    async def analyze(self, goal: str) -> dict:
+    async def analyze(self, goal: str, case_id: str = None, **kwargs) -> dict:
         logger.info(f"[IndustryResearch] {goal[:60]}...")
+
+        # 🔴 多案例支持（#398）：解析案例（指定 case_id 或案例库默认 active 案例）
+        from src.agents.case_curator.agent import case_curator_agent
+
+        case_curator_agent._ensure_seed()
+        cid = case_id or case_curator_agent._active_case_id() or self.case_id
+        case = case_curator_agent._get_case(cid)
+        if case:
+            self.case_id = cid
+            self.anon_label = case.get("subject_anon", ANON_LABEL)
+            industry = case.get("industry", "通讯设备 / 信息通信")
+            # 🔴 真实锚定仅存内部变量，绝不进任何外发字段
+            self._real_anchor = case.get("real_anchor") or REAL_ANCHOR
+        else:
+            industry = "通讯设备 / 信息通信"
 
         # 1) 拉取环境感知信号（disclosure / benchmark / policy）
         env = await self.env_context()
@@ -48,7 +63,7 @@ class IndustryResearchAgent(BaseAgent):
         policy = [s for s in signals if s.get("payload", {}).get("category") == "policy"]
 
         # 2) 建匿名画像（绝不写真实公司名）
-        profile = self._build_anon_profile(disclosure, benchmark, policy)
+        profile = self._build_anon_profile(disclosure, benchmark, policy, industry)
 
         # 3) 调度 4 外圈 agent(research_case 模式)——不污染租户上下文、不写租户作用域记忆
         outer = {}
@@ -87,10 +102,10 @@ class IndustryResearchAgent(BaseAgent):
             },
         }
 
-    def _build_anon_profile(self, disclosure, benchmark, policy) -> dict:
+    def _build_anon_profile(self, disclosure, benchmark, policy, industry: str = "通讯设备 / 信息通信") -> dict:
         return {
             "label": self.anon_label,
-            "industry": "通讯设备 / 信息通信",
+            "industry": industry,
             "disclosure_themes": [s.get("title") for s in disclosure[:5]],
             "benchmark_themes": [s.get("title") for s in benchmark[:5]],
             "policy_themes": [s.get("title") for s in policy[:5]],

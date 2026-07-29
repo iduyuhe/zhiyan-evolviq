@@ -78,6 +78,17 @@ class CaseCuratorAgent(BaseAgent):
     async def analyze(self, goal: str) -> dict:
         self._ensure_seed()
         g = goal.lower()
+        # 🔴 多案例：若 goal 明确带 case_id，直接返回该案例详情
+        import re
+
+        m = re.search(r"case_[a-z0-9_]+", goal)
+        if m:
+            c = self._get_case(m.group(0))
+            if c:
+                return self._case_detail(c)
+        # 搜索 / 查找（按 case_id / 匿名主题 / 行业 / 教学笔记模糊匹配）
+        if "搜索" in goal or "search" in g or "查找" in goal or "查询" in goal or "找" in goal:
+            return self._search_cases(goal)
         if "教学" in goal or "双版" in goal or "teaching" in g:
             return self._teaching_dual_version()
         if "推荐接口" in goal or "recommended" in g or "接口" in goal:
@@ -85,11 +96,88 @@ class CaseCuratorAgent(BaseAgent):
         # 默认：列出 / 汇总案例库
         return self._list_cases()
 
+    # ---------- 多案例能力（#398） ----------
+
+    def _get_case(self, case_id: str) -> dict | None:
+        for c in self._load():
+            if c["case_id"] == case_id:
+                return c
+        return None
+
+    def _active_case_id(self) -> str | None:
+        """默认案例：第一个 active 案例（先有后优，单案例时即它）。"""
+        for c in self._load():
+            if c.get("status", "active") == "active":
+                return c["case_id"]
+        cases = self._load()
+        return cases[0]["case_id"] if cases else None
+
+    def _search_cases(self, query: str) -> dict:
+        import re
+
+        q = query.lower().replace("搜索", "").replace("查找", "").replace("查询", "").replace("找", "").strip()
+        if not q:
+            return self._list_cases()
+        # 分词：英文/数字连续段整体保留；中文按 2 字滑动窗口生成词素，任一命中即匹配
+        raw_tokens = re.findall(r"[A-Za-z0-9_]+|[\u4e00-\u9fff]+", q)
+        tokens: list[str] = []
+        for t in raw_tokens:
+            if re.search(r"[A-Za-z0-9]", t):
+                if len(t) >= 2:
+                    tokens.append(t)
+            else:
+                for i in range(len(t) - 1):
+                    tokens.append(t[i : i + 2])
+        if not tokens:
+            tokens = [q]
+        out = []
+        for c in self._load():
+            hay = " ".join([
+                c.get("case_id", ""), c.get("subject_anon", ""),
+                c.get("industry", ""), c.get("real_anchor", ""),
+                c.get("teaching_notes_anon", ""),
+            ]).lower()
+            if any(t.lower() in hay for t in tokens):
+                out.append(c)
+        return {
+            "status": "completed",
+            "query": q,
+            "tokens": tokens,
+            "match_count": len(out),
+            "cases": [
+                {
+                    "case_id": c["case_id"],
+                    "subject_anon": c["subject_anon"],
+                    "industry": c["industry"],
+                    "status": c.get("status", "active"),
+                }
+                for c in out
+            ],
+            "summary": f"搜索「{q}」命中 {len(out)} 个案例" if out else f"搜索「{q}」无匹配案例",
+        }
+
+    def _case_detail(self, c: dict) -> dict:
+        """单案例详情（对外匿名视图，绝不带 real_anchor）。"""
+        return {
+            "status": "completed",
+            "case": {
+                "case_id": c["case_id"],
+                "subject_anon": c["subject_anon"],
+                "industry": c["industry"],
+                "recommended_interfaces": c.get("recommended_interfaces", []),
+                "teaching_notes_anon": c.get("teaching_notes_anon", ""),
+                "status": c.get("status", "active"),
+                "updated_at": c.get("updated_at", ""),
+            },
+            "summary": f"案例 {c['case_id']} 详情（{c['subject_anon']}）",
+        }
+
     def _list_cases(self) -> dict:
         cases = self._load()
         return {
             "status": "completed",
             "case_count": len(cases),
+            "active_case_id": self._active_case_id(),
             "cases": [
                 {
                     "case_id": c["case_id"],

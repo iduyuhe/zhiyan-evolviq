@@ -1,6 +1,6 @@
 """多Agent路由引擎——根据用户目标自动分派到合适的Agent
 
-当前Agent阵容（23个）：
+当前Agent阵容（24个）：
 1. 供应链Agent (supply_chain) — 物料齐套检查、缺料预警、替代推荐
 2. 设备维护Agent (pm_maintenance) — 设备健康诊断、预测维护
 3. 良率分析Agent (yield_analysis) — 晶圆良率分析、缺陷定位
@@ -24,6 +24,7 @@
 21. 行业研究Agent (industry_research) — 研究案例范式发动机：选标杆→匿名画像→调度外圈4 agent推演→对齐真实锚定校准
 22. 案例库策展Agent (case_curator) — 案例库活体本体：列/汇总案例、挂推荐接口、生成教学双版(对外匿名/对内真名)
 23. 企业入驻Agent (enterprise_onboarding) — 两阶段实例化：现状画像→案例库驱动接口推荐(三态清单)→三圈解锁引导
+24. 合规闸门Agent (compliance_reviewer) — 研究案例范式合规审查：匿名/真名双版边界 + 零真名泄漏 + research_case 纪律
 """
 
 import importlib
@@ -65,6 +66,8 @@ AGENT_REGISTRY: dict[str, tuple[str, str]] = {
     "case_curator": ("src.agents.case_curator.agent", "case_curator_agent"),
     # 两阶段实例化框架（Phase 2）：企业入驻驱动入口
     "enterprise_onboarding": ("src.agents.enterprise_onboarding.agent", "enterprise_onboarding_agent"),
+    # 合规闸门（Phase 3.2）：研究案例范式合规审查（匿名/真名边界 + 零泄漏 + research_case 纪律）
+    "compliance_reviewer": ("src.agents.compliance_reviewer.agent", "compliance_reviewer_agent"),
 }
 
 
@@ -103,6 +106,9 @@ ROUTING_RULES = [
     (["能耗", "能源", "碳", "碳排放", "碳足迹", "esg", "双碳", "节能", "绿电", "排放", "energy", "carbon"], "energy_carbon"),
     # 制造成本Agent触发词（经营决策大脑）
     (["成本", "制造成本", "降本", "报价", "毛利", "费用", "单位成本", "成本核算", "cost"], "cost_analysis"),
+    # 合规闸门Agent触发词（研究案例范式合规审查；置于 compliance_q 之前，
+    # 靠「合规审查/复核/零泄漏/匿名边界」等专属复合词截获，普通「合规」仍归 compliance_q）
+    (["合规审查", "合规复核", "零泄漏", "匿名边界", "双版边界", "合规闸门", "compliance review", "leak check", "研究案例合规"], "compliance_reviewer"),
     # 质量合规Agent触发词（经营决策大脑；置于良率之前）
     (["合规", "认证", "iso", "审核", "audit", "法规", "rohs", "reach", "capa", "质量体系", "纠正措施", "体系认证", "管理体系"], "compliance_q"),
     # 经营驾驶舱Agent触发词（经营决策大脑；置于良率之前）

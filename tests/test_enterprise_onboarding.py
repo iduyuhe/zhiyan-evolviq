@@ -18,6 +18,11 @@ import os
 
 import pytest
 
+# 🔴 必须在 import enterprise_store（经 router 间接 import）之前设置，
+# 否则 _DATA_DIR 已在模块加载时捕获为 data/，凭证会落到生产态并跨用例累积。
+_TMP = "/tmp/zhiyan_enterprise_test"
+os.environ["ZHIYAN_ENTERPRISE_DATA_DIR"] = _TMP
+
 from src.runtime.agent.router import AGENT_REGISTRY, route_goal
 
 # 🔴 匿名铁律：真实锚定名片段，任何形式的外部结果都不得含
@@ -30,17 +35,13 @@ def _assert_no_leak(result, where: str):
         assert tok not in blob, f"❌ {where} 外泄真实锚定名片段 {tok!r}"
 
 
-# 隔离存储到 tmp：避免污染 data/ 生产态
-_TMP = "/tmp/zhiyan_enterprise_test"
-os.environ["ZHIYAN_ENTERPRISE_DATA_DIR"] = _TMP
-
-
 @pytest.fixture(autouse=True)
 def _isolate_store():
     """每个用例前重置进程级单例 + 清空 tmp vault。
 
     单例重置后，同步给已加载的 API 模块（enterprise.py 静态 import 了单例），
-    保证 API 端点也指向新的 tmp 隔离实例。
+    保证 API 端点也指向新的 tmp 隔离实例。显式传 path 以隔离到 _TMP，
+    不依赖 _DATA_DIR 在模块导入期是否已被捕获。
     """
     import shutil
 
@@ -49,8 +50,14 @@ def _isolate_store():
     os.makedirs(_TMP, exist_ok=True)
     from src.runtime import enterprise_store
 
-    enterprise_store.profile_store = enterprise_store.EnterpriseProfileStore()
-    enterprise_store.credential_vault = enterprise_store.CredentialVault()
+    enterprise_store._DATA_DIR = _TMP  # 覆盖模块级常量，兜底
+    enterprise_store.profile_store = enterprise_store.EnterpriseProfileStore(
+        path=os.path.join(_TMP, "enterprise_profiles.json")
+    )
+    enterprise_store.credential_vault = enterprise_store.CredentialVault(
+        path=os.path.join(_TMP, "credential_vault.json"),
+        key_path=os.path.join(_TMP, "vault.key"),
+    )
     try:
         import src.runtime.api.enterprise as ent
 
@@ -67,7 +74,7 @@ def _isolate_store():
 
 def test_registry_has_enterprise_onboarding():
     assert "enterprise_onboarding" in AGENT_REGISTRY, "注册表须含 enterprise_onboarding"
-    assert len(AGENT_REGISTRY) == 23
+    assert len(AGENT_REGISTRY) == 24
 
 
 def test_route_goal_triggers_enterprise_onboarding():

@@ -26,11 +26,12 @@ def _assert_no_leak(result, where: str):
 
 # ===== 1. 注册表 =====
 
-def test_registry_has_23_agents():
-    assert len(AGENT_REGISTRY) == 23, f"注册表应为 23，实际 {len(AGENT_REGISTRY)}"
+def test_registry_has_24_agents():
+    assert len(AGENT_REGISTRY) == 24, f"注册表应为 24，实际 {len(AGENT_REGISTRY)}"
     assert "industry_research" in AGENT_REGISTRY
     assert "case_curator" in AGENT_REGISTRY
     assert "enterprise_onboarding" in AGENT_REGISTRY
+    assert "compliance_reviewer" in AGENT_REGISTRY
 
 
 def test_route_goal_triggers_new_agents():
