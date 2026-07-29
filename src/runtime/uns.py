@@ -1,7 +1,7 @@
 """轻量统一事件总线（Unified Namespace, UNS）
 
 六路感知归一接入（与战略文档 §3.3 事件 schema 一致，v30 五路→六路）：
-    channel : gateway | system | human | social | meeting | collab | environment | platform_insight
+    channel : gateway | system | human | social | meeting | collab | environment | environment_internal | platform_insight
     source  : opcua://line-3 | erp://sap/mm | wecom://group-x | env://policy/miit | platform://zhiyan/suggestion
     type    : sensor_reading | business_event | tacit_judgment | decision_rationale | collab_message | env_signal | platform_insight
     payload : {...结构化字段...}
@@ -39,6 +39,7 @@ CHANNEL_SOCIAL = "social"
 CHANNEL_MEETING = "meeting"
 CHANNEL_COLLAB = "collab"
 CHANNEL_ENVIRONMENT = "environment"
+CHANNEL_ENVIRONMENT_INTERNAL = "environment_internal"  # 内部研究专用（上铁实证），绝不进客户面共享池
 CHANNEL_PLATFORM_INSIGHT = "platform_insight"
 
 ALL_CHANNELS = (
@@ -49,6 +50,7 @@ ALL_CHANNELS = (
     CHANNEL_MEETING,
     CHANNEL_COLLAB,
     CHANNEL_ENVIRONMENT,
+    CHANNEL_ENVIRONMENT_INTERNAL,
     CHANNEL_PLATFORM_INSIGHT,
 )
 
@@ -184,6 +186,15 @@ class UnifiedNamespace:
     def publish_environment(self, source, payload, entities=None, type="env_signal", confidence=1.0, credibility=CRED_GENERAL):
         """第⑥路环境感知：外部世界信号（政策/行情/对标等），credibility 必填（F4 可信治理）。"""
         return self.publish(CHANNEL_ENVIRONMENT, source, type, payload, entities, confidence, credibility=credibility)
+
+    def publish_environment_internal(self, source, payload, entities=None, type="env_signal", confidence=1.0, credibility=CRED_GENERAL):
+        """内部研究专用环境通道（如上市企业公告披露 / 上铁通信实证）。
+
+        🔴 与 CHANNEL_ENVIRONMENT 严格分离：所有客户面消费方（孪生大屏体外感知、/environment/signals、
+        平台建议派生、BOM 毛利测算、agents 环境消费）只查 CHANNEL_ENVIRONMENT，天然读不到此通道。
+        即「上铁实证」仅内部研究与实测、不对外宣传、非外界可见公开服务的硬性隔离。
+        """
+        return self.publish(CHANNEL_ENVIRONMENT_INTERNAL, source, type, payload, entities, confidence, credibility=credibility)
 
     def publish_platform_insight(self, source, payload, entities=None, type="platform_insight", confidence=1.0, tenant_id=None):
         """G5 轨道二：智衍平台基于真实情报生成的建议/解读（透明标注 credibility=platform）。

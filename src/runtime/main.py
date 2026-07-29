@@ -212,7 +212,7 @@ async def lifespan(app: FastAPI):
                 src = cls()
                 for sig in src._simulated_samples(3):
                     src.publish_signal(sig)
-                logger.info(f"🌐 环境演示种子：{src.name} × 3 条已入 UNS environment 路")
+                logger.info(f"🌐 环境演示种子：{src.name} × 3 条已入 UNS（disclosure 走内部研究通道）")
             except Exception as e:
                 logger.warning(f"⚠️ 环境种子 {cls.__name__} 注入失败（不破管）：{e}")
 
