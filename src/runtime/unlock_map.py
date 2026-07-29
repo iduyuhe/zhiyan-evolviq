@@ -16,10 +16,14 @@ from __future__ import annotations
 
 import os
 
-# ---------- 三圈成员（20 agent 全集，与 agents_api.AGENT_REGISTRY 对齐） ----------
+# ---------- 三圈成员（24 agent 全集，与 agents_api.AGENT_REGISTRY 对齐） ----------
 
 OUTER_AGENTS = ["executive_cockpit", "supply_chain", "procurement_manage", "compliance_q"]
-MIDDLE_AGENTS = ["cost_analysis", "demand_order", "bom_selector", "rd_npi"]
+MIDDLE_AGENTS = [
+    "cost_analysis", "demand_order", "bom_selector", "rd_npi",
+    # 研究案例范式 + 企业入驻 + 合规闸门：范式与治理类，启用后激活（2026-07-29 24 阵营补齐）
+    "industry_research", "case_curator", "enterprise_onboarding", "compliance_reviewer",
+]
 INNER_AGENTS = [
     "pm_maintenance", "yield_analysis", "quality_trace", "dfm_check",
     "oee_optimizer", "eco_change", "smt_changeover", "aoi_judge",
@@ -51,11 +55,11 @@ _CIRCLE_ORDER = {"outer": 0, "middle": 1, "inner": 2}
 
 NEXT_STEP = {
     "outer": "上传 1 份 BOM（物料清单文件，不接系统、不进内网），或在「连接」页配置"
-             "第 1 个内部数据源（网关），即可解锁中圈 4 个交叉分析 agent，"
+             "第 1 个内部数据源（网关），即可解锁中圈 8 个交叉分析 agent（+研究案例/案例库/企业入驻/合规闸门），"
              "并免除信号/解读免费额度——数据仍只读，不改动任何现有系统。",
     "middle": "预约私有化部署评估，解锁内圈 12 个深度自治 agent（设备维护/良率/排产等），"
               "全部数据不出厂区。",
-    "inner": "已全部解锁——20 个 agent 全量可用。",
+    "inner": "已全部解锁——24 个 agent 全量可用。",
 }
 
 

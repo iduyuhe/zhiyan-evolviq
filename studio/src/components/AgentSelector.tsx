@@ -36,6 +36,16 @@ export const SCENARIO_GROUPS: Record<string, { label: string; icon: string; agen
     icon: '🧠',
     agents: ['aps_scheduler', 'energy_carbon', 'cost_analysis', 'demand_order', 'wms_logistics', 'compliance_q', 'executive_cockpit', 'rd_npi', 'procurement_manage'],
   },
+  industry: {
+    label: '行业研究',
+    icon: '🏛️',
+    agents: ['industry_research', 'case_curator'],
+  },
+  onboarding: {
+    label: '入驻与合规',
+    icon: '🏭',
+    agents: ['enterprise_onboarding', 'compliance_reviewer'],
+  },
 };
 
 const DEFAULT_EXAMPLES: Record<string, string[]> = {
@@ -138,6 +148,26 @@ const DEFAULT_EXAMPLES: Record<string, string[]> = {
     '分析供应商绩效，识别低评分供应商并自动生成供应商评审任务',
     '查看合同到期与采购策略执行进度，给出合同续签建议',
     '对比各供应商绩效评分与供应商品质四维度，输出采购策略建议',
+  ],
+  industry_research: [
+    '调研通讯行业近 3 年公开披露与对标信号，匿名生成「某某通讯公司」经营画像',
+    '基于公开财报与行业智能化对标，推演一家通讯设备商的供应链韧性与合规风险',
+    '分析研究案例范式的真实锚定校准报告，输出对内可见的归因结论',
+  ],
+  case_curator: [
+    '列出当前案例库全部行业案例与对外/对内可见性',
+    '查询通讯行业研究案例的推荐接口清单与教学材料',
+    '基于某行业案例生成对外匿名版的教学材料',
+  ],
+  enterprise_onboarding: [
+    '我们公司用 SAP ERP + 3 条产线 + 上海/苏州两厂，推荐首批应开通的接口',
+    '校验企业现状描述是否完整，列出待补字段',
+    '输出无感转型三圈解锁进度（外圈免费激活数 + 中圈待开通项）',
+  ],
+  compliance_reviewer: [
+    '复核行业研究输出，确认无任何真实锚定公司名片段泄漏',
+    '审计外圈 4 个 agent 在研究案例模式的纪律（不写租户作用域记忆）',
+    '汇总当前研究案例范式的合规违规清单与整改建议',
   ],
 };
 

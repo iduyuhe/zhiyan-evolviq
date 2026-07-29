@@ -1,8 +1,13 @@
 """Agent管理API——列出所有可用Agent"""
 
+import logging
+
 from fastapi import APIRouter
 
+from src.runtime.agent.router import AGENT_REGISTRY as _ROUTER_AGENT_REGISTRY
+
 router = APIRouter(prefix="/agents", tags=["agents"])
+logger = logging.getLogger(__name__)
 
 AGENT_REGISTRY = [
     {
@@ -185,10 +190,68 @@ AGENT_REGISTRY = [
         "scenarios": ["供应商绩效", "合同管理", "采购策略", "供应商评审", "战略采购"],
         "icon": "📑",
     },
+    {
+        "id": "industry_research",
+        "name": "行业研究 Agent",
+        "description": "研究案例范式发动机：选行业标杆→匿名画像→调度外圈 4 agent 推演→对齐真实锚定出校准报告",
+        "status": "active",
+        "version": "1.0.0",
+        "scenarios": ["行业标杆选择", "匿名画像构建", "外圈 agent 协同推演", "真实锚定校准"],
+        "icon": "🏛️",
+    },
+    {
+        "id": "case_curator",
+        "name": "案例库策展 Agent",
+        "description": "案例库活体本体：列/汇总案例、挂载推荐接口、生成教学双版（对外匿名/对内真名）",
+        "status": "active",
+        "version": "1.0.0",
+        "scenarios": ["案例库列表", "案例查询", "推荐接口挂载", "教学双版生成"],
+        "icon": "📚",
+    },
+    {
+        "id": "enterprise_onboarding",
+        "name": "企业入驻 Agent",
+        "description": "两阶段实例化入口：解读企业现状画像→基于案例库推荐接口→输出三态开通清单并映射三圈解锁",
+        "status": "active",
+        "version": "1.0.0",
+        "scenarios": ["现状画像解析", "接口推荐", "三态开通清单", "三圈解锁引导"],
+        "icon": "🏭",
+    },
+    {
+        "id": "compliance_reviewer",
+        "name": "合规闸门 Agent",
+        "description": "研究案例范式合规审查：匿名/真名双版边界 + 零真名泄漏 + research_case 纪律校验",
+        "status": "active",
+        "version": "1.0.0",
+        "scenarios": ["匿名边界审查", "真名泄漏复核", "research_case 纪律校验"],
+        "icon": "✅",
+    },
 ]
+
+
+def _align_with_router():
+    """启动期一次性：把 router 已注册但静态元数据缺失的 agent 自动补占位（防再失同步）。
+    静态元数据已为新增 agent 显式补充；本函数作为安全网，对未来新增 agent 兜底。
+    """
+    known = {a["id"] for a in AGENT_REGISTRY}
+    for name in _ROUTER_AGENT_REGISTRY:
+        if name not in known:
+            AGENT_REGISTRY.append({
+                "id": name,
+                "name": name.replace("_", " ").title() + " Agent",
+                "description": "（元数据待补，自动占位）",
+                "status": "active",
+                "version": "0.0.0",
+                "scenarios": [],
+                "icon": "🤖",
+            })
+            logger.warning("agents_api: agent '%s' 在 router 已注册但元数据缺失，已插入占位", name)
+
+
+_align_with_router()
 
 
 @router.get("")
 async def list_agents():
-    """列出所有可用的Agent"""
+    """列出所有可用的 Agent"""
     return {"agents": AGENT_REGISTRY, "total": len(AGENT_REGISTRY)}
