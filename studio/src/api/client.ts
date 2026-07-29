@@ -1537,3 +1537,98 @@ export async function getTwinExternalPerception(): Promise<ExternalPerceptionVie
   return res.json();
 }
 
+// ---------------- 企业现状描述接口（Phase 2 两阶段实例化） ----------------
+
+export interface EnterpriseSystems {
+  erp: string | null;
+  mes: string | null;
+  gateway: string[];
+  social: string[];
+  knowledge_base: boolean;
+}
+
+export interface EnterpriseIntent {
+  free_tier_ok: boolean;
+  internal_connect: string; // 暂不/评估后/现在就开
+  concerns: string;
+}
+
+export interface EnterpriseProfile {
+  industry: string;
+  region: string;
+  legal_entities: string[];
+  org_scale: string;
+  revenue_band: string;
+  systems: EnterpriseSystems;
+  intent: EnterpriseIntent;
+  narrative: string;
+  updated_at?: string;
+}
+
+export interface CredentialRef {
+  vault_id: string;
+  kind: string;
+  created_at?: string;
+}
+
+export interface OnboardingRecommendation {
+  stage: string;
+  ready: { interface: string; circle: string; note?: string }[];
+  pending_credentials: { interface: string; circle: string; reason?: string }[];
+  not_needed: { interface: string; circle: string; reason?: string }[];
+  unlock_path: string;
+}
+
+export async function getEnterpriseProfile(): Promise<{ exists: boolean; profile: EnterpriseProfile | null }> {
+  const res = await fetch(`${API_BASE}/enterprise/profile`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function saveEnterpriseProfile(profile: EnterpriseProfile): Promise<{ status: string; profile: EnterpriseProfile }> {
+  const res = await fetch(`${API_BASE}/enterprise/profile`, {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(profile),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function listEnterpriseCredentials(): Promise<{ total: number; refs: CredentialRef[] }> {
+  const res = await fetch(`${API_BASE}/enterprise/credentials`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function storeEnterpriseCredential(kind: string, secret: Record<string, string>): Promise<{ status: string; ref: CredentialRef }> {
+  const res = await fetch(`${API_BASE}/enterprise/credentials`, {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ kind, secret }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function deleteEnterpriseCredential(vaultId: string): Promise<{ status: string }> {
+  const res = await fetch(`${API_BASE}/enterprise/credentials/${vaultId}`, {
+    method: 'DELETE', headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function getOnboardingRecommendations(): Promise<{
+  onboarding_stage: string;
+  portrait?: Record<string, unknown>;
+  recommendation?: OnboardingRecommendation;
+  credential_refs?: CredentialRef[];
+  summary: string;
+  next_step?: string;
+}> {
+  const res = await fetch(`${API_BASE}/enterprise/recommendations`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+

@@ -1,6 +1,6 @@
 """多Agent路由引擎——根据用户目标自动分派到合适的Agent
 
-当前Agent阵容（22个）：
+当前Agent阵容（23个）：
 1. 供应链Agent (supply_chain) — 物料齐套检查、缺料预警、替代推荐
 2. 设备维护Agent (pm_maintenance) — 设备健康诊断、预测维护
 3. 良率分析Agent (yield_analysis) — 晶圆良率分析、缺陷定位
@@ -23,6 +23,7 @@
 20. 采购与供应商管理Agent (procurement_manage) — 供应商绩效、合同管理、采购策略
 21. 行业研究Agent (industry_research) — 研究案例范式发动机：选标杆→匿名画像→调度外圈4 agent推演→对齐真实锚定校准
 22. 案例库策展Agent (case_curator) — 案例库活体本体：列/汇总案例、挂推荐接口、生成教学双版(对外匿名/对内真名)
+23. 企业入驻Agent (enterprise_onboarding) — 两阶段实例化：现状画像→案例库驱动接口推荐(三态清单)→三圈解锁引导
 """
 
 import importlib
@@ -62,6 +63,8 @@ AGENT_REGISTRY: dict[str, tuple[str, str]] = {
     # 研究案例范式（§3.7，2026-07-29 杜总定调）：发动机 + 案例库本体
     "industry_research": ("src.agents.industry_research.agent", "industry_research_agent"),
     "case_curator": ("src.agents.case_curator.agent", "case_curator_agent"),
+    # 两阶段实例化框架（Phase 2）：企业入驻驱动入口
+    "enterprise_onboarding": ("src.agents.enterprise_onboarding.agent", "enterprise_onboarding_agent"),
 }
 
 
@@ -110,6 +113,8 @@ ROUTING_RULES = [
     (["供应商绩效", "合同到期", "竞价", "srm", "战略采购", "供应商管理", "供应商评审", "长协", "供应商评分", "供应商品质", "供应商业绩"], "procurement_manage"),
     # 良率分析Agent触发词（放最后，作为宽泛兜底）
     (["良率", "yield", "缺陷", "defect", "质量", "quality", "颗粒", "污染", "合格率", "不良"], "yield_analysis"),
+    # 企业入驻Agent触发词（两阶段实例化；专属复合词，置于行业研究之前避免"企业画像"被"匿名画像"混淆）
+    (["企业入驻", "入驻", "现状描述", "企业画像", "onboarding", "接口实例化", "开通接口", "入驻推荐"], "enterprise_onboarding"),
     # 行业研究Agent触发词（研究案例范式发动机；置于兜底之前，靠专属复合词截获）
     (["研究案例", "行业研究", "标杆企业", "案例推演", "范式发动机", "industry research", "benchmark study", "匿名画像"], "industry_research"),
     # 案例库策展Agent触发词（案例库本体；靠案例库/策展/教学双版/推荐接口等专属词截获）

@@ -34,6 +34,10 @@ build/
 *.sqlite
 *.sqlite3
 data/*.db
+# 企业入驻 Vault 运行时产物（含加密密钥 vault.key，绝不入库）
+data/vault.key
+data/credential_vault.json
+data/enterprise_profiles.json
 
 # ===================== Logs =====================
 *.log

@@ -22,6 +22,7 @@ from src.runtime.api import env_perception as env_perception_api  # 环境感知
 from src.runtime.api import bom as bom_api  # BOM 上传+毛利影响测算（S2-5 #311）
 from src.runtime.api import feedback as feedback_api  # 共生进化环反馈入口（S2-6 #313）
 from src.runtime.api import behavior as behavior_api  # S3-1 行为埋点基座（#315）
+from src.runtime.api import enterprise as enterprise_api  # 企业现状描述接口（Phase 2 两阶段实例化）
 # v30.0：隐式导入注册 UNS environment 路订阅者（import 即注册，无 lifespan 依赖）
 import src.runtime.env_sources  # noqa: F401  管理器单例
 import src.runtime.env_perception  # noqa: F401  分级门管道
@@ -294,6 +295,7 @@ app.include_router(env_perception_api.router)  # 环境感知第⑥路（v30.0 �
 app.include_router(bom_api.router)  # BOM 上传+毛利影响（S2-5 #311）— 路由自带 Depends(require_auth)
 app.include_router(feedback_api.router)  # 共生进化环反馈入口（S2-6 #313）— 路由自带 Depends(require_auth)
 app.include_router(behavior_api.router)  # S3-1 行为埋点基座（#315）— 路由自带 Depends(require_auth)
+app.include_router(enterprise_api.router)  # 企业现状描述接口（Phase 2）— 路由自带 Depends(require_auth)
 
 
 if __name__ == "__main__":

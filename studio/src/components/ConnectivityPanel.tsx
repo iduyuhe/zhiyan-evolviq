@@ -14,6 +14,7 @@ import {
   SocialConnector,
   DataSourceEntry,
 } from '../api/client';
+import EnterpriseOnboardingPanel from './EnterpriseOnboardingPanel';
 
 const GATEWAY_PROTOCOLS = ['opcua', 'mqtt', 'modbus', 'ipc_cfx'] as const;
 const DS_KINDS = ['mes', 'erp', 'plm', 'wms', 'timeseries'] as const;
@@ -356,6 +357,9 @@ export default function ConnectivityPanel() {
           ))}
         </div>
       </section>
+
+      {/* E. 企业入驻 · 现状描述与接口实例化（Phase 2 两阶段实例化框架） */}
+      <EnterpriseOnboardingPanel />
     </div>
   );
 }
