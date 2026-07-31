@@ -1,101 +1,568 @@
 {
   "_meta": {
-    "description": "SMIC晶圆厂核心设备档案种子数据",
-    "fab": "SMIC-Fab8-28nm",
-    "updated": "2026-07-16",
-    "source": "设备管理系统(EAM)导出 + PLC传感器采集"
+    "description": "半导体晶圆厂典型设备图谱（6大类9台设备，预置模板）",
+    "fab": "匿名FAB-X（研究案例范式·设备模板库）",
+    "updated": "2026-07-29",
+    "source": "equipment_profiles.py 设备类型模板自动生成",
+    "integration_mode": "simulated_gateway_ready"
   },
   "equipments": [
     {
-      "equipment_id": "scanner_1",
-      "name": "ASML NXT:1980 光刻机 #1",
-      "type": "光刻机",
-      "vendor": "ASML",
-      "location": "PHOTO-BAY-A",
+      "equipment_id": "cmp_1",
+      "name": "AMAT Reflexion CMP #1",
+      "type": "化学机械抛光",
+      "vendor": "Applied Materials",
+      "model": "Reflexion LK",
+      "location": "化学机械抛光-BAY-1",
       "status": "running",
-      "uptime_hours": 8750,
-      "mtbf_hours": 720,
-      "health_score": 87.5,
-      "last_pm": "2026-06-15",
-      "next_pm_due": "2026-07-25",
+      "uptime_hours": 3346,
+      "mtbf_hours": 3000,
+      "health_score": 73.5,
+      "last_pm": "2026-01-14",
+      "next_pm_due": "2026-08-10",
       "sensors": {
-        "chamber_temp_c": 22.4,
-        "vibration_mm_s": 0.32,
-        "laser_power_pct": 96.5,
-        "overlay_nm": 2.1
+        "ns=2;s=CMP1.Status": true,
+        "ns=2;s=CMP1.Health": 85.0,
+        "ns=2;s=CMP1.PadTemp": 32.0,
+        "ns=2;s=CMP1.PadLife": 62.0,
+        "ns=2;s=CMP1.SlurryFlow": 250.0,
+        "ns=2;s=CMP1.DownForce": 2.5,
+        "ns=2;s=CMP1.PowerKw": 25.0
       },
       "key_parts": [
-        {"name": "激光光源", "part_no": "LGT-4021", "life_remaining_pct": 72, "risk": "low", "replace_lead_days": 45},
-        {"name": "投影物镜", "part_no": "LNS-8830", "life_remaining_pct": 88, "risk": "low", "replace_lead_days": 90},
-        {"name": "掩膜台", "part_no": "MSK-1120", "life_remaining_pct": 65, "risk": "medium", "replace_lead_days": 30},
-        {"name": "晶圆台", "part_no": "WFR-2245", "life_remaining_pct": 91, "risk": "low", "replace_lead_days": 30}
+        {
+          "name": "抛光垫",
+          "part_no": "PAD-1001",
+          "life_remaining_pct": 62,
+          "risk": "medium",
+          "replace_lead_days": 20
+        },
+        {
+          "name": "修整器",
+          "part_no": "DRS-2200",
+          "life_remaining_pct": 45,
+          "risk": "high",
+          "replace_lead_days": 30
+        },
+        {
+          "name": "主轴电机",
+          "part_no": "SPL-3300",
+          "life_remaining_pct": 78,
+          "risk": "low",
+          "replace_lead_days": 60
+        },
+        {
+          "name": "磨料泵",
+          "part_no": "SLP-4400",
+          "life_remaining_pct": 55,
+          "risk": "medium",
+          "replace_lead_days": 15
+        }
       ],
       "recent_alerts": [],
       "maintenance_history": [
-        {"date": "2026-06-15", "type": "PM", "action": "季度预防保养", "cost": 45000},
-        {"date": "2026-04-02", "type": "CM", "action": "更换掩膜台密封圈", "cost": 12000}
+        {
+          "date": "2026-04-22",
+          "type": "PM",
+          "action": "定期预防维护",
+          "cost": 6
+        }
+      ]
+    },
+    {
+      "equipment_id": "deposition_1",
+      "name": "AMAT Endura 薄膜沉积 #1",
+      "type": "薄膜沉积",
+      "vendor": "Applied Materials",
+      "model": "Endura 300mm PVD",
+      "location": "薄膜沉积-BAY-1",
+      "status": "running",
+      "uptime_hours": 6962,
+      "mtbf_hours": 2500,
+      "health_score": 70.9,
+      "last_pm": "2026-02-03",
+      "next_pm_due": "2026-09-18",
+      "sensors": {
+        "ns=2;s=Deposition1.Status": true,
+        "ns=2;s=Deposition1.Health": 92.1,
+        "ns=2;s=Deposition1.ChamberVacuum": 8e-07,
+        "ns=2;s=Deposition1.HeaterTemp": 385.0,
+        "ns=2;s=Deposition1.TargetErosion": 65.0,
+        "ns=2;s=Deposition1.DepositionRate": 8.2,
+        "ns=2;s=Deposition1.PowerKw": 55.0
+      },
+      "key_parts": [
+        {
+          "name": "靶材",
+          "part_no": "TGT-Cu-01",
+          "life_remaining_pct": 35,
+          "risk": "high",
+          "replace_lead_days": 45
+        },
+        {
+          "name": "加热器",
+          "part_no": "HTR-9910",
+          "life_remaining_pct": 78,
+          "risk": "low",
+          "replace_lead_days": 60
+        },
+        {
+          "name": "真空泵",
+          "part_no": "PMP-4420",
+          "life_remaining_pct": 62,
+          "risk": "medium",
+          "replace_lead_days": 30
+        },
+        {
+          "name": "质量流量控制器",
+          "part_no": "MFC-3080",
+          "life_remaining_pct": 70,
+          "risk": "low",
+          "replace_lead_days": 45
+        }
+      ],
+      "recent_alerts": [],
+      "maintenance_history": [
+        {
+          "date": "2026-04-23",
+          "type": "PM",
+          "action": "定期预防维护",
+          "cost": 29
+        }
+      ]
+    },
+    {
+      "equipment_id": "deposition_2",
+      "name": "Lam Vector PECVD 沉积 #2",
+      "type": "薄膜沉积",
+      "vendor": "Lam Research",
+      "model": "Vector Express",
+      "location": "薄膜沉积-BAY-2",
+      "status": "running",
+      "uptime_hours": 6189,
+      "mtbf_hours": 1800,
+      "health_score": 68.7,
+      "last_pm": "2026-03-27",
+      "next_pm_due": "2026-09-15",
+      "sensors": {
+        "ns=2;s=Deposition2.Status": true,
+        "ns=2;s=Deposition2.Health": 73.5,
+        "ns=2;s=Deposition2.ChamberVacuum": 5e-06,
+        "ns=2;s=Deposition2.HeaterTemp": 400.0,
+        "ns=2;s=Deposition2.RFPower": 350.0,
+        "ns=2;s=Deposition2.DepositionRate": 12.5,
+        "ns=2;s=Deposition2.PowerKw": 60.0
+      },
+      "key_parts": [
+        {
+          "name": "射频发生器",
+          "part_no": "RFG-5100",
+          "life_remaining_pct": 48,
+          "risk": "medium",
+          "replace_lead_days": 60
+        },
+        {
+          "name": "加热器",
+          "part_no": "HTR-1100",
+          "life_remaining_pct": 55,
+          "risk": "medium",
+          "replace_lead_days": 60
+        },
+        {
+          "name": "真空泵",
+          "part_no": "PMP-5530",
+          "life_remaining_pct": 42,
+          "risk": "high",
+          "replace_lead_days": 30
+        },
+        {
+          "name": "喷淋头",
+          "part_no": "SHW-2200",
+          "life_remaining_pct": 68,
+          "risk": "low",
+          "replace_lead_days": 45
+        }
+      ],
+      "recent_alerts": [],
+      "maintenance_history": [
+        {
+          "date": "2026-06-04",
+          "type": "PM",
+          "action": "定期预防维护",
+          "cost": 25
+        }
       ]
     },
     {
       "equipment_id": "etcher_1",
       "name": "中微 Primo D-RIE 刻蚀机 #1",
       "type": "刻蚀机",
-      "vendor": "AMEC 中微半导体",
-      "location": "ETCH-BAY-C",
+      "vendor": "AMEC 中微",
+      "model": "Primo D-RIE",
+      "location": "刻蚀机-BAY-1",
       "status": "running",
-      "uptime_hours": 6200,
-      "mtbf_hours": 480,
-      "health_score": 76.2,
-      "last_pm": "2026-05-20",
-      "next_pm_due": "2026-07-10",
+      "uptime_hours": 8141,
+      "mtbf_hours": 2000,
+      "health_score": 66.2,
+      "last_pm": "2026-05-17",
+      "next_pm_due": "2026-09-14",
       "sensors": {
-        "chamber_pressure_mtorr": 45.8,
-        "rf_power_w": 1480,
-        "etch_rate_nm_min": 312,
-        "etch_rate_deviation_pct": 3.2
+        "ns=2;s=Etcher1.Status": true,
+        "ns=2;s=Etcher1.Health": 76.2,
+        "ns=2;s=Etcher1.ChamberPressure": 45.8,
+        "ns=2;s=Etcher1.RFPower": 1480.0,
+        "ns=2;s=Etcher1.EtchRate": 312.0,
+        "ns=2;s=Etcher1.EtchRateDev": 3.2,
+        "ns=2;s=Etcher1.PowerKw": 42.0
       },
       "key_parts": [
-        {"name": "射频电源", "part_no": "RF-3300", "life_remaining_pct": 55, "risk": "medium", "replace_lead_days": 60},
-        {"name": "真空腔体", "part_no": "VAC-7710", "life_remaining_pct": 82, "risk": "low", "replace_lead_days": 90},
-        {"name": "气体分配盘", "part_no": "GAS-2201", "life_remaining_pct": 45, "risk": "high", "replace_lead_days": 21},
-        {"name": "静电卡盘", "part_no": "ESC-5540", "life_remaining_pct": 38, "risk": "high", "replace_lead_days": 35}
-      ],
-      "recent_alerts": [
-        "2026-07-14: 腔体压力波动异常 (±8%)",
-        "2026-07-13: 刻蚀速率偏差 +3.2%"
-      ],
-      "maintenance_history": [
-        {"date": "2026-05-20", "type": "PM", "action": "季度预防保养", "cost": 38000},
-        {"date": "2026-03-11", "type": "CM", "action": "更换射频匹配器", "cost": 65000}
-      ]
-    },
-    {
-      "equipment_id": "deposition_1",
-      "name": "应用材料 Endura 薄膜沉积 #1",
-      "type": "薄膜沉积",
-      "vendor": "Applied Materials",
-      "location": "PVD-BAY-B",
-      "status": "running",
-      "uptime_hours": 4100,
-      "mtbf_hours": 600,
-      "health_score": 92.1,
-      "last_pm": "2026-07-01",
-      "next_pm_due": "2026-08-15",
-      "sensors": {
-        "chamber_vacuum_torr": 0.0000008,
-        "heater_temp_c": 385,
-        "target_erosion_pct": 65,
-        "deposition_rate_a_s": 8.2
-      },
-      "key_parts": [
-        {"name": "靶材", "part_no": "TGT-Cu-01", "life_remaining_pct": 35, "risk": "high", "replace_lead_days": 30},
-        {"name": "加热器", "part_no": "HTR-9910", "life_remaining_pct": 78, "risk": "low", "replace_lead_days": 45},
-        {"name": "真空泵", "part_no": "PMP-4420", "life_remaining_pct": 62, "risk": "medium", "replace_lead_days": 60},
-        {"name": "质量流量控制器", "part_no": "MFC-3080", "life_remaining_pct": 70, "risk": "low", "replace_lead_days": 30}
+        {
+          "name": "射频电源",
+          "part_no": "RF-3300",
+          "life_remaining_pct": 55,
+          "risk": "medium",
+          "replace_lead_days": 60
+        },
+        {
+          "name": "真空腔体",
+          "part_no": "VAC-7710",
+          "life_remaining_pct": 82,
+          "risk": "low",
+          "replace_lead_days": 90
+        },
+        {
+          "name": "气体分配盘",
+          "part_no": "GAS-2201",
+          "life_remaining_pct": 45,
+          "risk": "high",
+          "replace_lead_days": 30
+        },
+        {
+          "name": "静电卡盘",
+          "part_no": "ESC-5540",
+          "life_remaining_pct": 38,
+          "risk": "high",
+          "replace_lead_days": 45
+        }
       ],
       "recent_alerts": [],
       "maintenance_history": [
-        {"date": "2026-07-01", "type": "PM", "action": "月度预防保养+靶材检查", "cost": 28000}
+        {
+          "date": "2026-03-01",
+          "type": "PM",
+          "action": "定期预防维护",
+          "cost": 26
+        }
+      ]
+    },
+    {
+      "equipment_id": "etcher_2",
+      "name": "Lam 2300 Kiyo 刻蚀机 #2",
+      "type": "刻蚀机",
+      "vendor": "Lam Research",
+      "model": "2300 Kiyo",
+      "location": "刻蚀机-BAY-2",
+      "status": "running",
+      "uptime_hours": 3303,
+      "mtbf_hours": 2200,
+      "health_score": 81.3,
+      "last_pm": "2026-06-19",
+      "next_pm_due": "2026-09-15",
+      "sensors": {
+        "ns=2;s=Etcher2.Status": true,
+        "ns=2;s=Etcher2.Health": 91.0,
+        "ns=2;s=Etcher2.ChamberPressure": 38.2,
+        "ns=2;s=Etcher2.RFPower": 1650.0,
+        "ns=2;s=Etcher2.EtchRate": 345.0,
+        "ns=2;s=Etcher2.EtchRateDev": 1.8,
+        "ns=2;s=Etcher2.PowerKw": 48.0
+      },
+      "key_parts": [
+        {
+          "name": "射频电源",
+          "part_no": "RF-4400",
+          "life_remaining_pct": 82,
+          "risk": "low",
+          "replace_lead_days": 60
+        },
+        {
+          "name": "真空腔体",
+          "part_no": "VAC-8820",
+          "life_remaining_pct": 90,
+          "risk": "low",
+          "replace_lead_days": 90
+        },
+        {
+          "name": "气体分配盘",
+          "part_no": "GAS-3302",
+          "life_remaining_pct": 72,
+          "risk": "low",
+          "replace_lead_days": 30
+        },
+        {
+          "name": "电极组件",
+          "part_no": "ELC-6610",
+          "life_remaining_pct": 62,
+          "risk": "medium",
+          "replace_lead_days": 45
+        }
+      ],
+      "recent_alerts": [],
+      "maintenance_history": [
+        {
+          "date": "2026-05-01",
+          "type": "PM",
+          "action": "定期预防维护",
+          "cost": 8
+        }
+      ]
+    },
+    {
+      "equipment_id": "implant_1",
+      "name": "AMAT VIISta 900 离子注入 #1",
+      "type": "离子注入",
+      "vendor": "Applied Materials",
+      "model": "VIISta 900",
+      "location": "离子注入-BAY-1",
+      "status": "running",
+      "uptime_hours": 3610,
+      "mtbf_hours": 1800,
+      "health_score": 74.6,
+      "last_pm": "2026-02-03",
+      "next_pm_due": "2026-07-27",
+      "sensors": {
+        "ns=2;s=Implant1.Status": true,
+        "ns=2;s=Implant1.Health": 81.0,
+        "ns=2;s=Implant1.BeamCurrent": 12.5,
+        "ns=2;s=Implant1.BeamEnergy": 180.0,
+        "ns=2;s=Implant1.ChamberVacuum": 2e-06,
+        "ns=2;s=Implant1.SourceLife": 58.0,
+        "ns=2;s=Implant1.PowerKw": 72.0
+      },
+      "key_parts": [
+        {
+          "name": "离子源",
+          "part_no": "ION-8800",
+          "life_remaining_pct": 58,
+          "risk": "medium",
+          "replace_lead_days": 90
+        },
+        {
+          "name": "分析磁铁",
+          "part_no": "MAG-9900",
+          "life_remaining_pct": 85,
+          "risk": "low",
+          "replace_lead_days": 120
+        },
+        {
+          "name": "真空泵",
+          "part_no": "PMP-6600",
+          "life_remaining_pct": 50,
+          "risk": "medium",
+          "replace_lead_days": 30
+        },
+        {
+          "name": "晶圆传输臂",
+          "part_no": "ARM-4400",
+          "life_remaining_pct": 72,
+          "risk": "low",
+          "replace_lead_days": 45
+        }
+      ],
+      "recent_alerts": [],
+      "maintenance_history": [
+        {
+          "date": "2026-03-24",
+          "type": "PM",
+          "action": "定期预防维护",
+          "cost": 20
+        }
+      ]
+    },
+    {
+      "equipment_id": "inspection_1",
+      "name": "KLA 29xx 晶圆检测 #1",
+      "type": "检测/量测",
+      "vendor": "KLA",
+      "model": "29xx 宽光谱",
+      "location": "检测/量测-BAY-1",
+      "status": "running",
+      "uptime_hours": 8280,
+      "mtbf_hours": 4000,
+      "health_score": 80.9,
+      "last_pm": "2026-04-28",
+      "next_pm_due": "2026-09-16",
+      "sensors": {
+        "ns=2;s=Inspection1.Status": true,
+        "ns=2;s=Inspection1.Health": 93.5,
+        "ns=2;s=Inspection1.LaserSource": 88.0,
+        "ns=2;s=Inspection1.StagePrecision": 1.2,
+        "ns=2;s=Inspection1.DetectionRate": 125.0,
+        "ns=2;s=Inspection1.DefectSensitivity": 95.0,
+        "ns=2;s=Inspection1.PowerKw": 15.0
+      },
+      "key_parts": [
+        {
+          "name": "激光源",
+          "part_no": "LSR-5500",
+          "life_remaining_pct": 88,
+          "risk": "low",
+          "replace_lead_days": 120
+        },
+        {
+          "name": "光学系统",
+          "part_no": "OPT-6600",
+          "life_remaining_pct": 72,
+          "risk": "low",
+          "replace_lead_days": 90
+        },
+        {
+          "name": "晶圆台",
+          "part_no": "WFR-3340",
+          "life_remaining_pct": 82,
+          "risk": "low",
+          "replace_lead_days": 60
+        },
+        {
+          "name": "探测器",
+          "part_no": "DTCT-7700",
+          "life_remaining_pct": 65,
+          "risk": "medium",
+          "replace_lead_days": 60
+        }
+      ],
+      "recent_alerts": [],
+      "maintenance_history": [
+        {
+          "date": "2026-04-16",
+          "type": "PM",
+          "action": "定期预防维护",
+          "cost": 30
+        }
+      ]
+    },
+    {
+      "equipment_id": "scanner_1",
+      "name": "ASML NXT:1980Di 光刻机 #1",
+      "type": "光刻机",
+      "vendor": "ASML",
+      "model": "TWINSCAN NXT:1980Di",
+      "location": "光刻机-BAY-1",
+      "status": "running",
+      "uptime_hours": 6606,
+      "mtbf_hours": 3000,
+      "health_score": 83.9,
+      "last_pm": "2026-04-17",
+      "next_pm_due": "2026-08-10",
+      "sensors": {
+        "ns=2;s=Scanner1.Status": true,
+        "ns=2;s=Scanner1.Health": 88.0,
+        "ns=2;s=Scanner1.LaserPower": 96.5,
+        "ns=2;s=Scanner1.OverlayNm": 2.1,
+        "ns=2;s=Scanner1.Vibration": 0.32,
+        "ns=2;s=Scanner1.ChamberTemp": 22.4,
+        "ns=2;s=Scanner1.PowerKw": 85.0
+      },
+      "key_parts": [
+        {
+          "name": "激光光源",
+          "part_no": "LGT-4021",
+          "life_remaining_pct": 72,
+          "risk": "low",
+          "replace_lead_days": 90
+        },
+        {
+          "name": "投影物镜",
+          "part_no": "LNS-8830",
+          "life_remaining_pct": 88,
+          "risk": "low",
+          "replace_lead_days": 120
+        },
+        {
+          "name": "掩膜台",
+          "part_no": "MSK-1120",
+          "life_remaining_pct": 65,
+          "risk": "medium",
+          "replace_lead_days": 45
+        },
+        {
+          "name": "晶圆台",
+          "part_no": "WFR-2245",
+          "life_remaining_pct": 91,
+          "risk": "low",
+          "replace_lead_days": 60
+        }
+      ],
+      "recent_alerts": [],
+      "maintenance_history": [
+        {
+          "date": "2026-04-26",
+          "type": "PM",
+          "action": "定期预防维护",
+          "cost": 13
+        }
+      ]
+    },
+    {
+      "equipment_id": "scanner_2",
+      "name": "ASML NXT:1980Di 光刻机 #2",
+      "type": "光刻机",
+      "vendor": "ASML",
+      "model": "TWINSCAN NXT:1980Di",
+      "location": "光刻机-BAY-2",
+      "status": "running",
+      "uptime_hours": 8162,
+      "mtbf_hours": 2800,
+      "health_score": 75.5,
+      "last_pm": "2026-02-26",
+      "next_pm_due": "2026-09-23",
+      "sensors": {
+        "ns=2;s=Scanner2.Status": true,
+        "ns=2;s=Scanner2.Health": 79.0,
+        "ns=2;s=Scanner2.LaserPower": 82.0,
+        "ns=2;s=Scanner2.OverlayNm": 3.5,
+        "ns=2;s=Scanner2.Vibration": 0.45,
+        "ns=2;s=Scanner2.ChamberTemp": 23.8,
+        "ns=2;s=Scanner2.PowerKw": 88.0
+      },
+      "key_parts": [
+        {
+          "name": "激光光源",
+          "part_no": "LGT-4021",
+          "life_remaining_pct": 45,
+          "risk": "high",
+          "replace_lead_days": 90
+        },
+        {
+          "name": "投影物镜",
+          "part_no": "LNS-8830",
+          "life_remaining_pct": 72,
+          "risk": "low",
+          "replace_lead_days": 120
+        },
+        {
+          "name": "掩膜台",
+          "part_no": "MSK-1120",
+          "life_remaining_pct": 58,
+          "risk": "medium",
+          "replace_lead_days": 45
+        },
+        {
+          "name": "晶圆台",
+          "part_no": "WFR-2245",
+          "life_remaining_pct": 85,
+          "risk": "low",
+          "replace_lead_days": 60
+        }
+      ],
+      "recent_alerts": [],
+      "maintenance_history": [
+        {
+          "date": "2026-04-08",
+          "type": "PM",
+          "action": "定期预防维护",
+          "cost": 30
+        }
       ]
     }
   ]

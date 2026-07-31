@@ -18,8 +18,9 @@ async def test_pm_analyze_equipment():
 async def test_pm_analyze_multiple():
     """测试多台设备分析"""
     from src.agents.pm_maintenance.agent import pm_agent
+    from src.agents.pm_maintenance.equipment_profiles import PROFILES
     result = await pm_agent.analyze("检查所有设备健康")
-    assert len(result["equipments"]) == 3
+    assert len(result["equipments"]) == len(PROFILES)
     assert len(result["alerts"]) >= 0
     print(f"  ✅ 多设备分析: {len(result['equipments'])}台")
 

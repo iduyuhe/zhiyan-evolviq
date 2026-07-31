@@ -16,6 +16,22 @@ class EnergyCarbonTools:
         {"line_id": "DIFF", "name": "扩散/炉管区", "energy_kwh": 60000, "green_ratio": 8.0, "output_units": 30000},
     ]
 
+    # 🆕 半导体 Fab 设备级能耗（2026-07-29 设备模板库扩展）
+    # 与 pm_maintenance/equipment_profiles.py 的 PROFILES 同步。
+    # 每台设备的典型运行功率（kW）× 每周运行小时（7×24=168h×利用率）
+    FAB_EQUIPMENT_ENERGY = [
+        {"eq_id": "scanner_1", "name": "ASML 光刻机 #1", "power_kw": 85, "utilization": 0.88, "weekly_kwh": round(85 * 168 * 0.88), "area": "PHOTO"},
+        {"eq_id": "scanner_2", "name": "ASML 光刻机 #2", "power_kw": 86, "utilization": 0.82, "weekly_kwh": round(86 * 168 * 0.82), "area": "PHOTO"},
+        {"eq_id": "etcher_1", "name": "中微刻蚀机 #1", "power_kw": 42, "utilization": 0.92, "weekly_kwh": round(42 * 168 * 0.92), "area": "ETCH"},
+        {"eq_id": "etcher_2", "name": "Lam刻蚀机 #2", "power_kw": 48, "utilization": 0.85, "weekly_kwh": round(48 * 168 * 0.85), "area": "ETCH"},
+        {"eq_id": "deposition_1", "name": "AMAT沉积 #1", "power_kw": 55, "utilization": 0.90, "weekly_kwh": round(55 * 168 * 0.90), "area": "PVD"},
+        {"eq_id": "deposition_2", "name": "Lam沉积 #2", "power_kw": 60, "utilization": 0.78, "weekly_kwh": round(60 * 168 * 0.78), "area": "CVD"},
+        {"eq_id": "cmp_1", "name": "AMAT CMP #1", "power_kw": 25, "utilization": 0.80, "weekly_kwh": round(25 * 168 * 0.80), "area": "CMP"},
+        {"eq_id": "inspection_1", "name": "KLA检测 #1", "power_kw": 15, "utilization": 0.85, "weekly_kwh": round(15 * 168 * 0.85), "area": "INSP"},
+        {"eq_id": "implant_1", "name": "AMAT注入 #1", "power_kw": 72, "utilization": 0.75, "weekly_kwh": round(72 * 168 * 0.75), "area": "IMP"},
+    ]
+    FAB_TOTAL_WEEKLY_KWH = sum(e["weekly_kwh"] for e in FAB_EQUIPMENT_ENERGY)
+
     # 排放因子：电网 0.581 tCO2/MWh（中国区域电网均值）；绿电近似 0
     GRID_FACTOR = 0.581  # tCO2 / MWh
     # 单位产值碳强度目标（tCO2 / 万元产值）
@@ -42,6 +58,31 @@ class EnergyCarbonTools:
                 "status": "critical" if ln["green_ratio"] < 15 else "warning" if ln["green_ratio"] < 25 else "good",
             })
         return out
+
+    async def get_fab_equipment_energy(self) -> dict:
+        """获取设备级能耗（半导�� Fab 设备模板库）。"""
+        total_kwh = 0
+        equipments = []
+        for eq in self.FAB_EQUIPMENT_ENERGY:
+            carbon_t = eq["weekly_kwh"] / 1000 * self.GRID_FACTOR
+            total_kwh += eq["weekly_kwh"]
+            equipments.append({
+                "eq_id": eq["eq_id"],
+                "name": eq["name"],
+                "power_kw": eq["power_kw"],
+                "utilization": eq["utilization"],
+                "weekly_kwh": eq["weekly_kwh"],
+                "carbon_t": round(carbon_t, 1),
+                "area": eq["area"],
+            })
+        total_carbon = round(total_kwh / 1000 * self.GRID_FACTOR, 1)
+        return {
+            "equipment_count": len(equipments),
+            "total_weekly_kwh": total_kwh,
+            "total_weekly_carbon_t": total_carbon,
+            "equipments": equipments,
+            "note": "设备级能耗基于典型功率×利用率推算（研究案例范式·设备模板库预置）",
+        }
 
     async def get_carbon_summary(self) -> dict:
         lines = await self.get_energy_list()
