@@ -33,13 +33,15 @@ import EnvPerceptionPanel from './components/EnvPerceptionPanel';
 import UnlockProgressPanel from './components/UnlockProgressPanel';
 import BomMarginPanel from './components/BomMarginPanel';
 import FeedbackPanel from './components/FeedbackPanel';
+import CaseLibraryPanel from './components/CaseLibraryPanel';
+import PresetLibraryPanel from './components/PresetLibraryPanel';
 import { createSession, approveSession, quickCheck, authHeaders, apiUrl } from './api/client';
 import type { Session, ExecutionResult } from './api/client';
 import Login from './components/Login';
 import { getToken, fetchMe, logout, requireLocalToken, AuthExpiredError, type AuthUser } from './api/client';
 
 type Stage = 'input' | 'planning' | 'approving' | 'executing' | 'result' | 'error';
-type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'twin' | 'governance' | 'federation' | 'supplychain' | 'writeback' | 'tacit' | 'bluearc' | 'tenant' | 'connect' | 'symbiosis';
+type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'twin' | 'governance' | 'federation' | 'supplychain' | 'writeback' | 'tacit' | 'bluearc' | 'tenant' | 'connect' | 'symbiosis' | 'caselib' | 'presetlib';
 
 const STEPS = [
   { key: 'input', label: '目标设定', icon: '🎯' },
@@ -256,6 +258,8 @@ export default function App() {
                 { key: 'tenant' as Tab, label: '租户', icon: '🏢' },
                 { key: 'connect' as Tab, label: '连接', icon: '🔌' },
                 { key: 'symbiosis' as Tab, label: '共生环', icon: '🤝' },
+                { key: 'caselib' as Tab, label: '研究案例库', icon: '📚' },
+                { key: 'presetlib' as Tab, label: '设备预设库', icon: '🔧' },
               ].map(t => (
                 <button
                   key={t.key}
@@ -484,6 +488,8 @@ export default function App() {
           {tab === 'tenant' && <TenantManagement />}
           {tab === 'connect' && (<><UnlockProgressPanel /><BomMarginPanel /><EnvPerceptionPanel /><ConnectivityPanel /></>)}
           {tab === 'symbiosis' && <FeedbackPanel />}
+          {tab === 'caselib' && <CaseLibraryPanel />}
+          {tab === 'presetlib' && <PresetLibraryPanel />}
         </main>
       )}
 

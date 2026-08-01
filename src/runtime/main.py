@@ -23,6 +23,7 @@ from src.runtime.api import bom as bom_api  # BOM 上传+毛利影响测算（S2
 from src.runtime.api import feedback as feedback_api  # 共生进化环反馈入口（S2-6 #313）
 from src.runtime.api import behavior as behavior_api  # S3-1 行为埋点基座（#315）
 from src.runtime.api import enterprise as enterprise_api  # 企业现状描述接口（Phase 2 两阶段实例化）
+from src.runtime.api import library as library_api  # 预设库 + 研究案例库只读 REST（#427）
 # v30.0：隐式导入注册 UNS environment 路订阅者（import 即注册，无 lifespan 依赖）
 import src.runtime.env_sources  # noqa: F401  管理器单例
 import src.runtime.env_perception  # noqa: F401  分级门管道
@@ -131,6 +132,18 @@ async def lifespan(app: FastAPI):
             logger.info(f"🟢 杜特真实信号源已注入：{dute_real_summary}")
     except Exception as e:  # noqa: BLE001
         logger.warning(f"⚠️ 杜特真实信号源注入失败（不阻断启动）：{e}")
+
+    # #429（2026-07-29 杜总破例授权）：研究案例租户直连实例化——
+    # 企业入驻签约流程暂时不走，直接把「通讯 / 半导体」两个研究案例开成可登录租户。
+    # 🔴 匿名铁律 + 私域边界仍守：租户名匿名、标注未签约、信号 real_time=False。
+    try:
+        from src.runtime.seed_case_tenants import seed_case_tenants
+
+        case_tenant_summary = await seed_case_tenants()
+        if case_tenant_summary.get("tenants"):
+            logger.info(f"🧪 研究案例租户就绪：{case_tenant_summary['tenants']}")
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"⚠️ 研究案例租户开通失败（不阻断启动）：{e}")
 
     # 行业知识库模板：按 ZHIYAN_INDUSTRY 注入对应种子（船舶/铁路/电子…）
     industry = os.environ.get("ZHIYAN_INDUSTRY", "").strip()
@@ -327,6 +340,8 @@ app.include_router(bom_api.router)  # BOM 上传+毛利影响（S2-5 #311）— 
 app.include_router(feedback_api.router)  # 共生进化环反馈入口（S2-6 #313）— 路由自带 Depends(require_auth)
 app.include_router(behavior_api.router)  # S3-1 行为埋点基座（#315）— 路由自带 Depends(require_auth)
 app.include_router(enterprise_api.router)  # 企业现状描述接口（Phase 2）— 路由自带 Depends(require_auth)
+app.include_router(library_api.presets_router)  # 设备/ERP/MES 预设库（#427）— 路由自带 Depends(require_auth)
+app.include_router(library_api.cases_router)  # 研究案例库（#427，匿名只读）— 路由自带 Depends(require_auth)
 
 
 if __name__ == "__main__":

@@ -74,6 +74,10 @@ AGENT_REGISTRY: dict[str, tuple[str, str]] = {
 # Agent路由规则：关键词 → 目标Agent
 # 注意：顺序敏感，越具体的Agent越靠前，避免被宽泛触发词截获。
 ROUTING_RULES = [
+    # 🔴 最高优先级：case_id 显式引用（case_telecom_2026 / case_semicon_2026 …）。
+    # 必须置于全表最前——否则会被子串意外截获（实测 "tel(eco)m" 命中 eco_change 的 "eco"），
+    # 显式 ID 引用语义唯一，不应让位于任何宽泛关键词。
+    (["case_"], "case_curator"),
     # DFM检查Agent触发词（放最前，避免被BOM选型/供应链截获）
     (["dfm", "可制造性", "焊盘间距", "线宽", "阻焊", "过孔", "设计审查", "制造风险"], "dfm_check"),
     # BOM选型Agent触发词（放在供应链之前，避免"替代料"被供应链的"替代"截获）
@@ -121,10 +125,20 @@ ROUTING_RULES = [
     (["良率", "yield", "缺陷", "defect", "质量", "quality", "颗粒", "污染", "合格率", "不良"], "yield_analysis"),
     # 企业入驻Agent触发词（两阶段实例化；专属复合词，置于行业研究之前避免"企业画像"被"匿名画像"混淆）
     (["企业入驻", "入驻", "现状描述", "企业画像", "onboarding", "接口实例化", "开通接口", "入驻推荐"], "enterprise_onboarding"),
+    # 案例库策展Agent触发词（案例库本体；🔴顺序铁律：必须置于 industry_research 之前——
+    # 「列出所有研究案例 / 研究案例列表 / case_xxx 详情」属于案例库检索意图，若被
+    # industry_research 的宽泛「研究案例」截获，会误走单案例推演而非 _list_cases。）
+    ([
+        "案例库", "策展", "教学双版", "推荐接口", "案例汇总", "case curator", "教学素材",
+        # —— 检索/列举意图（复合词，先于 industry_research 命中）
+        "所有研究案例", "全部研究案例", "研究案例列表", "研究案例清单",
+        "列出研究案例", "列出所有案例", "列出案例", "案例列表", "案例清单", "全部案例", "所有案例",
+        "案例详情", "案例检索", "案例搜索",
+        # —— case_id 直达（case_telecom_2026 / case_semicon_2026 / ...）
+        "case_",
+    ], "case_curator"),
     # 行业研究Agent触发词（研究案例范式发动机；置于兜底之前，靠专属复合词截获）
     (["研究案例", "行业研究", "标杆企业", "案例推演", "范式发动机", "industry research", "benchmark study", "匿名画像"], "industry_research"),
-    # 案例库策展Agent触发词（案例库本体；靠案例库/策展/教学双版/推荐接口等专属词截获）
-    (["案例库", "策展", "教学双版", "推荐接口", "案例汇总", "case curator", "教学素材"], "case_curator"),
 ]
 
 

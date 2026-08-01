@@ -74,20 +74,74 @@ class EnterpriseOnboardingAgent(BaseAgent):
         vault_refs = credential_vault.list_refs(tenant_id)
         recommendation = self._recommend(profile, vault_refs)
         portrait = self._portrait(profile)
+        equipment = self._equipment_presets(profile.get("industry", ""))
 
+        eq_tail = (
+            f"该行业已预置 {equipment['profile_count']} 台 / {equipment['equipment_type_count']} 类设备模板，可直接匹配。"
+            if equipment.get("matched")
+            else "该行业暂无设备模板预设（可 1-2 天新建）。"
+        )
         return {
             "status": "completed",
             "onboarding_stage": recommendation["stage"],
             "portrait": portrait,
             "recommendation": recommendation,
+            "equipment_presets": equipment,  # #428：设备预设层接入对话式入驻路径
             "credential_refs": vault_refs,  # 仅引用元数据，无明文/密文
             "summary": (
                 f"入驻画像已生成（行业：{profile.get('industry', '未知')}）。"
                 f"建议开通 {len(recommendation['ready'])} 项、"
                 f"待补凭证 {len(recommendation['pending_credentials'])} 项、"
-                f"暂不需要 {len(recommendation['not_needed'])} 项。"
+                f"暂不需要 {len(recommendation['not_needed'])} 项。" + eq_tail
             ),
         }
+
+    # ---------- 设备预设层接入（#428） ----------
+    # 画像行业（中文枚举）→ 设备库行业代码
+    _INDUSTRY_TO_EQUIPMENT: dict[str, str] = {
+        "半导体": "semiconductor",
+        "3C": "3c",
+        "新能源汽车": "new_energy",
+    }
+
+    def _equipment_presets(self, industry: str) -> dict:
+        """按画像行业拉取设备模板预设（客户接入时"选行业→自动匹配设备模板"）。"""
+        code = self._INDUSTRY_TO_EQUIPMENT.get(industry)
+        base = {"industry": industry, "industry_code": code, "matched": False,
+                "equipment_type_count": 0, "profile_count": 0,
+                "equipment_types": [], "equipments": []}
+        if not code:
+            base["note"] = "该行业暂无设备模板预设，接入时按 1-2 天新建模板流程处理"
+            return base
+        try:
+            from src.agents.pm_maintenance import equipment_profiles
+
+            overview = equipment_profiles.industry_overview().get(code, {})
+            profiles = equipment_profiles.list_by_industry(code)
+            base.update({
+                "matched": True,
+                "industry_cn": overview.get("industry_cn", industry),
+                "equipment_type_count": overview.get("equipment_type_count", 0),
+                "equipment_types": overview.get("equipment_types", []),
+                "profile_count": len(profiles),
+                "equipments": [
+                    {
+                        "equipment_id": p.equipment_id,
+                        "name": p.name,
+                        "type_cn": p.type_cn,
+                        "vendor": p.vendor,
+                        "model": p.model,
+                        "opcua_tag_count": len(p.opcua_tags),
+                        "mtbf_hours": p.mtbf_hours,
+                    }
+                    for p in profiles
+                ],
+                "note": "同型号直接套模板；不同型号按模板规则快速适配（数日而非数月）",
+            })
+        except Exception as e:  # noqa: BLE001
+            logger.warning(f"设备预设读取失败（不阻断入驻推荐）：{e}")
+            base["note"] = "设备模板读取失败，可稍后重试"
+        return base
 
     # ---------- 入驻画像摘要 ----------
     def _portrait(self, profile: dict) -> dict:
