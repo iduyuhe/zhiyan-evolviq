@@ -1,0 +1,91 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>智衍 EvolvIQ · P2 成果总览</title>
+<style>
+body{font-family:-apple-system,'Segoe UI','Microsoft YaHei',sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:32px;}
+.wrap{max-width:1080px;margin:0 auto;}
+h1{color:#60a5fa;font-size:26px;margin:0 0 4px;}
+.sub{color:#94a3b8;margin-bottom:24px;font-size:13px;}
+.card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;margin-bottom:20px;}
+.card h2{color:#38bdf8;font-size:18px;margin:0 0 14px;border-left:4px solid #2563eb;padding-left:10px;}
+.kpi{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px;}
+.kpi .box{background:#0f172a;border:1px solid #334155;border-radius:10px;padding:14px 18px;flex:1;min-width:140px;}
+.kpi .n{font-size:28px;color:#60a5fa;font-weight:700;}
+.kpi .l{font-size:12px;color:#94a3b8;margin-top:4px;}
+.tag{display:inline-block;background:#1e3a5f;color:#93c5fd;border-radius:6px;padding:3px 10px;font-size:12px;margin:3px 4px 3px 0;}
+.case{border:1px solid #334155;border-radius:10px;padding:14px;margin-bottom:12px;background:#0f172a;}
+.case .t{color:#e2e8f0;font-weight:600;font-size:15px;}
+.case .meta{color:#94a3b8;font-size:12px;margin:4px 0 8px;}
+.case .int{font-size:12px;color:#cbd5e1;}
+.eqgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+.eq{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px;font-size:13px;}
+.eq .id{color:#38bdf8;font-family:monospace;font-size:11px;}
+.eq .ty{color:#e2e8f0;margin-top:3px;}
+.ind-h{color:#fbbf24;font-size:14px;margin:14px 0 8px;font-weight:600;}
+</style></head><body><div class="wrap">
+<h1>智衍 EvolvIQ · P2 成果总览</h1>
+<div class="sub">部署版本 commit 827f433 · 全量回归 506 passed · 双入口冒烟 PASS · 生成时间 2026-08-01</div>
+
+<div class="card"><h2>覆盖度量</h2><div class="kpi">
+<div class="box"><div class="n">4</div><div class="l">研究案例（行业）</div></div>
+<div class="box"><div class="n">3</div><div class="l">设备覆盖行业</div></div>
+<div class="box"><div class="n">12</div><div class="l">设备类别</div></div>
+<div class="box"><div class="n">15</div><div class="l">设备模板（台）</div></div>
+</div>
+<div style="margin-top:10px">ERP 预设 7 套 · MES 预设 4 套 · 设备库 15 台</div>
+</div>
+<div class="card"><h2>研究案例库（对外匿名 · 对内真名锚定）</h2>
+<div class="case">
+<div class="t">某某通讯公司（研究案例·公开披露）</div>
+<div class="meta">行业：通讯设备 / 信息通信 · 状态：active · 公开年报：2025 年 · 推演维度：compliance, cost, strategy, supply_chain</div>
+<div class="int">推荐接口：<span class="tag">industry_research</span><span class="tag">executive_cockpit</span><span class="tag">supply_chain</span><span class="tag">compliance_q</span><span class="tag">cost_analysis</span></div>
+</div>
+<div class="case">
+<div class="t">某某半导体公司（研究案例·公开披露）</div>
+<div class="meta">行业：半导体 / 集成电路晶圆代工 · 状态：active · 公开年报：2025 年 · 推演维度：compliance, cost, energy, equipment, strategy</div>
+<div class="int">推荐接口：<span class="tag">industry_research</span><span class="tag">pm_maintenance</span><span class="tag">energy_carbon</span><span class="tag">executive_cockpit</span><span class="tag">supply_chain</span><span class="tag">compliance_q</span><span class="tag">cost_analysis</span></div>
+</div>
+<div class="case">
+<div class="t">某某精密制造公司（研究案例·公开披露）</div>
+<div class="meta">行业：消费电子 / 3C 精密制造 · 状态：active · 公开年报：2025 年 · 推演维度：compliance, cost, equipment, strategy, supply_chain</div>
+<div class="int">推荐接口：<span class="tag">industry_research</span><span class="tag">pm_maintenance</span><span class="tag">energy_carbon</span><span class="tag">executive_cockpit</span><span class="tag">supply_chain</span><span class="tag">compliance_q</span><span class="tag">cost_analysis</span></div>
+</div>
+<div class="case">
+<div class="t">某某新能源公司（研究案例·公开披露）</div>
+<div class="meta">行业：新能源 / 动力电池与储能 · 状态：active · 公开年报：2025 年 · 推演维度：compliance, cost, equipment, strategy, supply_chain</div>
+<div class="int">推荐接口：<span class="tag">industry_research</span><span class="tag">pm_maintenance</span><span class="tag">energy_carbon</span><span class="tag">executive_cockpit</span><span class="tag">supply_chain</span><span class="tag">compliance_q</span><span class="tag">cost_analysis</span></div>
+</div>
+</div>
+<div class="card"><h2>设备预设库（按行业）</h2>
+<div class="ind-h">半导体 / 集成电路晶圆制造 · 6 类</div>
+<div class="eqgrid">
+<div class="eq"><div class="id">lithography</div><div class="ty">光刻机</div></div>
+<div class="eq"><div class="id">etch</div><div class="ty">刻蚀机</div></div>
+<div class="eq"><div class="id">deposition</div><div class="ty">薄膜沉积</div></div>
+<div class="eq"><div class="id">cmp</div><div class="ty">化学机械抛光</div></div>
+<div class="eq"><div class="id">inspection</div><div class="ty">检测/量测</div></div>
+<div class="eq"><div class="id">implant</div><div class="ty">离子注入</div></div>
+</div>
+<div class="ind-h">3C 消费电子 / 精密制造 · 3 类</div>
+<div class="eqgrid">
+<div class="eq"><div class="id">smt</div><div class="ty">SMT 贴片机</div></div>
+<div class="eq"><div class="id">cnc</div><div class="ty">CNC 加工中心</div></div>
+<div class="eq"><div class="id">injection</div><div class="ty">注塑机</div></div>
+</div>
+<div class="ind-h">新能源 / 动力电池与储能 · 3 类</div>
+<div class="eqgrid">
+<div class="eq"><div class="id">coating</div><div class="ty">涂布机</div></div>
+<div class="eq"><div class="id">winding</div><div class="ty">卷绕/叠片机</div></div>
+<div class="eq"><div class="id">formation</div><div class="ty">化成分容柜</div></div>
+</div>
+<div style="margin-top:12px;color:#94a3b8;font-size:12px">各行业设备模板台数：半导体 / 集成电路晶圆制造 9台 · 3C 消费电子 / 精密制造 3台 · 新能源 / 动力电池与储能 3台</div>
+</div>
+<div class="card"><h2>如何在生产系统里看到</h2>
+<div style="line-height:1.9;font-size:13px">
+① 浏览器打开 <b>http://43.153.172.52:3006</b>（或边缘 https://zhiyan.weomnitech.com.cn）<br>
+② 登录：账号 <b>dute_admin</b> / 密码 <b>Dute@dute_admin2026</b><br>
+③ Studio 标签 → 左侧 Agent 栏选 <b>案例库策展 Agent（📚）</b> → 输入「列出所有研究案例」或「生成教学双版」即可看到 4 行业案例<br>
+④ Studio 标签 → 选 <b>企业入驻 Agent</b> → 描述一家企业现状，系统会按行业推荐接口并映射设备/ERP/MES 预设模板<br>
+⑤ 设备监控 / 连接 标签可看到已接入的设备孪生与网关信号
+</div></div>
+</div></body></html>
