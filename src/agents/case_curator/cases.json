@@ -371,5 +371,304 @@
         ]
       }
     ]
+  },
+  {
+    "case_id": "case_3c_2026",
+    "subject_anon": "某某精密制造公司（研究案例·公开披露）",
+    "industry": "消费电子 / 3C 精密制造",
+    "real_anchor": "立讯精密（002475.SZ）",
+    "recommended_interfaces": [
+      "industry_research",
+      "pm_maintenance",
+      "energy_carbon",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在 3C 精密制造标杆企业上推演 消费电子 / 汽车电子 / 通讯数据中心三大业务板块的战略、供应链、合规与成本四维，并叠加设备健康 / 能耗孪生视角。",
+    "teaching_notes_internal": "内部锚定立讯精密(002475.SZ)公开披露，用于校准 3C 精密制造行业研究推演；真实公司名仅在本视图出现，对外一律匿名。",
+    "status": "active",
+    "updated_at": "2026-07-31",
+    "disclosure_facts": {
+      "source": "2025 年年度报告（2026-04 披露；公司官网 / 巨潮资讯 / 证券日报交叉核对）",
+      "fiscal_year": 2025,
+      "facts": [
+        {
+          "metric": "营业总收入",
+          "value": "3323.44 亿元",
+          "yoy": "+23.64%"
+        },
+        {
+          "metric": "归母净利润",
+          "value": "166.00 亿元",
+          "yoy": "+24.20%"
+        },
+        {
+          "metric": "扣除非经常性损益净利润",
+          "value": "146.90 亿元",
+          "yoy": "+19.44%"
+        },
+        {
+          "metric": "综合毛利率",
+          "value": "11.91%",
+          "yoy": "同比 +1.5 个百分点"
+        },
+        {
+          "metric": "消费电子营收",
+          "value": "2642.66 亿元",
+          "yoy": "+13.37%",
+          "share": "79.52%"
+        },
+        {
+          "metric": "汽车电子营收",
+          "value": "392.55 亿元",
+          "yoy": "+185.34%（爆发式增长，第二引擎成型）",
+          "share": "11.81%"
+        },
+        {
+          "metric": "通讯及数据中心营收",
+          "value": "245.68 亿元",
+          "yoy": "+33.81%",
+          "share": "7.39%"
+        },
+        {
+          "metric": "海外营收占比",
+          "value": "约 78%",
+          "yoy": "海外基地近 30 国、100+ 制造据点"
+        },
+        {
+          "metric": "前五大客户销售占比",
+          "value": "约 78%",
+          "yoy": "客户集中度偏高（消费电子代工特征）"
+        },
+        {
+          "metric": "研发支出",
+          "value": "约 110 亿元",
+          "yoy": "占营收约 3.3%（持续高投入）"
+        },
+        {
+          "metric": "经营活动现金流净额",
+          "value": "约 340 亿元",
+          "yoy": "同比显著改善"
+        },
+        {
+          "metric": "资产负债率",
+          "value": "约 62%",
+          "yoy": "重资产扩张期可控区间"
+        },
+        {
+          "metric": "全球地位",
+          "value": "全球消费电子精密制造龙头；AirPods 主力代工、Watch/手机整机与零件核心供应商",
+          "yoy": "—"
+        }
+      ]
+    },
+    "derived_insights": [
+      {
+        "dimension": "strategy",
+        "claim": "汽车电子营收同比 +185% 已成第二增长引擎，业务结构从单一消费电子代工转向'消费电子基本盘 + 汽车电子新引擎'双轮。",
+        "rationale": "汽车电子 392.55 亿、占比 11.81%、同比 +185.34%；通讯及数据中心 +33.81% 为第三增长极；与'三个五年'全球化多品类战略自洽，降低对单一客户的周期依赖。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "+185.34%",
+          "11.81%",
+          "+33.81%"
+        ]
+      },
+      {
+        "dimension": "supply_chain",
+        "claim": "前五大客户占比约 78% 凸显客户集中风险，海外基地近 30 国 100+ 据点构成地缘韧性，同时放大全球供应链协同与库存优化需求。",
+        "rationale": "消费电子代工天然客户集中；海外营收约 78%、制造据点遍布近 30 国，使其供应链调度跨多时区多关境，对实时产能/物流/关税协同的智能体需求强。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "约 78%",
+          "近 30 国",
+          "100+ 据点"
+        ]
+      },
+      {
+        "dimension": "compliance",
+        "claim": "海外营收约 78% 使全球贸易合规、出口管制、ESG 碳足迹披露成为持续性核心风险面。",
+        "rationale": "海外基地近 30 国、100+ 据点；多关境制造使出口管制、原产地规则、碳边境调节机制(CBAM)合规贯穿经营，合规智能体价值突出。",
+        "assertion_type": "predictive",
+        "value_judgment": "high",
+        "key_figures": [
+          "约 78%"
+        ]
+      },
+      {
+        "dimension": "cost",
+        "claim": "综合毛利率仅 11.91% 属代工薄利结构，成本改善空间在汽车电子高毛利品类占比提升与制造自动化降本，而非简单压价。",
+        "rationale": "毛利率 11.91%（同比 +1.5pct）仍处制造业低位；汽车电子毛利率显著高于消费电子，其占比上升是毛利率结构性改善主因；设备自动化(OEE)提升是直接降本杠杆。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "11.91%",
+          "+1.5pct",
+          "+185.34%"
+        ]
+      },
+      {
+        "dimension": "equipment",
+        "claim": "3C 精密制造以 SMT 贴片 / CNC 加工 / 注塑成型 / 自动化装配为主，设备数量庞大、单台价值相对半导体低，但停机对整线节拍影响直接——集群化健康管理 ROI 高。",
+        "rationale": "消费电子整机组装产线设备以万计；SMT 贴片机、CNC、注塑机、点胶/锁附/检测自动化设备的节拍耦合紧密，单点停线即整线停滞，预测维护按集群而非单台核算价值更优。",
+        "assertion_type": "descriptive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "以万计",
+          "集群化"
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "case_newenergy_2026",
+    "subject_anon": "某某新能源公司（研究案例·公开披露）",
+    "industry": "新能源 / 动力电池与储能",
+    "real_anchor": "宁德时代（300750.SZ）",
+    "recommended_interfaces": [
+      "industry_research",
+      "pm_maintenance",
+      "energy_carbon",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在新能源动力电池标杆企业上推演 动力电池 / 储能双板块的战略、供应链(锂价/材料)、合规(电池碳足迹/海外)与成本四维，并叠加电芯产线设备健康 / 能耗孪生视角。",
+    "teaching_notes_internal": "内部锚定宁德时代(300750.SZ)公开披露，用于校准新能源动力电池行业研究推演；真实公司名仅在本视图出现，对外一律匿名。",
+    "status": "active",
+    "updated_at": "2026-07-31",
+    "disclosure_facts": {
+      "source": "2025 年年度报告（2026-03 披露；公司官网 / 巨潮资讯 / 上海证券报交叉核对）",
+      "fiscal_year": 2025,
+      "facts": [
+        {
+          "metric": "营业总收入",
+          "value": "4237 亿元",
+          "yoy": "+17%"
+        },
+        {
+          "metric": "归母净利润",
+          "value": "722 亿元",
+          "yoy": "+42%"
+        },
+        {
+          "metric": "综合毛利率",
+          "value": "26.27%",
+          "yoy": "显著高于代工制造业，技术溢价体现"
+        },
+        {
+          "metric": "动力电池系统营收",
+          "value": "1921.25 亿元",
+          "yoy": "—",
+          "share": "69.38%"
+        },
+        {
+          "metric": "储能电池系统营收",
+          "value": "532.61 亿元",
+          "yoy": "系统集出货同比 +160%",
+          "share": "19.23%"
+        },
+        {
+          "metric": "锂电池销量",
+          "value": "661 GWh",
+          "yoy": "同比 +39%"
+        },
+        {
+          "metric": "全球动力电池市占率",
+          "value": "39.2%",
+          "yoy": "连续九年全球第一"
+        },
+        {
+          "metric": "全球储能电池市占率",
+          "value": "30.4%",
+          "yoy": "全球第一"
+        },
+        {
+          "metric": "研发费用",
+          "value": "约 221 亿元",
+          "yoy": "占营收约 5.2%"
+        },
+        {
+          "metric": "产能利用率",
+          "value": "高位运行",
+          "yoy": "供需紧平衡、产能爬坡持续"
+        },
+        {
+          "metric": "海外营收占比",
+          "value": "约 30%+",
+          "yoy": "欧洲/北美/东南亚基地布局加速"
+        },
+        {
+          "metric": "全球地位",
+          "value": "全球动力电池与储能双料龙头；麒麟/神行/钠新等新技术量产领先",
+          "yoy": "—"
+        }
+      ]
+    },
+    "derived_insights": [
+      {
+        "dimension": "strategy",
+        "claim": "储能电池系统营收同比 +160% 已成第二爆发极，业务结构从动力电池单核转向'动力基本盘 + 储能增长极'双核。",
+        "rationale": "储能 532.61 亿、占比 19.23%、系统集出货 +160%；全球储能市占 30.4% 第一；与全球能源转型及电网侧储能需求自洽，对冲动力电池周期波动。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "+160%",
+          "19.23%",
+          "30.4%"
+        ]
+      },
+      {
+        "dimension": "supply_chain",
+        "claim": "锂盐及关键材料价格周期直接影响成本，向上游锂资源/材料一体化与回收闭环延伸是供应链韧性核心。",
+        "rationale": "动力电池成本结构中锂盐占比高且价格波动大；年报强调一体化与回收（锂回收率行业领先），供应链智能体需在锂价波动下做采购节奏与库存策略推演。",
+        "assertion_type": "predictive",
+        "value_judgment": "high",
+        "key_figures": [
+          "锂价周期",
+          "回收闭环"
+        ]
+      },
+      {
+        "dimension": "compliance",
+        "claim": "电池全生命周期碳足迹与海外建厂(欧洲/北美)使电池护照、碳披露、跨境合规成为持续性风险面。",
+        "rationale": "海外营收约 30%+、海外基地加速；欧盟电池法规(碳足迹/电池护照)、CBAM 等使合规从'出口文件'升级为'产品准入门槛'，合规智能体价值突出。",
+        "assertion_type": "predictive",
+        "value_judgment": "high",
+        "key_figures": [
+          "约 30%+",
+          "电池护照",
+          "碳足迹"
+        ]
+      },
+      {
+        "dimension": "cost",
+        "claim": "综合毛利率 26.27% 远高于代工制造业，技术溢价 + 规模效应构筑成本护城河；成本改善方向在良率提升与能耗优化而非压供应商。",
+        "rationale": "毛利率 26.27% 体现技术溢价；661GWh 规模效应摊薄固定成本；电芯制造高能耗，单 Wh 能耗优化直接进入毛利敏感区间，能耗孪生价值高。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "26.27%",
+          "661 GWh"
+        ]
+      },
+      {
+        "dimension": "equipment",
+        "claim": "电芯产线以涂布 / 辊压 / 卷绕(叠片) / 化成分容为核心，化成分容工序能耗占整线 30%+ 且设备数量巨大——化成分容设备的能耗孪生与预测维护 ROI 最直接。",
+        "rationale": "化成分容是电芯产线能耗最高、设备最多的工序（单 GWh 对应数百台分容柜）；涂布机幅宽/速度决定产能节拍；该工序设备健康与能耗直接决定整线 OEE 与单位 kWh 成本。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "30%+",
+          "数百台分容柜",
+          "OEE"
+        ]
+      }
+    ]
   }
 ]

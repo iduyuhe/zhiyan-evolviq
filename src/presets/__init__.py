@@ -6,7 +6,7 @@
 —— 杜总 2026-07-29 战略定调
 
 包含：
-- equipment_profiles: 设备预设（半导体 Fab 6类9台）
+- equipment_profiles: 设备预设（3 行业 12 类 15 台：半导体 6类9台 / 3C 3类3台 / 新能源 3类3台）
 - erp_profiles: ERP 系统预设（7 套覆盖中国制造业 90%+）
 - mes_profiles: MES 系统预设（4 套覆盖主流国产/进口）
 - permission_templates: 权限模板预设（7 岗位 × 3 行业，入驻勾选即配权）
@@ -36,13 +36,15 @@ def get_preset_summary() -> dict:
         "mes_list": list(mes.keys()),
         "equipment_count": len(eq),
         "equipment_types": sorted(set(p.type_cn for p in eq.values())),
+        "equipment_industry_count": len(equipment_profiles.INDUSTRY_EQUIPMENT_TYPES),
+        "equipment_by_industry": equipment_profiles.industry_overview(),
         "permission_role_count": perm["business_role_count"],
         "permission_roles": perm["business_roles"],
         "permission_industries": perm["industries"],
         "estimated_coverage": {
             "erp": "覆盖中国制造业 ERP 90%+（SAP/用友/金蝶/Oracle/浪潮）",
             "mes": "覆盖主流进口+国产 MES 85%+（西门子/罗克韦尔/霍尼韦尔/国产通用）",
-            "equipment": "半导体 Fab 6 大设备类型（可扩展至其他行业）",
+            "equipment": "半导体 Fab 6 类 + 3C 精密制造 3 类(SMT/CNC/注塑) + 新能源动力电池 3 类(涂布/卷绕/化成分容)；共 3 行业 12 类设备（可继续按行业扩展）",
             "permission": "7 类标准岗位 × 3 行业专属覆盖，入驻勾选即配权",
         },
     }

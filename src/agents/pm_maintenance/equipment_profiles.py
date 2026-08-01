@@ -1,6 +1,6 @@
-# 半导体晶圆代工典型设备配置模板（设备类型图谱）
+# 多行业典型设备配置模板（设备类型图谱）
 
-"""半导体行业典型设备类型定义。
+"""多行业典型设备类型定义（半导体 / 3C 精密制造 / 新能源动力电池）。
 
 每类设备包含：
 - 基本信息（类型、典型型号、供应商）
@@ -9,7 +9,9 @@
 - 能耗特征（功率范围）
 - 健康分计算参考
 
-用于"先建模板、客户设备按型号匹配接入"策略。
+用于"先建模板、客户设备按型号匹配接入"策略：
+客户入驻时选行业 → list_by_industry() 拉出该行业全部设备模板 →
+按型号匹配（同型号直接套模板，异型号按模板规则快速适配）。
 """
 
 from dataclasses import dataclass, field
@@ -50,7 +52,60 @@ EQUIPMENT_CATEGORIES = {
         "description": "掺杂工艺（阱/源漏注入）",
         "vendors": ["Applied Materials", "Axcelis"],
     },
+    # ── 3C 精密制造（2026-07-31 设备库扩列）──
+    "smt": {
+        "cn_name": "SMT 贴片机",
+        "description": "表面贴装——PCB 元器件高速贴装，产线节拍核心",
+        "vendors": ["FUJI", "ASMPT", "Panasonic", "Yamaha"],
+    },
+    "cnc": {
+        "cn_name": "CNC 加工中心",
+        "description": "金属/非金属精密结构件铣削加工",
+        "vendors": ["FANUC", "Brother", "DMG MORI", "Haas"],
+    },
+    "injection": {
+        "cn_name": "注塑机",
+        "description": "塑料精密结构件成型（外壳/支架）",
+        "vendors": ["Haitian", "Engel", "ARBURG", "Sumitomo"],
+    },
+    # ── 新能源 动力电池（2026-07-31 设备库扩列）──
+    "coating": {
+        "cn_name": "涂布机",
+        "description": "锂电电芯极片涂布——幅宽/面密度决定产能节拍",
+        "vendors": ["PNT", "CKD", "先导智能", "赢合科技"],
+    },
+    "winding": {
+        "cn_name": "卷绕/叠片机",
+        "description": "电芯卷绕或叠片成型——决定电芯一致性与良率",
+        "vendors": ["先导智能", "赢合科技", "GL Automation"],
+    },
+    "formation": {
+        "cn_name": "化成分容柜",
+        "description": "电芯化成/分容/老化——产线能耗最高、设备数量最大工序",
+        "vendors": ["瑞能", "杭可科技", "先导智能"],
+    },
 }
+
+# ── 行业归属映射（预设层：客户入驻选行业 → 自动匹配该行业设备模板）──
+# key = 行业代码，value = 该行业的设备类型列表
+INDUSTRY_EQUIPMENT_TYPES: Dict[str, List[str]] = {
+    "semiconductor": ["lithography", "etch", "deposition", "cmp", "inspection", "implant"],
+    "3c": ["smt", "cnc", "injection"],
+    "new_energy": ["coating", "winding", "formation"],
+}
+
+INDUSTRY_LABELS: Dict[str, str] = {
+    "semiconductor": "半导体 / 集成电路晶圆制造",
+    "3c": "3C 消费电子 / 精密制造",
+    "new_energy": "新能源 / 动力电池与储能",
+}
+
+# 反向注入：让每个设备类别自带 industry 归属，避免调用方硬编码判断
+for _ind, _types in INDUSTRY_EQUIPMENT_TYPES.items():
+    for _t in _types:
+        if _t in EQUIPMENT_CATEGORIES:
+            EQUIPMENT_CATEGORIES[_t]["industry"] = _ind
+            EQUIPMENT_CATEGORIES[_t]["industry_cn"] = INDUSTRY_LABELS[_ind]
 
 
 @dataclass
@@ -299,6 +354,152 @@ PROFILES: Dict[str, EquipmentProfile] = {
         power_kw_avg=72.0, power_kw_peak=110.0, coolant_flow_lpm=50.0,
         mtbf_hours=1800,
     ),
+    # ── 3C 精密制造典型设备（2026-07-31 扩列）──
+    "smt_1": EquipmentProfile(
+        equipment_id="smt_1",
+        name="FUJI NXT III 贴片机 #1",
+        type_cn="SMT 贴片机",
+        vendor="FUJI",
+        model="NXT III",
+        opcua_tags={
+            "ns=2;s=SMT1.Status": (True, "bool", "运行状态"),
+            "ns=2;s=SMT1.Health": (84.0, "pct", "设备健康分"),
+            "ns=2;s=SMT1.PlacementRate": (36000, "cph", "贴装节拍(点/小时)"),
+            "ns=2;s=SMT1.FeederErr": (0.8, "pct", "喂料误差率"),
+            "ns=2;s=SMT1.NozzleVac": (62.0, "kPa", "吸嘴真空度"),
+            "ns=2;s=SMT1.BoardCount": (12500, "pcs", "累计贴装板数"),
+            "ns=2;s=SMT1.PowerKw": (8.5, "kW", "运行功率"),
+        },
+        key_parts=[
+            {"name": "贴装头", "part_no": "HD-7700", "life_remaining_pct": 70, "risk": "medium", "replace_lead_days": 30},
+            {"name": "喂料器", "part_no": "FD-3300", "life_remaining_pct": 65, "risk": "medium", "replace_lead_days": 15},
+            {"name": "吸嘴", "part_no": "NZ-1180", "life_remaining_pct": 55, "risk": "high", "replace_lead_days": 7},
+            {"name": "视觉相机", "part_no": "CAM-5500", "life_remaining_pct": 82, "risk": "low", "replace_lead_days": 45},
+        ],
+        power_kw_avg=8.5, power_kw_peak=14.0, coolant_flow_lpm=6.0,
+        mtbf_hours=3500,
+    ),
+    "cnc_1": EquipmentProfile(
+        equipment_id="cnc_1",
+        name="Brother S700X1 加工中心 #1",
+        type_cn="CNC 加工中心",
+        vendor="Brother",
+        model="SPEEDIO S700X1",
+        opcua_tags={
+            "ns=2;s=CNC1.Status": (True, "bool", "运行状态"),
+            "ns=2;s=CNC1.Health": (88.5, "pct", "设备健康分"),
+            "ns=2;s=CNC1.SpindleLoad": (42.0, "pct", "主轴负载"),
+            "ns=2;s=CNC1.SpindleTemp": (31.5, "C", "主轴温度"),
+            "ns=2;s=CNC1.SpindleRpm": (12000, "rpm", "主轴转速"),
+            "ns=2;s=CNC1.ToolWear": (18.0, "pct", "刀具磨损"),
+            "ns=2;s=CNC1.PowerKw": (6.2, "kW", "运行功率"),
+        },
+        key_parts=[
+            {"name": "主轴", "part_no": "SPD-4400", "life_remaining_pct": 78, "risk": "low", "replace_lead_days": 60},
+            {"name": "刀库", "part_no": "TCM-2200", "life_remaining_pct": 85, "risk": "low", "replace_lead_days": 30},
+            {"name": "丝杠", "part_no": "BLS-6610", "life_remaining_pct": 62, "risk": "medium", "replace_lead_days": 45},
+            {"name": "冷却泵", "part_no": "CLP-3300", "life_remaining_pct": 50, "risk": "medium", "replace_lead_days": 15},
+        ],
+        power_kw_avg=6.2, power_kw_peak=11.0, coolant_flow_lpm=10.0,
+        mtbf_hours=4200,
+    ),
+    "injection_1": EquipmentProfile(
+        equipment_id="injection_1",
+        name="Haitian MA2500 注塑机 #1",
+        type_cn="注塑机",
+        vendor="Haitian",
+        model="MA2500II",
+        opcua_tags={
+            "ns=2;s=INJ1.Status": (True, "bool", "运行状态"),
+            "ns=2;s=INJ1.Health": (80.2, "pct", "设备健康分"),
+            "ns=2;s=INJ1.BarrelTemp": (235.0, "C", "料筒温度"),
+            "ns=2;s=INJ1.MoldTemp": (62.0, "C", "模具温度"),
+            "ns=2;s=INJ1.InjPressure": (118.0, "MPa", "注射压力"),
+            "ns=2;s=INJ1.CycleTime": (28.5, "s", "成型周期"),
+            "ns=2;s=INJ1.PowerKw": (22.0, "kW", "运行功率"),
+        },
+        key_parts=[
+            {"name": "螺杆料筒", "part_no": "SCW-8800", "life_remaining_pct": 58, "risk": "medium", "replace_lead_days": 60},
+            {"name": "模具", "part_no": "MLD-4400", "life_remaining_pct": 72, "risk": "low", "replace_lead_days": 30},
+            {"name": "伺服电机", "part_no": "SVX-5500", "life_remaining_pct": 80, "risk": "low", "replace_lead_days": 45},
+            {"name": "液压密封", "part_no": "HYS-2200", "life_remaining_pct": 45, "risk": "high", "replace_lead_days": 15},
+        ],
+        power_kw_avg=22.0, power_kw_peak=40.0, coolant_flow_lpm=18.0,
+        mtbf_hours=3000,
+    ),
+    # ── 新能源 动力电池典型设备（2026-07-31 扩列）──
+    "coating_1": EquipmentProfile(
+        equipment_id="coating_1",
+        name="先导智能 涂布机 #1",
+        type_cn="涂布机",
+        vendor="先导智能",
+        model="双面挤压涂布机 1400mm",
+        opcua_tags={
+            "ns=2;s=COAT1.Status": (True, "bool", "运行状态"),
+            "ns=2;s=COAT1.Health": (86.0, "pct", "设备健康分"),
+            "ns=2;s=COAT1.CoatWeight": (185.0, "g/m2", "面密度"),
+            "ns=2;s=COAT1.CoatDev": (1.2, "pct", "面密度偏差"),
+            "ns=2;s=COAT1.WebSpeed": (80.0, "m/min", "走带速度"),
+            "ns=2;s=COAT1.DryTemp": (125.0, "C", "烘箱温度"),
+            "ns=2;s=COAT1.PowerKw": (95.0, "kW", "运行功率"),
+        },
+        key_parts=[
+            {"name": "涂布模头", "part_no": "DIE-5500", "life_remaining_pct": 68, "risk": "medium", "replace_lead_days": 45},
+            {"name": "背辊", "part_no": "RPL-3300", "life_remaining_pct": 75, "risk": "low", "replace_lead_days": 30},
+            {"name": "纠偏系统", "part_no": "EPC-2200", "life_remaining_pct": 82, "risk": "low", "replace_lead_days": 20},
+            {"name": "烘箱风机", "part_no": "FAN-6600", "life_remaining_pct": 55, "risk": "medium", "replace_lead_days": 15},
+        ],
+        power_kw_avg=95.0, power_kw_peak=140.0, coolant_flow_lpm=5.0,
+        mtbf_hours=2600,
+    ),
+    "winding_1": EquipmentProfile(
+        equipment_id="winding_1",
+        name="先导智能 卷绕机 #1",
+        type_cn="卷绕/叠片机",
+        vendor="先导智能",
+        model="圆柱卷绕机 26/46 系列",
+        opcua_tags={
+            "ns=2;s=WND1.Status": (True, "bool", "运行状态"),
+            "ns=2;s=WND1.Health": (83.5, "pct", "设备健康分"),
+            "ns=2;s=WND1.Tension": (12.5, "N", "极片张力"),
+            "ns=2;s=WND1.AlignErr": (0.25, "mm", "对齐偏差"),
+            "ns=2;s=WND1.WindRate": (45.0, "ppm", "卷绕节拍(只/分)"),
+            "ns=2;s=WND1.ShortRate": (35.0, "ppm", "短路不良率"),
+            "ns=2;s=WND1.PowerKw": (12.0, "kW", "运行功率"),
+        },
+        key_parts=[
+            {"name": "卷针", "part_no": "NDL-4400", "life_remaining_pct": 60, "risk": "medium", "replace_lead_days": 20},
+            {"name": "张力控制器", "part_no": "TNS-2200", "life_remaining_pct": 78, "risk": "low", "replace_lead_days": 30},
+            {"name": "视觉对位", "part_no": "VIS-5500", "life_remaining_pct": 70, "risk": "low", "replace_lead_days": 45},
+            {"name": "伺服电机", "part_no": "SVX-3300", "life_remaining_pct": 85, "risk": "low", "replace_lead_days": 30},
+        ],
+        power_kw_avg=12.0, power_kw_peak=20.0, coolant_flow_lpm=4.0,
+        mtbf_hours=3200,
+    ),
+    "formation_1": EquipmentProfile(
+        equipment_id="formation_1",
+        name="杭可科技 化成分容柜 #1",
+        type_cn="化成分容柜",
+        vendor="杭可科技",
+        model="高温化成容量柜 512CH",
+        opcua_tags={
+            "ns=2;s=FOR1.Status": (True, "bool", "运行状态"),
+            "ns=2;s=FOR1.Health": (90.0, "pct", "设备健康分"),
+            "ns=2;s=FOR1.ChanInUse": (498, "ch", "在用通道数"),
+            "ns=2;s=FOR1.CapacityErr": (0.35, "pct", "容量分选误差"),
+            "ns=2;s=FOR1.TempMax": (48.5, "C", "柜内最高温"),
+            "ns=2;s=FOR1.TotalPower": (320.0, "kW", "整柜功率"),
+            "ns=2;s=FOR1.PowerKw": (320.0, "kW", "运行功率"),
+        },
+        key_parts=[
+            {"name": "电源模块", "part_no": "PSU-8800", "life_remaining_pct": 72, "risk": "low", "replace_lead_days": 45},
+            {"name": "温控风机", "part_no": "FAN-4400", "life_remaining_pct": 58, "risk": "medium", "replace_lead_days": 15},
+            {"name": "采样板", "part_no": "SMP-2200", "life_remaining_pct": 80, "risk": "low", "replace_lead_days": 30},
+            {"name": "接触器", "part_no": "CNT-5500", "life_remaining_pct": 65, "risk": "medium", "replace_lead_days": 20},
+        ],
+        power_kw_avg=320.0, power_kw_peak=420.0, coolant_flow_lpm=2.0,
+        mtbf_hours=5000,
+    ),
 }
 
 
@@ -310,6 +511,51 @@ def get_profile(eq_id: str) -> EquipmentProfile | None:
 def list_by_type(type_cn: str) -> list[EquipmentProfile]:
     """按设备类型中文名获取所有模板。"""
     return [p for p in PROFILES.values() if p.type_cn == type_cn]
+
+
+# 中文类型名 → 设备类别代码（用于行业反查）
+_CN_TO_CATEGORY: Dict[str, str] = {
+    v["cn_name"]: k for k, v in EQUIPMENT_CATEGORIES.items()
+}
+
+
+def get_industry(eq_id: str) -> str | None:
+    """按设备 ID 反查所属行业代码（semiconductor / 3c / new_energy）。"""
+    p = PROFILES.get(eq_id)
+    if not p:
+        return None
+    cat = _CN_TO_CATEGORY.get(p.type_cn)
+    if not cat:
+        return None
+    return EQUIPMENT_CATEGORIES.get(cat, {}).get("industry")
+
+
+def list_by_industry(industry: str) -> list[EquipmentProfile]:
+    """按行业代码获取该行业全部设备模板。
+
+    预设层核心入口：客户入驻声明行业后，直接拉取该行业设备模板集，
+    按型号匹配后即可生成网关标签映射与 PM 种子，无需从零配置。
+    """
+    types = INDUSTRY_EQUIPMENT_TYPES.get(industry, [])
+    cn_names = {EQUIPMENT_CATEGORIES[t]["cn_name"] for t in types if t in EQUIPMENT_CATEGORIES}
+    return [p for p in PROFILES.values() if p.type_cn in cn_names]
+
+
+def industry_overview() -> Dict[str, dict]:
+    """行业维度的设备预设总览（供预设层汇总与入驻向导使用）。"""
+    out: Dict[str, dict] = {}
+    for ind, types in INDUSTRY_EQUIPMENT_TYPES.items():
+        profiles = list_by_industry(ind)
+        out[ind] = {
+            "industry_cn": INDUSTRY_LABELS.get(ind, ind),
+            "equipment_type_count": len(types),
+            "equipment_types": [
+                EQUIPMENT_CATEGORIES[t]["cn_name"] for t in types if t in EQUIPMENT_CATEGORIES
+            ],
+            "profile_count": len(profiles),
+            "profile_ids": [p.equipment_id for p in profiles],
+        }
+    return out
 
 
 def build_seed_equipment(eq_id: str) -> dict | None:
