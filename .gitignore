@@ -68,3 +68,8 @@ scripts/gen_cover_risk_gov.py
 studio/vite.local.ts
 outputs/
 _sync.bundle
+
+# ===================== 部署/恢复临时产物 & scratch 脚本（不入库） =====================
+*.bundle
+tests/_tmp_*.py
+studio/tsconfig.tsbuildinfo
