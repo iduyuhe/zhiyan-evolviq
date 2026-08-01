@@ -9,6 +9,7 @@
 - equipment_profiles: 设备预设（半导体 Fab 6类9台）
 - erp_profiles: ERP 系统预设（7 套覆盖中国制造业 90%+）
 - mes_profiles: MES 系统预设（4 套覆盖主流国产/进口）
+- permission_templates: 权限模板预设（7 岗位 × 3 行业，入驻勾选即配权）
 
 每一套预设包含：
 1. 基础信息（名称/版本/典型行业）
@@ -18,7 +19,7 @@
 5. 连接参数模板（客户接入时填写具体 IP/端口/密钥）
 """
 
-from src.presets import erp_profiles, mes_profiles
+from src.presets import erp_profiles, mes_profiles, permission_templates
 from src.agents.pm_maintenance import equipment_profiles
 
 
@@ -27,6 +28,7 @@ def get_preset_summary() -> dict:
     erp = erp_profiles.ERP_REGISTRY
     mes = mes_profiles.MES_REGISTRY
     eq = equipment_profiles.PROFILES
+    perm = permission_templates.get_permission_summary()
     return {
         "erp_count": len(erp),
         "erp_list": list(erp.keys()),
@@ -34,9 +36,13 @@ def get_preset_summary() -> dict:
         "mes_list": list(mes.keys()),
         "equipment_count": len(eq),
         "equipment_types": sorted(set(p.type_cn for p in eq.values())),
+        "permission_role_count": perm["business_role_count"],
+        "permission_roles": perm["business_roles"],
+        "permission_industries": perm["industries"],
         "estimated_coverage": {
             "erp": "覆盖中国制造业 ERP 90%+（SAP/用友/金蝶/Oracle/浪潮）",
             "mes": "覆盖主流进口+国产 MES 85%+（西门子/罗克韦尔/霍尼韦尔/国产通用）",
             "equipment": "半导体 Fab 6 大设备类型（可扩展至其他行业）",
+            "permission": "7 类标准岗位 × 3 行业专属覆盖，入驻勾选即配权",
         },
     }

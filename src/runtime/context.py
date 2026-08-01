@@ -13,8 +13,15 @@
 （MCP 联邦 dispatch 内部仍用 try/finally reset 以恢复调用前上下文）。
 """
 import contextvars
+from typing import Any
 
 current_tenant: contextvars.ContextVar = contextvars.ContextVar("zhiyan_tenant", default="default")
+
+#: 权限第③层——当前请求用户的功能作用域（business_role + capability_scope）。
+#: 默认 None = 不限制（向后兼容：既有匿名/存量用户行为不变）。
+current_capability: contextvars.ContextVar = contextvars.ContextVar(
+    "zhiyan_capability", default=None
+)
 
 
 def get_current_tenant() -> str:
@@ -24,3 +31,17 @@ def get_current_tenant() -> str:
 
 def set_current_tenant(tenant_id: str) -> contextvars.Token:
     return current_tenant.set(tenant_id or "default")
+
+
+def get_current_capability() -> dict[str, Any] | None:
+    """读取当前请求用户的功能作用域快照。
+
+    返回形如 ``{"username":..., "business_role":..., "capability_scope": {...}}``；
+    None 表示未设置（不限制）。
+    """
+    return current_capability.get()
+
+
+def set_current_capability(cap: dict[str, Any] | None) -> contextvars.Token:
+    """把功能作用域钉在请求上下文（由鉴权依赖统一调用，业务层只读）。"""
+    return current_capability.set(cap)

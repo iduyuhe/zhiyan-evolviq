@@ -7,7 +7,7 @@ auth_source 记录来源（local / ldap / oauth2 / saml），便于审计与混�
 
 import uuid
 
-from sqlalchemy import Boolean, Enum as SAEnum, String, Text
+from sqlalchemy import JSON, Boolean, Enum as SAEnum, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.runtime.authn.roles import Role
@@ -29,6 +29,10 @@ class User(Base, TimestampMixin):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     # 外部目录中的唯一标识（LDAP dn / OAuth2 sub），用于去重同步
     external_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
+    # ---- 权限第③层：业务角色 + 功能作用域（与 RBAC role 正交，只缩不放）----
+    # NULL = 不限制（向后兼容：存量用户升级后行为完全不变）
+    business_role: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
+    capability_scope: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     def to_dict(self, include_secrets: bool = False) -> dict:
         d = {
@@ -42,6 +46,8 @@ class User(Base, TimestampMixin):
             "auth_source": self.auth_source,
             "is_active": self.is_active,
             "external_id": self.external_id,
+            "business_role": self.business_role,
+            "capability_scope": self.capability_scope,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

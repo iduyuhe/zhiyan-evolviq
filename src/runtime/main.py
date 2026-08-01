@@ -243,6 +243,25 @@ async def root_index() -> RedirectResponse:
     return RedirectResponse(url="/docs", status_code=307)
 
 
+# 权限第③层：功能作用域越权统一转 403（引擎/工具层抛 CapabilityDenied，无需各端点 try/except）
+from src.runtime.authn.capability import CapabilityDenied as _CapabilityDenied
+
+
+@app.exception_handler(_CapabilityDenied)
+async def _capability_denied_handler(request, exc: _CapabilityDenied):
+    from fastapi.responses import JSONResponse
+
+    return JSONResponse(
+        status_code=403,
+        content={
+            "detail": str(exc),
+            "error": "capability_denied",
+            "agent": exc.agent_name,
+            "business_role": exc.business_role,
+        },
+    )
+
+
 # CORS（MVP阶段允许本地前端跨域调用）
 app.add_middleware(
     CORSMiddleware,

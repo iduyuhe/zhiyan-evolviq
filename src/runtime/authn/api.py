@@ -30,10 +30,21 @@ class CreateUserRequest(BaseModel):
     tenant_id: str = "default"
     email: str | None = None
     display_name: str | None = None
+    # 权限第③层：业务角色（只填岗位即自动套用权限模板库的标准作用域）
+    business_role: str | None = None
+    capability_scope: dict | None = None
 
 
 class SetRoleRequest(BaseModel):
     role: str
+
+
+class SetCapabilityRequest(BaseModel):
+    """权限第③层设置：只填 business_role 即按模板配权；也可手工传 capability_scope。"""
+
+    business_role: str | None = None
+    capability_scope: dict | None = None
+    industry: str | None = None
 
 
 @router.post("/login")
@@ -102,10 +113,86 @@ async def create_user(req: CreateUserRequest, _: dict = Depends(require_role("te
             tenant_id=req.tenant_id,
             email=req.email,
             display_name=req.display_name,
+            business_role=req.business_role,
+            capability_scope=req.capability_scope,
         )
     except ValueError as e:
         raise HTTPException(status_code=409, detail=str(e))
     return {"status": "created", "user": rec}
+
+
+@router.get("/business-roles")
+async def list_business_roles(
+    industry: str | None = Query(None, description="行业 key，命中则返回行业专属作用域"),
+    _: dict = Depends(get_current_user),
+):
+    """列出权限模板库中的标准岗位（前端「用户权限」下拉框用）。"""
+    from src.presets.permission_templates import (
+        list_business_roles as _roles,
+        list_industries,
+        scope_for_business_role,
+    )
+
+    roles = _roles()
+    for r in roles:
+        r["scope"] = scope_for_business_role(r["value"], industry=industry)
+    return {
+        "total": len(roles),
+        "industry": industry,
+        "industries": list_industries(),
+        "roles": roles,
+    }
+
+
+@router.post("/users/{user_id}/capability")
+async def set_capability(
+    user_id: str,
+    req: SetCapabilityRequest,
+    _: dict = Depends(require_role("tenant_admin")),
+):
+    """设置用户的业务角色 / 功能作用域（权限第③层，租户管理员及以上）。
+
+    - 传 business_role 不传 capability_scope → 自动套用权限模板库标准作用域；
+    - business_role 传空串 → 清空限制（恢复全部智能体可见）。
+    """
+    try:
+        rec = await authn_service.set_capability(
+            user_id,
+            business_role=req.business_role,
+            capability_scope=req.capability_scope,
+            industry=req.industry,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    return {"status": "updated", "user": rec}
+
+
+@router.get("/my-agents")
+async def my_agents(u: dict = Depends(get_current_user)):
+    """返回当前用户实际可见的智能体列表（前端菜单渲染的唯一真相源）。"""
+    from src.runtime.api.agents_api import AGENT_REGISTRY
+    from src.runtime.authn.capability import (
+        business_role_label,
+        is_agent_read_only,
+        is_unrestricted,
+        visible_agents,
+    )
+
+    scope = u.get("capability_scope")
+    all_ids = [a["id"] for a in AGENT_REGISTRY]
+    allowed = set(visible_agents(scope, all_ids))
+    items = [
+        {**a, "read_only": is_agent_read_only(scope, a["id"])}
+        for a in AGENT_REGISTRY
+        if a["id"] in allowed
+    ]
+    return {
+        "business_role": u.get("business_role"),
+        "business_role_label": business_role_label(u.get("business_role")),
+        "unrestricted": is_unrestricted(scope),
+        "total": len(items),
+        "agents": items,
+    }
 
 
 @router.post("/users/{user_id}/role")

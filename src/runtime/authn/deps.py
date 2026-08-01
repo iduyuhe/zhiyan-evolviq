@@ -12,10 +12,27 @@
 
 from fastapi import Depends, Header, HTTPException
 
+from src.runtime.authn.capability import (
+    CapabilityDenied,
+    is_agent_allowed,
+    normalize_scope,
+)
 from src.runtime.authn.config import config
 from src.runtime.authn.roles import parse_role
 from src.runtime.authn.service import authn_service
-from src.runtime.context import set_current_tenant
+from src.runtime.context import set_current_capability, set_current_tenant
+
+
+def _bind_capability(user: dict | None) -> None:
+    """把用户的第③层功能作用域钉进请求上下文（引擎/工具层只读）。"""
+    if not user:
+        set_current_capability(None)
+        return
+    set_current_capability({
+        "username": user.get("username"),
+        "business_role": user.get("business_role"),
+        "capability_scope": normalize_scope(user.get("capability_scope")),
+    })
 
 
 async def get_current_user(authorization: str = Header(None, alias="Authorization")) -> dict:
@@ -30,6 +47,7 @@ async def get_current_user(authorization: str = Header(None, alias="Authorizatio
         raise HTTPException(status_code=401, detail="JWT 无效或已过期")
     if not user.get("is_active", True):
         raise HTTPException(status_code=403, detail="账号已停用")
+    _bind_capability(user)
     return user
 
 
@@ -43,6 +61,26 @@ def require_role(min_role: str):
             need = role_label(min_role)
             got = role_label(u.get("role", "OPERATOR"))
             raise HTTPException(status_code=403, detail=f"权限不足：需要 {need}，当前 {got}")
+        return u
+
+    return _guard
+
+
+def require_capability(agent_name: str):
+    """功能作用域门禁工厂（权限第③层）：用户 capability_scope 未覆盖该智能体 → 403。
+
+    与 `require_role` 正交组合使用：
+        @router.post("/x", dependencies=[Depends(require_role("operator")),
+                                          Depends(require_capability("pm_maintenance"))])
+    未设置作用域（NULL）的用户视为全放行，存量行为不变。
+    """
+
+    async def _guard(u: dict = Depends(get_current_user)) -> dict:
+        if not is_agent_allowed(u.get("capability_scope"), agent_name):
+            raise HTTPException(
+                status_code=403,
+                detail=str(CapabilityDenied(agent_name, u.get("business_role"), u.get("username"))),
+            )
         return u
 
     return _guard
@@ -66,6 +104,7 @@ async def require_auth(
                 u = authn_service.get_user_from_token(token)
                 if u is not None:
                     set_current_tenant(u.get("tenant_id", "default"))
+                    _bind_capability(u)
                     return u
         # P0 修复：匿名上下文必须是最小权限（viewer），绝不能再是 SUPERADMIN。
         # 生产由 ZHIYAN_AUTH_REQUIRE=1 强制拒绝无 token 请求；此处仅保护"误配置/开发"场景。
@@ -85,6 +124,8 @@ async def require_auth(
                     )
                 tenant = resolved
         set_current_tenant(tenant)
+        # 匿名上下文不受第③层限制（其权限已由 viewer 角色兜底收窄）
+        set_current_capability(None)
         return {
             "username": "anonymous",
             "role": "viewer",
@@ -103,4 +144,5 @@ async def require_auth(
     if not user.get("is_active", True):
         raise HTTPException(status_code=403, detail="账号已停用")
     set_current_tenant(user.get("tenant_id", "default"))
+    _bind_capability(user)
     return user

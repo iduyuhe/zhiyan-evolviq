@@ -21,6 +21,11 @@ from sqlalchemy import select
 from src.common import db
 from src.runtime.authn import backends
 from src.runtime.authn.config import config
+from src.runtime.authn.capability import (
+    business_role_label,
+    normalize_scope,
+    parse_business_role,
+)
 from src.runtime.authn.models import User
 from src.runtime.authn.roles import Role, parse_role, has_role
 from src.runtime.authn.security import encode_jwt, hash_password, verify_password
@@ -110,6 +115,9 @@ class AuthnService:
             "auth_source": "local",
             "is_active": True,
             "external_id": None,
+            # 平台管理员不受业务角色限制（全放行）
+            "business_role": None,
+            "capability_scope": None,
         }
         # 已存在则跳过（保留既有密码）——幂等；环境密码同步见 sync_admin_password()
         existing = await self._load(config.ADMIN_USERNAME)
@@ -230,6 +238,8 @@ class AuthnService:
             "auth_source": info.get("auth_source", "ldap"),
             "is_active": True,
             "external_id": info.get("external_id"),
+            "business_role": None,
+            "capability_scope": None,
         }
         self._mem[rec["username"]] = rec
         await self._upsert_db(rec)
@@ -241,6 +251,9 @@ class AuthnService:
             role_name = parse_role(role).name
         except Exception:
             role_name = "OPERATOR"
+        # 权限第③层：业务角色 + 功能作用域随 JWT 下发（NULL → 全放行，向后兼容）
+        biz_role = info.get("business_role")
+        scope = normalize_scope(info.get("capability_scope"))
         token = encode_jwt(
             {
                 "sub": info["username"],
@@ -249,6 +262,8 @@ class AuthnService:
                 "tenant_id": info.get("tenant_id", "default"),
                 "auth_source": info.get("auth_source", "local"),
                 "name": info.get("display_name") or info["username"],
+                "business_role": biz_role,
+                "capability_scope": scope,
             }
         )
         return {
@@ -260,6 +275,9 @@ class AuthnService:
                 "role": role_name,
                 "tenant_id": info.get("tenant_id", "default"),
                 "auth_source": info.get("auth_source", "local"),
+                "business_role": biz_role,
+                "business_role_label": business_role_label(biz_role),
+                "capability_scope": scope,
             },
         }
 
@@ -279,6 +297,9 @@ class AuthnService:
             "tenant_id": p.get("tenant_id", "default"),
             "auth_source": p.get("auth_source", "local"),
             "display_name": p.get("name", p.get("sub")),
+            # 权限第③层（旧 token 无此字段 → normalize 归一为全放行，平滑过渡）
+            "business_role": p.get("business_role"),
+            "capability_scope": normalize_scope(p.get("capability_scope")),
         }
 
     # ---------------- 用户管理（RBAC 由 API 层 require_role 保护）----------------
@@ -286,9 +307,16 @@ class AuthnService:
     async def create_user(
         self, username: str, password: str, role: str = "operator",
         tenant_id: str = "default", email: str | None = None, display_name: str | None = None,
+        business_role: str | None = None, capability_scope: dict | None = None,
     ) -> dict:
         if await self._load(username):
             raise ValueError(f"用户已存在: {username}")
+        br = parse_business_role(business_role)
+        # 只给了业务角色未给作用域 → 从权限模板库取该岗位的标准作用域
+        if capability_scope is None and br is not None:
+            from src.presets.permission_templates import scope_for_business_role
+
+            capability_scope = scope_for_business_role(br.value)
         rec = {
             "id": uuid.uuid4().hex[:12],
             "username": username,
@@ -300,9 +328,57 @@ class AuthnService:
             "auth_source": "local",
             "is_active": True,
             "external_id": None,
+            "business_role": br.value if br else None,
+            "capability_scope": capability_scope,
         }
         self._mem[rec["username"]] = rec
         await self._upsert_db(rec)
+        return self._public(rec)
+
+    async def set_capability(
+        self, user_id: str, business_role: str | None = None,
+        capability_scope: dict | None = None, industry: str | None = None,
+    ) -> dict:
+        """设置用户的业务角色 / 功能作用域（权限第③层）。
+
+        - 只给 business_role 不给 capability_scope → 自动套用权限模板库的岗位标准作用域；
+        - business_role 传空串 / "none" → 清空为 NULL（恢复全放行）。
+        """
+        br = parse_business_role(business_role)
+        clear = business_role is not None and br is None
+        scope = capability_scope
+        if scope is None and br is not None:
+            from src.presets.permission_templates import scope_for_business_role
+
+            scope = scope_for_business_role(br.value, industry=industry)
+        if clear:
+            scope = None
+
+        new_role_val = None if clear else (br.value if br else None)
+        rec = None
+        for u in self._mem.values():
+            if u["id"] == user_id:
+                if business_role is not None:
+                    u["business_role"] = new_role_val
+                if scope is not None or clear:
+                    u["capability_scope"] = scope
+                rec = u
+                break
+        if db.db_available and db.async_session:
+            try:
+                async with db.async_session() as s:
+                    row = (await s.execute(select(User).where(User.id == user_id))).scalars().first()
+                    if row:
+                        if business_role is not None:
+                            row.business_role = new_role_val
+                        if scope is not None or clear:
+                            row.capability_scope = scope
+                        await s.commit()
+                        rec = row.to_dict(include_secrets=True)
+            except Exception as e:
+                logger.warning(f"更新功能作用域落库失败：{e}")
+        if rec is None:
+            raise ValueError("用户不存在")
         return self._public(rec)
 
     async def list_users(self, tenant_id: str | None = None) -> list[dict]:
@@ -361,6 +437,9 @@ class AuthnService:
         d.pop("password_hash", None)
         if isinstance(d.get("role"), Role):
             d["role"] = d["role"].name
+        d.setdefault("business_role", None)
+        d["business_role_label"] = business_role_label(d.get("business_role"))
+        d.setdefault("capability_scope", None)
         return d
 
     # ---------------- RBAC ----------------

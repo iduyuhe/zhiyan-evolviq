@@ -16,6 +16,51 @@ from src.runtime import persistence
 logger = logging.getLogger(__name__)
 
 
+def _guard_capability(agent_name: str) -> None:
+    """权限第③层守卫——当前请求用户的功能作用域是否覆盖该智能体。
+
+    上下文未设置（后台任务 / 匿名 / 存量 token）→ 全放行，保持向后兼容；
+    越权 → 抛 CapabilityDenied，由 API 层统一转 403。
+    """
+    from src.runtime.authn.capability import ensure_agent_allowed
+    from src.runtime.context import get_current_capability
+
+    cap = get_current_capability()
+    if not cap:
+        return
+    ensure_agent_allowed(
+        agent_name,
+        scope=cap.get("capability_scope"),
+        business_role=cap.get("business_role"),
+        username=cap.get("username"),
+    )
+
+
+def _filter_sub_tasks_by_capability(sub_tasks: list, goal: str = "") -> list:
+    """多 Agent 编排的第③层过滤：剔除用户无权使用的子任务。
+
+    全部被剔除时抛 CapabilityDenied（说明该复合目标完全落在用户权限之外）。
+    """
+    from src.runtime.authn.capability import CapabilityDenied, is_agent_allowed
+    from src.runtime.context import get_current_capability
+
+    cap = get_current_capability()
+    if not cap or not sub_tasks:
+        return sub_tasks
+    scope = cap.get("capability_scope")
+    kept = [t for t in sub_tasks if is_agent_allowed(scope, getattr(t, "agent", ""))]
+    dropped = len(sub_tasks) - len(kept)
+    if dropped:
+        logger.info(f"第③层功能作用域：多Agent编排剔除 {dropped} 个越权子任务")
+    if not kept:
+        raise CapabilityDenied(
+            getattr(sub_tasks[0], "agent", "unknown"),
+            cap.get("business_role"),
+            cap.get("username"),
+        )
+    return kept
+
+
 class AgentEngine:
     """Agent执行引擎——管理Agent从规划到完成的全生命周期"""
 
@@ -57,6 +102,10 @@ class AgentEngine:
         # Step 2: 路由到合适的Agent生成规划
         from src.runtime.agent.router import route_goal
         agent_name = route_goal(goal)
+
+        # 权限第③层：用户功能作用域门禁（fail-fast，路由后立即拦，避免白跑推理）
+        _guard_capability(agent_name)
+
         self._sessions[session_id]["agent"] = agent_name
 
         if agent_name == "supply_chain":
@@ -269,6 +318,14 @@ class AgentEngine:
         from src.runtime.models.authorization import PlannedAction
         from src.meta_agent.audit import audit_logger
 
+        # 权限第③层（纵深防御）：作用域不覆盖 → 直接拦；标记只读 → 一律转人工，禁止自主执行
+        _guard_capability(agent_name)
+        from src.runtime.authn.capability import is_agent_read_only
+        from src.runtime.context import get_current_capability
+
+        _cap = get_current_capability() or {}
+        _read_only = bool(_cap) and is_agent_read_only(_cap.get("capability_scope"), agent_name)
+
         # 取边界：优先会话指定，否则取Agent默认（均限定在当前租户内）
         auth_scope = authorization.for_tenant(tenant_id)
         boundary = None
@@ -316,6 +373,13 @@ class AgentEngine:
             return [], []
 
         decisions = auth_scope.evaluate_batch(boundary, actions)
+
+        # 只读作用域：即便边界判定为 auto，也强制降级为人工（岗位只能看，不能让 Agent 代做）
+        if _read_only:
+            for dec in decisions:
+                if dec.decision == "auto":
+                    dec.decision = "human"
+                    dec.reason = "当前岗位对该智能体仅有只读权限，自主动作已转人工审批"
 
         autonomous: list[dict] = []
         pending: list[dict] = []
@@ -595,6 +659,10 @@ class AgentEngine:
         # 目标分解（LLM 增强 → 模板/规则兜底）
         decomposer = GoalDecomposer()
         plan = await decomposer.decompose(goal)
+
+        # 权限第③层：把用户无权使用的子任务从编排里剔除；全被剔除 → 拒绝
+        plan.sub_tasks = _filter_sub_tasks_by_capability(plan.sub_tasks, goal)
+
         plan_dict = plan.to_dict()
 
         self._sessions[session_id]["plan"] = plan_dict
