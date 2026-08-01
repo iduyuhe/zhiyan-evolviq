@@ -84,6 +84,20 @@ export function logout(): void {
   setToken(null);
 }
 
+// 🔴 主动鉴权守卫：任何受 JWT 保护的主动操作（建会话/审批/干预/快检）前调用。
+// 若本地 token 已静默丢失（多 Tab 清理、跨日过期、localStorage 被清），
+// 不等后端 401，前端先抛出友好错误，由调用方回登录页——避免"能看列表但一点就 401"。
+export class AuthExpiredError extends Error {
+  constructor() {
+    super('登录态已失效，请重新登录');
+    this.name = 'AuthExpiredError';
+  }
+}
+
+export function requireLocalToken(): void {
+  if (!getToken()) throw new AuthExpiredError();
+}
+
 
 export interface Session {
   session_id: string;
@@ -170,6 +184,7 @@ export async function healthCheck(): Promise<HealthStatus> {
 }
 
 export async function createSession(goal: string): Promise<Session> {
+  requireLocalToken();
   const res = await fetch(`${API_BASE}/sessions`, {
     method: 'POST',
     headers: authHeaders(),
@@ -180,6 +195,7 @@ export async function createSession(goal: string): Promise<Session> {
 }
 
 export async function approveSession(sessionId: string, approved: boolean, feedback?: string): Promise<Session> {
+  requireLocalToken();
   const res = await fetch(`${API_BASE}/sessions/${sessionId}/approve`, {
     method: 'POST',
     headers: authHeaders(),
@@ -190,6 +206,7 @@ export async function approveSession(sessionId: string, approved: boolean, feedb
 }
 
 export async function interveneSession(sessionId: string, action: string, newGoal?: string): Promise<Session> {
+  requireLocalToken();
   const res = await fetch(`${API_BASE}/sessions/${sessionId}/intervene`, {
     method: 'POST',
     headers: authHeaders(),
@@ -200,6 +217,7 @@ export async function interveneSession(sessionId: string, action: string, newGoa
 }
 
 export async function quickCheck(goal: string): Promise<{ result: ExecutionResult }> {
+  requireLocalToken();
   const res = await fetch(`${API_BASE}/sessions/quick-check`, {
     method: 'POST',
     headers: authHeaders(),

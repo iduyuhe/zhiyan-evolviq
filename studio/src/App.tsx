@@ -36,7 +36,7 @@ import FeedbackPanel from './components/FeedbackPanel';
 import { createSession, approveSession, quickCheck, authHeaders, apiUrl } from './api/client';
 import type { Session, ExecutionResult } from './api/client';
 import Login from './components/Login';
-import { getToken, fetchMe, logout, type AuthUser } from './api/client';
+import { getToken, fetchMe, logout, requireLocalToken, AuthExpiredError, type AuthUser } from './api/client';
 
 type Stage = 'input' | 'planning' | 'approving' | 'executing' | 'result' | 'error';
 type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'twin' | 'governance' | 'federation' | 'supplychain' | 'writeback' | 'tacit' | 'bluearc' | 'tenant' | 'connect' | 'symbiosis';
@@ -89,6 +89,12 @@ export default function App() {
     setMe(null);
   };
 
+  // 🔴 全局守卫：已登录态(me 存在)但本地 token 静默丢失（多 Tab 清理 / 跨日过期 /
+  // localStorage 被清）→ 立即回登录页，避免"能看 Agent 列表但一点击就 401"的悬空态。
+  useEffect(() => {
+    if (me && !getToken()) handleLogout();
+  }, [me, handleLogout]);
+
   // 桌面侧栏折叠偏好持久化
   useEffect(() => {
     const saved = localStorage.getItem('zhiyan_sidebar_collapsed');
@@ -136,12 +142,16 @@ export default function App() {
       setResult(data.result);
       setStage('result');
     } catch (e) {
+      if (e instanceof AuthExpiredError) {
+        handleLogout();
+        return;
+      }
       setError(e instanceof Error ? e.message : '快速检查失败');
       setStage('error');
     } finally {
       setExecuting(false);
     }
-  }, []);
+  }, [handleLogout]);
 
   const handleSubmitGoal = useCallback(async (goal: string) => {
     setStage('planning');
@@ -151,10 +161,14 @@ export default function App() {
       setSession(s);
       setStage('approving');
     } catch (e) {
+      if (e instanceof AuthExpiredError) {
+        handleLogout();
+        return;
+      }
       setError(e instanceof Error ? e.message : '请求失败');
       setStage('error');
     }
-  }, []);
+  }, [handleLogout]);
 
   const handleApprove = useCallback(async (approved: boolean, feedback?: string) => {
     if (!session) return;
@@ -169,12 +183,16 @@ export default function App() {
         setStage('input');
       }
     } catch (e) {
+      if (e instanceof AuthExpiredError) {
+        handleLogout();
+        return;
+      }
       setError(e instanceof Error ? e.message : '执行失败');
       setStage('error');
     } finally {
       setExecuting(false);
     }
-  }, [session]);
+  }, [session, handleLogout]);
 
   const handleNewGoal = () => {
     setSession(null);
