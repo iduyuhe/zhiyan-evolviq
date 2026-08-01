@@ -43,6 +43,7 @@
 | `DOMAIN_GUIDE.md` | 领域指南 | ✅ | |
 | `TUTORIAL.md` | 教程 | ✅ | |
 | `API_AUTH.md` | API 鉴权 | ✅ | |
+| `CASE_TENANT_ACCOUNTS.md` | 研究案例租户登录账号（团队查阅） | ✅ | #429 破例实例化，4 账号已实机验证 |
 | `INTEGRATION.md` | 集成 | ✅ | |
 | `DEPLOYMENT_GUIDE.md` | 部署指南 | ✅ | 双入口架构已生产验证 |
 | `MULTI_AGENT_ORCHESTRATION.md` | 多智能体编排 | ✅ | |
