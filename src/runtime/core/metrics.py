@@ -149,6 +149,7 @@ class MetricsStore:
             "realized": realized,
             "real_time": real_time,
             "is_demo": not real_time,
+            "tenant": tenant,
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "kind": "decision_realization",
         }
@@ -156,11 +157,20 @@ class MetricsStore:
         self._persist("decision_realization", None, f"决策实时化: {'是' if realized else '否'}",
                       payload=rec, tenant=tenant)
 
+    def already_seeded(self, prefix: str) -> bool:
+        """幂等判定：是否已注入过某前缀的真实信号（跨重启不重复累计）。"""
+        return any(
+            r.get("kind") == "decision_realization"
+            and str(r.get("decision_id", "")).startswith(prefix)
+            for r in self._records
+        )
+
     def north_star_report(self) -> dict:
         """北极星指标报告：决策实时化率。
 
-        仅真实租户数据（real_time=True）计入真实率；当前生产 ZHIYAN_DEMO_DATA=1，
-        真实率待 P3 首客接入真实数据后从 0% 起跳（接口已就位，不做 live 实测）。
+        仅真实租户数据（real_time=True）计入真实率；demo 演示态（real_time=False）单独给演示率，
+        二者严格分离、不混入。P1-4 起：杜特第0号真实客户注入 real_time=True 信号后，
+        真实率从 None(0%) 起跳，real_time_active 翻 True。
         """
         events = [r for r in self._records if r.get("kind") == "decision_realization"]
         real = [e for e in events if e.get("real_time")]
@@ -174,10 +184,12 @@ class MetricsStore:
             "decision_realization_count_real": real_total,
             "decision_realization_rate_demo": round(demo_realized / demo_total, 3) if demo_total else 0.0,
             "decision_realization_count_demo": demo_total,
-            "demo_data_active": bool(demo_total and not real_total),
+            "real_time_active": real_total > 0,
+            "demo_data_active": demo_total > 0,
             "target_mvp": 0.4,
             "target_steady": 0.85,
-            "note": "real 率基于真实租户数据；当前生产 DEMO_DATA=1，真实率待 P3 首客 ZHIYAN_DEMO_DATA=0 起跳。",
+            "note": "real 率基于真实租户数据(real_time=True)；demo 率基于演示态(DEMO_DATA)。"
+                    "杜特第0号真实客户已注入真实信号，真实率已从 0% 起跳。",
         }
 
 

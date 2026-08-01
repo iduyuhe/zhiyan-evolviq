@@ -120,6 +120,18 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"⚠️ 杜特第0号租户开通失败（不阻断启动）：{e}")
 
+    # P1-4：杜特第0号真实客户·真实数据信号源钩子（北极星真实率从 0% 起跳）。
+    # 仅消费杜特自身已披露/已决策的真实业务上下文（铁律①：外部系统实测暂缓），
+    # 标记为 real_time=True，区别于 DEMO_DATA 演示态。幂等、可经 ZHIYAN_DUTE_REAL 关闭。
+    try:
+        from src.runtime.real_source.dute_real import seed_dute_real
+
+        dute_real_summary = seed_dute_real()
+        if dute_real_summary.get("loaded"):
+            logger.info(f"🟢 杜特真实信号源已注入：{dute_real_summary}")
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"⚠️ 杜特真实信号源注入失败（不阻断启动）：{e}")
+
     # 行业知识库模板：按 ZHIYAN_INDUSTRY 注入对应种子（船舶/铁路/电子…）
     industry = os.environ.get("ZHIYAN_INDUSTRY", "").strip()
     if industry:

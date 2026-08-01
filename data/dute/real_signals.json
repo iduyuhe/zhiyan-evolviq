@@ -1,0 +1,90 @@
+{
+  "tenant_id": "dute",
+  "description": "杜特（上海杜特企业管理咨询有限公司）第0号真实客户的自有业务信号源。本清单由杜特自身已披露/已决策的真实业务上下文构成（非演示数据、非外部系统实测），作为北极星『决策实时化率』真实率(Real)的起跳原料。外部系统(OPC-UA/ERP/MES)实测按铁律①暂缓，待真实签约客户接入后切换。",
+  "signals": [
+    {
+      "id": "dute-real-001",
+      "agent": "industry_research",
+      "signal": "杜特研究案例范式锚定中兴通讯(000063.SZ)公开年报与2026上半年数据，推演通讯行业设备健康与供应链韧性结论。",
+      "decision": "基于公开数据实时生成通讯行业设备健康/能耗/供应链韧性结论，支撑研究案例库沉淀。",
+      "realized": true
+    },
+    {
+      "id": "dute-real-002",
+      "agent": "case_curator",
+      "signal": "杜特定义研究案例匿名铁律：对外仅显『某某通讯公司』，真实锚定仅内部变量，结果 payload 严禁含真名。",
+      "decision": "实时校验案例入库的匿名边界，防止真名泄漏，区分『公开推演』与『真实客户数据』。",
+      "realized": true
+    },
+    {
+      "id": "dute-real-003",
+      "agent": "executive_cockpit",
+      "signal": "杜特定价模型定为第一梯队：参考西门子80%、国内第一；需实时呈现对标定位与价值锚点。",
+      "decision": "实时聚合外部行情/竞品信号，生成杜特对外定价定位的经营驾驶舱结论。",
+      "realized": true
+    },
+    {
+      "id": "dute-real-004",
+      "agent": "cost_analysis",
+      "signal": "杜特预设层战略确立：先建设备库/ERP库/MES库/权限库，客户来了直接匹配，为行业高质量数据集奠基。",
+      "decision": "实时评估预设层投入产出，给出各行业设备/系统模板的优先级排序建议。",
+      "realized": true
+    },
+    {
+      "id": "dute-real-005",
+      "agent": "supply_chain",
+      "signal": "杜特P3试点锚定中芯国际，场景A=设备健康/能耗孪生；需实时评估供应链与产能韧性。",
+      "decision": "实时生成半导体Fab供应链韧性结论，支撑试点场景A的设备健康/能耗孪生决策。",
+      "realized": true
+    },
+    {
+      "id": "dute-real-006",
+      "agent": "compliance_q",
+      "signal": "杜特要求私有化/合规闸门：real_anchor 仅内部变量，research_case 模式不写租户作用域记忆，结果零泄漏。",
+      "decision": "实时复核研究案例推演的合规边界，确保匿名/真名双版隔离与零泄漏。",
+      "realized": true
+    },
+    {
+      "id": "dute-real-007",
+      "agent": "equipment_twin",
+      "signal": "杜特按行业典型设备预接入（如半导体Fab 9台6类），无需等签约即可建模板，同型号客户直接套用。",
+      "decision": "实时匹配设备库模板，给出新客户接入时的设备对接路径与数据管道建议。",
+      "realized": true
+    },
+    {
+      "id": "dute-real-008",
+      "agent": "erp_mes_bridge",
+      "signal": "杜特预设ERP 7套(含SAP/用友/金蝶/浪潮)+MES 4套(含Opcenter/FactoryTalk/霍尼韦尔)，覆盖中国制造业90%+。",
+      "decision": "实时生成客户入驻时的ERP/MES预设匹配方案，缩短签约到首个决策结论的周期。",
+      "realized": true
+    },
+    {
+      "id": "dute-real-009",
+      "agent": "permission_curator",
+      "signal": "杜特要求企业内部多用户差异化权限：业务角色→功能作用域第③层已落地，7岗位基线+3行业模板。",
+      "decision": "实时生成杜特多用户入驻的权限模板分配方案，杜绝越权看财务/经营数据。",
+      "realized": true
+    },
+    {
+      "id": "dute-real-010",
+      "agent": "content_amplify",
+      "signal": "杜特运营『工业5点0产业生态联盟』公众号，已建40篇草稿，需实时规划内容节奏与生态图投放。",
+      "decision": "实时生成公众号内容节奏与全链路生态图投放建议，支撑生态联盟运营。",
+      "realized": true
+    },
+    {
+      "id": "dute-real-011",
+      "agent": "strategy_tuner",
+      "signal": "杜特定义北极星=决策实时化率(MVP≥40%/稳态≥85%)，第③层权限只调阈值绝不改业务数字。",
+      "decision": "实时给出阈值调参建议（置信度夹[0.5,0.95]），不触碰事实锚点。",
+      "realized": true
+    },
+    {
+      "id": "dute-real-012",
+      "agent": "symbiosis_store",
+      "signal": "杜特共生进化环：用户反馈经脱敏管道+48h SLA 沉淀，反哺平台建议与KG事实提议。",
+      "decision": "实时闭环用户反馈→脱敏→平台建议，支撑自进化回路。",
+      "realized": true
+    }
+  ]
+}
