@@ -25,8 +25,9 @@ class EnvSourceManager:
             from src.runtime.env_sources.market_source import MarketSource
             from src.runtime.env_sources.benchmark_source import BenchmarkSource
             from src.runtime.env_sources.disclosure_source import DisclosureSource
+            from src.runtime.env_sources.customer_voice_source import CustomerVoiceSource
 
-            for cls in (PolicySource, MarketSource, BenchmarkSource, DisclosureSource):
+            for cls in (PolicySource, MarketSource, BenchmarkSource, DisclosureSource, CustomerVoiceSource):
                 try:
                     inst = cls()
                     self._sources[inst.name] = inst

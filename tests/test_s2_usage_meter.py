@@ -175,7 +175,8 @@ class TestQuotaApi:
         data = r.json()
         assert data["unlimited"] is False
         assert set(data["metrics"]) == {"daily_signals", "monthly_insights", "env_sources"}
-        assert data["metrics"]["env_sources"]["limit"] == 3
+        # 2026-08-02 方案 A：customer_voice 源加入 → 免费额度 3→4
+        assert data["metrics"]["env_sources"]["limit"] == 4
 
     @pytest.mark.asyncio
     async def test_quota_default_tenant_unlimited(self, env_client):

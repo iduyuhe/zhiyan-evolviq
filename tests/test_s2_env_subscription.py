@@ -188,8 +188,9 @@ class TestSubscriptionAPI:
         assert r.status_code == 200
         body = r.json()
         assert body["tenant_id"] == "TENANT_A"
-        assert len(body["subscriptions"]) == 3
-        assert body["enabled_count"] == 3
+        # 2026-08-02 方案 A：customer_voice 源加入 → 默认模板 3→4（免费额度同步 3→4）
+        assert len(body["subscriptions"]) == 4
+        assert body["enabled_count"] == 4
         assert body["free_max_sources"] >= 1
 
     @pytest.mark.asyncio

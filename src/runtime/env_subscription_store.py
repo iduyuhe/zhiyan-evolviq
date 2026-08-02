@@ -6,7 +6,7 @@
 
 核心职责：
 1. CRUD（tenant-scoped，upsert 语义：一租户一源一行）。
-2. 免费额度上限：启用源数 ≤ FREE_MAX_SOURCES（默认 3，ZHIYAN_FREE_MAX_ENV_SOURCES 可调）
+2. 免费额度上限：启用源数 ≤ FREE_MAX_SOURCES（默认 4，ZHIYAN_FREE_MAX_ENV_SOURCES 可调）
    —— 超限抛 QuotaExceeded，API 层转 402（付费线=信任爬梯③）。
 3. 语义隔离筛选 filter_signals()：「抓取共享、语义隔离」两层制的消费层——
    平台级信号池按租户订阅规则（源开关/credibility 阈值/关键词）过滤出租户可见流。
@@ -28,7 +28,9 @@ from src.runtime.models.env_subscription import CRED_RANK, EnvSubscription
 logger = logging.getLogger(__name__)
 
 # 免费额度：最多启用的环境信息源数（总纲 §3 S2-3，发布前杜总可调）
-FREE_MAX_SOURCES = int(os.getenv("ZHIYAN_FREE_MAX_ENV_SOURCES", "3"))
+# 2026-08-02 方案 A：新增 customer_voice（客户声音）源后默认模板 4 源 → 免费额度 3→4。
+# 免费圈=「纯⑥信号」公开源，客户声音(商机情报)是免费圈钩子，不算破坏免费承诺。
+FREE_MAX_SOURCES = int(os.getenv("ZHIYAN_FREE_MAX_ENV_SOURCES", "4"))
 
 
 class QuotaExceeded(Exception):

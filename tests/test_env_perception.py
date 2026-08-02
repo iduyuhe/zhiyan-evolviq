@@ -242,6 +242,69 @@ class TestEnvSources:
         if signals:
             assert signals[0].get("category") == "benchmark"
 
+    # ===== customer_voice（2026-08-02 方案 A：补全第⑥路已定义未落地的「客户声音」）=====
+    @pytest.mark.asyncio
+    async def test_customer_voice_source_simulated(self):
+        from src.runtime.env_sources.customer_voice_source import CustomerVoiceSource
+
+        src = CustomerVoiceSource()
+        assert src.credibility == CRED_AUTHORITATIVE  # 非官方 → 人工审核队列（官方为锚、其余必筛）
+        assert src.kind == "customer_voice"
+        signals, mode = await src.fetch(limit=2)
+        assert mode == "simulated"
+        assert len(signals) <= 2
+        if signals:
+            assert signals[0].get("category") == "customer_voice"
+            assert any(str(e).startswith("CUS:") for e in signals[0].get("entities", []))
+
+    @pytest.mark.asyncio
+    async def test_customer_voice_manager_registered(self):
+        from src.runtime.env_sources.manager import env_manager
+
+        names = {s["name"] for s in env_manager.list()}
+        assert "customer_voice" in names
+
+    @pytest.mark.asyncio
+    async def test_customer_voice_goes_to_review_queue(self):
+        """authoritative 信号必须进人工审核队列（F4 红线），而不是直接锚定。"""
+        from src.runtime.env_sources.customer_voice_source import CustomerVoiceSource
+
+        src = CustomerVoiceSource()
+        sig = {
+            "title": "客户声音测试信号",
+            "content": "应进审核队列而非直接锚定",
+            "category": "customer_voice",
+            "entities": ["CUS:test"],
+        }
+        ev_id = src.publish_signal(sig)
+        assert ev_id is not None
+        # 非官方 → 出现在审核队列（pending）
+        pending = env_review.list(status="pending")
+        assert any(item["event_id"] == ev_id for item in pending)
+
+    @pytest.mark.asyncio
+    async def test_customer_voice_visible_via_env_context(self):
+        """通道级可见：外圈 agent 的 env_context() 能读到 customer_voice 信号（无需改 agent）。"""
+        from src.runtime.env_sources.customer_voice_source import CustomerVoiceSource
+        from src.agents.base import BaseAgent
+
+        class _ProbeAgent(BaseAgent):
+            name = "probe_env_context"
+
+            async def analyze(self, goal: str, tenant_id: str, **kw) -> dict:
+                return {"status": "completed"}
+
+        src = CustomerVoiceSource()
+        sig = {
+            "title": "客户声音通道可见性测试",
+            "content": "外圈 agent 经 env_context 应能读到",
+            "category": "customer_voice",
+            "entities": ["CUS:test_channel"],
+        }
+        src.publish_signal(sig)
+        ctx = await _ProbeAgent().env_context(tenant_id="default", limit=50)
+        assert any("客户声音通道可见性测试" in (s.get("payload") or {}).get("title", "") for s in ctx["signals"])
+
     @pytest.mark.asyncio
     async def test_publish_signal_to_uns(self):
         from src.runtime.env_sources.policy_source import PolicySource
