@@ -434,7 +434,7 @@ cd studio && node_modules/typescript/bin/tsc --noEmit   # EXIT=0
 
 ---
 
-## 十三、半年复盘 + Agent 心跳自触发（2026-08-02，commit `10c4bf1`）
+## 十三、半年复盘 + Agent 心跳自触发（2026-08-02，commit `3540cd2`）
 
 > 触发：杜总「总结近半年经验教训，先讨论方案再动手」→ OpenClaw（小龙虾）架构讨论后拍板借鉴 HEARTBEAT 模式，实现「从被动应答到主动巡检」。
 
