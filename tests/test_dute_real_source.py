@@ -60,3 +60,33 @@ def test_dute_real_disabled_when_flag_off(fresh_metrics, monkeypatch):
     assert summary["loaded"] is False
     assert summary["reason"] == "disabled"
     assert fresh_metrics.north_star_report()["real_time_active"] is False
+
+
+# ============ 主动决策实时化率（2026-08-02 OpenClaw HEARTBEAT 借鉴）============
+
+
+def test_north_star_includes_proactive_dimension(fresh_metrics):
+    """北极星报告含主动决策维度（计数 + 率 + 来源标注，诚实 seed 演示态）。"""
+    rep = fresh_metrics.north_star_report()
+    assert "proactive_decision_count" in rep
+    assert "proactive_decision_rate" in rep
+    assert "proactive_source" in rep
+    assert "heartbeat" in rep["proactive_source"]
+    # 无心跳告警时：计数 0，率为 None（0 触达不虚报）
+    assert rep["proactive_decision_count"] == 0
+    assert rep["proactive_decision_rate"] is None
+
+
+def test_proactive_rate_reflects_heartbeat_alerts(fresh_metrics, monkeypatch):
+    """主动决策率 = 心跳告警 ÷ (决策事件 + 心跳告警)。"""
+    from src.runtime.heartbeat.engine import heartbeat_engine
+
+    # 注入 1 条真实决策事件（杜特信号 seed）
+    from src.runtime.real_source.dute_real import seed_dute_real
+
+    seed_dute_real()
+    monkeypatch.setattr(heartbeat_engine, "_alerts", 3)  # 模拟 3 次心跳主动告警
+    rep = fresh_metrics.north_star_report()
+    # 3 / (12 + 3) = 0.2
+    assert rep["proactive_decision_count"] == 3
+    assert rep["proactive_decision_rate"] == 0.2

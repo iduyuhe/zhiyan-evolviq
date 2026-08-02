@@ -166,11 +166,15 @@ class MetricsStore:
         )
 
     def north_star_report(self) -> dict:
-        """北极星指标报告：决策实时化率。
+        """北极星指标报告：决策实时化率 + 主动决策实时化率。
 
         仅真实租户数据（real_time=True）计入真实率；demo 演示态（real_time=False）单独给演示率，
         二者严格分离、不混入。P1-4 起：杜特第0号真实客户注入 real_time=True 信号后，
         真实率从 None(0%) 起跳，real_time_active 翻 True。
+
+        主动决策实时化率（2026-08-02 OpenClaw HEARTBEAT 借鉴）：衡量「系统主动发现并推达」占
+        全部决策触达的比例 = 心跳主动检出的风险告警 ÷ (决策事件 + 心跳告警)。当前心跳基于 seed
+        演示态，真实源接入后自动升级（诚实标注 proactive_source）。
         """
         events = [r for r in self._records if r.get("kind") == "decision_realization"]
         real = [e for e in events if e.get("real_time")]
@@ -179,6 +183,18 @@ class MetricsStore:
         real_realized = sum(1 for e in real if e["realized"])
         demo_total = len(demo)
         demo_realized = sum(1 for e in demo if e["realized"])
+
+        # 主动决策：心跳引擎主动检出的风险告警数（进程级累计）
+        proactive_alerts = 0
+        proactive_source = "heartbeat（当前 seed 演示态，真实源接入后升级）"
+        try:
+            from src.runtime.heartbeat.engine import heartbeat_engine
+
+            proactive_alerts = int(heartbeat_engine.stats().get("alerts", 0))
+        except Exception:
+            proactive_alerts = 0
+
+        decision_events_total = real_total + demo_total
         return {
             "decision_realization_rate_real": round(real_realized / real_total, 3) if real_total else None,
             "decision_realization_count_real": real_total,
@@ -186,10 +202,16 @@ class MetricsStore:
             "decision_realization_count_demo": demo_total,
             "real_time_active": real_total > 0,
             "demo_data_active": demo_total > 0,
+            # 主动决策维度（2026-08-02）
+            "proactive_decision_count": proactive_alerts,
+            "proactive_decision_rate": round(proactive_alerts / (proactive_alerts + decision_events_total), 3)
+            if (proactive_alerts + decision_events_total) > 0 else None,
+            "proactive_source": proactive_source,
             "target_mvp": 0.4,
             "target_steady": 0.85,
             "note": "real 率基于真实租户数据(real_time=True)；demo 率基于演示态(DEMO_DATA)。"
-                    "杜特第0号真实客户已注入真实信号，真实率已从 0% 起跳。",
+                    "杜特第0号真实客户已注入真实信号，真实率已从 0% 起跳。"
+                    "主动决策率=心跳主动检出告警/(决策事件+心跳告警)，当前 seed 演示态。",
         }
 
 
