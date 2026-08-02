@@ -206,6 +206,14 @@ async def lifespan(app: FastAPI):
     except Exception:
         pass
 
+    # Agent 心跳自触发（2026-08-02 OpenClaw HEARTBEAT 借鉴）：主动巡检，默认关
+    try:
+        from src.runtime.heartbeat.engine import heartbeat_engine
+        if heartbeat_engine.configure():
+            await heartbeat_engine.start()
+    except Exception:
+        pass
+
     # 演示审计接收端（v29.2）：ZHIYAN_DS_DEMO_AUDIT=1 时，启动线程内 HTTP 接收端
     # 并把 MES/ERP 连接器指向它，使回写实执行路径（真实 HTTP POST→200）闭环，
     # 不依赖外部 ERP/MES；生产改用真实 ZHIYAN_DS_MES_URL/ERP_URL 同样生效。

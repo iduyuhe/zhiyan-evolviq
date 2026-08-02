@@ -119,7 +119,7 @@ class BidIntelAgent(BaseAgent):
             "env_signal_count": env.get("count", 0),
             "mode": mode,
             "case_id": case_id,
-            **({"note": "研究案例模式(research_case)：商机推演基于公开信号基准占位，不写租户作用域记忆；真实锚定仅内部可见"} if mode != "tenant" else {}),
+            **({"note": "研究案例模式(research_case)：商机推演基于公开信号基准占位，不写租户作用域记忆；真实锚定仅内部可见"} if mode == "research_case" else {}),
         }
 
     # ---------- 确定性规则推演（事实锚点：全部来自 env 信号溯源） ----------

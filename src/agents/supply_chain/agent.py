@@ -38,15 +38,57 @@ class SupplyChainAgent(BaseAgent):
 
         向后兼容：内部仍复用 `analyze_goal`（生成规划）+ `execute`（执行规划）。
         mode=research_case 时为研究案例匿名推演（数据作基准占位，不写租户作用域记忆）。
+        mode=heartbeat 为心跳巡检（2026-08-02）：只跑风险扫描（analyze_goal 的 baseline 检查），
+        🔴 不执行 execute（无锁料/无行动副作用），返回 risk_items_before 供心跳引擎判定。
         """
+        if mode == "heartbeat":
+            plan = await self.analyze_goal(goal)
+            result = {
+                "status": "completed",
+                "summary": f"心跳巡检：{plan[:120]}",
+                "risk_items_before": self._heartbeat_risk_count(),
+                "mode": "heartbeat",
+                "case_id": case_id,
+                "note": "心跳巡检(heartbeat)：仅风险扫描，不执行锁料/补货动作",
+            }
+            return result
         plan = await self.analyze_goal(goal)
         result = await self.execute(goal, plan, mode=mode)
         # 研究案例模式透传（supply_chain 的 actions_taken 仅记录、不写租户作用域记忆）
         result["mode"] = mode
         result["case_id"] = case_id
-        if mode != "tenant":
+        if mode == "research_case":
             result["note"] = "研究案例模式(research_case)：供应链数据为基准占位，不写租户作用域记忆；真实锚定仅内部可见"
         return result
+
+    def _heartbeat_risk_count(self) -> int:
+        """心跳巡检的缺料风险扫描（只读，无副作用）：BOM 需求 vs 可用（库存-预留+在途PO）。
+
+        事实锚点：全部来自 seed 数据，不编造；返回 high/critical 风险项数量。
+        """
+        try:
+            from src.agents.supply_chain.tools import SupplyChainTools
+
+            tools = SupplyChainTools()
+            bom = tools._mock_bom("HEARTBEAT-BOM")
+            items = bom.get("items", [])
+            codes = [it["material_code"] for it in items]
+            inv = tools._mock_inventory(codes)
+            po = tools._mock_po(codes)
+            risk = 0
+            for it in items:
+                need = int(it.get("qty", 0))
+                avail = 0
+                iv = inv.get(it["material_code"], {}) or {}
+                avail += int(iv.get("on_hand", 0) or 0) - int(iv.get("reserved", 0) or 0)
+                for p in po.get(it["material_code"], []) or []:
+                    if p.get("status") == "in_transit":
+                        avail += int(p.get("qty", 0) or 0)
+                if avail < need:
+                    risk += 1
+            return risk
+        except Exception:
+            return 0
 
     async def analyze_goal(self, goal: str, auth_boundary_id: str | None = None) -> str:
         """

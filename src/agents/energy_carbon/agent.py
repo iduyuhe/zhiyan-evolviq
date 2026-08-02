@@ -125,7 +125,7 @@ class EnergyCarbonAgent(BaseAgent):
             # 阶段1下半场：实时孪生融合块（含 real_time_* 字段，供前端/决策读取）
             "twin_context": twin,
         }
-        if mode != "tenant":
+        if mode == "research_case":
             out["actions_proposed"] = actions_proposed
             out["mode"] = mode
             out["case_id"] = case_id

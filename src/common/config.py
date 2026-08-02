@@ -75,6 +75,14 @@ class Settings(BaseSettings):
     wecom_agentid: str = ""       # 自建应用 AgentId
     wecom_token: str = ""         # 可信域名校验 Token（企微后台配置回调用，可留空）
 
+    # Agent 心跳自触发（2026-08-02 OpenClaw HEARTBEAT 借鉴，杜总拍板默认关）
+    # 主动巡检：风险发生 → 系统主动识别 → 复用 AlertMonitor 发布告警（不等用户提问）
+    # 默认关闭（避免演示环境噪音）；ZHIYAN_HEARTBEAT_ENABLED=1 开启
+    heartbeat_enabled: bool = False
+    heartbeat_interval_supply_chain: int = 1800    # 缺料巡检（秒，30min）
+    heartbeat_interval_bid_intel: int = 14400      # 商机扫描（秒，4h）
+    heartbeat_interval_energy_carbon: int = 3600   # 能耗/碳强度巡检（秒，1h）
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
