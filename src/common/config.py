@@ -68,6 +68,13 @@ class Settings(BaseSettings):
     env_customer_voice_url: str = ""  # 客户声音情报（招投标/行业报告/舆情聚合 JSON；authoritative 级→人工审核队列）
     env_pull_interval: int = 3600  # 环境源后台轮询间隔（秒），0=不轮询仅手动
 
+    # 企业微信自建应用 H5（移动端三阶第②阶，2026-08-02）：免登 agentConfig + 应用消息推送
+    # 留空=未配置（优雅降级，/wecom/status 返回未配置，不阻塞平台）；凭证进服务器 .env 绝不进代码
+    wecom_corpid: str = ""        # 企业微信 CorpID（我的企业→企业信息）
+    wecom_secret: str = ""        # 自建应用 Secret（应用管理→自建应用→Secret）
+    wecom_agentid: str = ""       # 自建应用 AgentId
+    wecom_token: str = ""         # 可信域名校验 Token（企微后台配置回调用，可留空）
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",

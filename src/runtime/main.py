@@ -17,6 +17,7 @@ from src.runtime.api import monitoring as monitoring_api
 from src.runtime.api import tacit_capture as tacit_capture_api
 from src.runtime.api import blue_arc as blue_arc_api
 from src.runtime.api import connectors as connectors_api  # 社交通道接入（v29.9）
+from src.runtime.api import wecom as wecom_api  # 企业微信自建应用 H5（移动端第②阶，2026-08-02）
 from src.runtime.api import connectivity as connectivity_api  # 配置 UI 连通性验证（§4.4）
 from src.runtime.api import env_perception as env_perception_api  # 环境感知第⑥路（v30.0 α）
 from src.runtime.api import bom as bom_api  # BOM 上传+毛利影响测算（S2-5 #311）
@@ -334,6 +335,7 @@ app.include_router(blue_arc_api.router, dependencies=_AUTH_DEPS)  # 蓝弧闭环
 app.include_router(authn_api.router)  # 公开：登录/后端发现/OAuth 回调
 app.include_router(connectors_api.admin_router)            # 社交连接器管理（需 JWT）
 app.include_router(connectors_api.callback_router)         # 企微/钉钉回调（免 JWT，靠签名鉴权）
+app.include_router(wecom_api.router, dependencies=_AUTH_DEPS)  # 企微自建应用 H5（移动端第②阶；JWT 保护）
 app.include_router(connectivity_api.router, dependencies=_AUTH_DEPS)  # 配置 UI 连通性验证（§4.4）
 app.include_router(env_perception_api.router)  # 环境感知第⑥路（v30.0 α）— 路由自带 Depends(require_auth)
 app.include_router(bom_api.router)  # BOM 上传+毛利影响（S2-5 #311）— 路由自带 Depends(require_auth)
