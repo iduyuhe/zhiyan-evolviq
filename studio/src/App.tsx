@@ -1,7 +1,9 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import GoalInput from './components/GoalInput';
 import PlanPreview from './components/PlanPreview';
 import ExecutionResultView from './components/ExecutionResult';
+import ResultMetaBar from './components/ResultMetaBar';
+import NorthStarStrip from './components/NorthStarStrip';
 import PMResultView from './components/PMResultView';
 import YieldResultView from './components/YieldResultView';
 import TraceResultView from './components/TraceResultView';
@@ -63,6 +65,12 @@ export default function App() {
   const [executing, setExecuting] = useState(false);
   const [agents, setAgents] = useState<AgentInfo[]>([]);
   const [currentAgent, setCurrentAgent] = useState<string>('supply_chain');
+  // F4（路由透明度）：后端按目标文本实际路由到的 Agent id
+  const [routedAgent, setRoutedAgent] = useState<string | null>(null);
+  // F2（可用性）：顶栏 Tab 条横向可滚动，激活项须自动滚入视野中央
+  const activeTabRef = useRef<HTMLButtonElement | null>(null);
+  // D4（可用性）：首次登录引导卡，关闭后写 localStorage 不再出现
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [examples, setExamples] = useState<string[]>(DEFAULT_EXAMPLES.supply_chain);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -101,6 +109,36 @@ export default function App() {
     if (me && !getToken()) handleLogout();
   }, [me, handleLogout]);
 
+  // F2：Tab 切换后把激活项滚动到 Tab 条中央（含首屏恢复的非默认 Tab）
+  useEffect(() => {
+    const el = activeTabRef.current;
+    if (!el) return;
+    try {
+      el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    } catch {
+      // 老旧内核不支持 options，静默降级——绝不因此中断渲染（白屏铁律）
+    }
+  }, [tab, me]);
+
+  // D4：登录成功后判定是否展示首次引导（localStorage 已标记过则不再打扰）
+  useEffect(() => {
+    if (!me) return;
+    try {
+      if (localStorage.getItem('zhiyan_onboarded') !== '1') setShowOnboarding(true);
+    } catch {
+      /* 隐私模式下 localStorage 不可用 → 不展示，绝不抛错 */
+    }
+  }, [me]);
+
+  const dismissOnboarding = () => {
+    setShowOnboarding(false);
+    try {
+      localStorage.setItem('zhiyan_onboarded', '1');
+    } catch {
+      /* 忽略存储失败 */
+    }
+  };
+
   // 桌面侧栏折叠偏好持久化
   useEffect(() => {
     const saved = localStorage.getItem('zhiyan_sidebar_collapsed');
@@ -115,6 +153,10 @@ export default function App() {
   };
 
   const currentAgentInfo = agents.find((a) => a.id === currentAgent) || agents[0];
+
+  // F4：agent id → 显示名（未在可见清单里时回退显示 id，绝不显示空）
+  const agentLabelOf = (id?: string | null): string | null =>
+    id ? (agents.find((a) => a.id === id)?.name ?? id) : null;
 
   const handleAgentChange = (agent: AgentInfo) => {
     setCurrentAgent(agent.id);
@@ -160,6 +202,7 @@ export default function App() {
     setError('');
     try {
       const data = await quickCheck(goal);
+      setRoutedAgent(data.routed_agent ?? data.result?.agent ?? null);
       setResult(data.result);
       setStage('result');
     } catch (e) {
@@ -179,6 +222,7 @@ export default function App() {
     setError('');
     try {
       const s = await createSession(goal);
+      setRoutedAgent(s.routed_agent ?? null);
       setSession(s);
       setStage('approving');
     } catch (e) {
@@ -197,6 +241,7 @@ export default function App() {
     setExecuting(true);
     try {
       const s = await approveSession(session.session_id, approved, feedback);
+      if (s.routed_agent) setRoutedAgent(s.routed_agent);
       if (s.status === 'completed' && s.result) {
         setResult(s.result);
         setStage('result');
@@ -218,6 +263,7 @@ export default function App() {
   const handleNewGoal = () => {
     setSession(null);
     setResult(null);
+    setRoutedAgent(null);
     setError('');
     setStage('input');
   };
@@ -286,6 +332,9 @@ export default function App() {
               ].map(t => (
                 <button
                   key={t.key}
+                  // F2：把当前激活 Tab 的 DOM 存起来，切换后自动滚动居中，
+                  // 避免 Tab 条横向滚动后「激活项在视野外 / 点到相邻项」的错点。
+                  ref={(el) => { if (tab === t.key) activeTabRef.current = el; }}
                   className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
                     tab === t.key
                       ? 'bg-white text-zhiyan-600 shadow-sm'
@@ -312,12 +361,23 @@ export default function App() {
                     {me.business_role && (
                       <>
                         {' · '}
-                        <span
-                          className="text-amber-600"
-                          title={`业务岗位：${me.business_role_label || me.business_role}（决定可见哪些智能体）`}
-                        >
-                          {me.business_role_label || me.business_role}
-                        </span>
+                        {ADMIN_ROLES.has(String(me.role).toLowerCase()) ? (
+                          // D4：管理员点击业务岗位徽标直达「用户权限」页（此前入口埋在长 Tab 条里难发现）
+                          <button
+                            className="text-amber-600 underline decoration-dotted underline-offset-2 hover:text-amber-700 transition-colors"
+                            title={`业务岗位：${me.business_role_label || me.business_role}（决定可见哪些智能体）· 点击管理用户权限`}
+                            onClick={() => setTab('permission')}
+                          >
+                            {me.business_role_label || me.business_role}
+                          </button>
+                        ) : (
+                          <span
+                            className="text-amber-600"
+                            title={`业务岗位：${me.business_role_label || me.business_role}（决定可见哪些智能体）`}
+                          >
+                            {me.business_role_label || me.business_role}
+                          </span>
+                        )}
                       </>
                     )}
                   </span>
@@ -406,7 +466,53 @@ export default function App() {
             </div>
 
             <div className="max-w-3xl mx-auto px-4 py-8 space-y-4">
-              {stage === 'input' && <GoalInput onSubmit={handleSubmitGoal} onQuickCheck={handleQuickCheck} loading={false} agentExamples={examples} />}
+              {stage === 'input' && (
+                <>
+                  {/* D4：首次登录引导——指向权限/租户等关键入口，可关闭且只出现一次 */}
+                  {showOnboarding && (
+                    <div className="page-transition rounded-xl border border-zhiyan-200 bg-gradient-to-br from-zhiyan-50 to-white px-4 py-3.5">
+                      <div className="flex items-start gap-3">
+                        <span className="text-xl leading-none mt-0.5">👋</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-800">
+                            欢迎，{me?.display_name || me?.username}
+                            {me?.business_role_label ? ` · ${me.business_role_label}` : ''}
+                          </p>
+                          <p className="mt-1 text-xs leading-5 text-gray-600">
+                            左侧只会显示你的岗位可见的智能体；直接在下方输入业务目标即可发起决策。
+                            系统会按目标文本自动识别应由哪个智能体处理，并在规划页明确回显。
+                          </p>
+                          <div className="mt-2.5 flex flex-wrap gap-2">
+                            {me && ADMIN_ROLES.has(String(me.role).toLowerCase()) && (
+                              <button
+                                className="px-2.5 py-1 rounded-md bg-zhiyan-600 text-white text-xs font-medium hover:bg-zhiyan-700 transition-colors"
+                                onClick={() => { setTab('permission'); dismissOnboarding(); }}
+                              >
+                                🔐 配置用户权限
+                              </button>
+                            )}
+                            <button
+                              className="px-2.5 py-1 rounded-md border border-zhiyan-200 bg-white text-zhiyan-700 text-xs font-medium hover:bg-zhiyan-50 transition-colors"
+                              onClick={() => { setTab('tenant'); dismissOnboarding(); }}
+                            >
+                              🏢 查看/切换租户
+                            </button>
+                            <button
+                              className="px-2.5 py-1 rounded-md text-gray-400 text-xs hover:text-gray-600 transition-colors"
+                              onClick={dismissOnboarding}
+                            >
+                              知道了，不再提示
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {/* F3：北极星双率（真实客户信号 vs 演示数据）显式区分 */}
+                  <NorthStarStrip />
+                  <GoalInput onSubmit={handleSubmitGoal} onQuickCheck={handleQuickCheck} loading={false} agentExamples={examples} />
+                </>
+              )}
 
               {stage === 'planning' && (
                 <div className="page-transition card text-center py-16">
@@ -424,7 +530,13 @@ export default function App() {
               )}
 
               {stage === 'approving' && session?.plan && (
-                <PlanPreview plan={session.plan} onApprove={handleApprove} loading={executing} />
+                <PlanPreview
+                  plan={session.plan}
+                  onApprove={handleApprove}
+                  loading={executing}
+                  routedLabel={agentLabelOf(routedAgent)}
+                  selectedLabel={currentAgentInfo?.name ?? null}
+                />
               )}
 
               {stage === 'executing' && (
@@ -452,23 +564,34 @@ export default function App() {
                 </div>
               )}
 
-              {stage === 'result' && result && (
+              {stage === 'result' && result && (() => {
+                // F4：结果视图必须按「实际处理该目标的 Agent」分支，而非侧栏所选——
+                // 引擎按目标文本路由，若仍按侧栏选择渲染会出现「用设备视图渲染供应链结论」的错配。
+                const viewAgent = routedAgent || result.agent || currentAgent;
+                return (
                 <div className="space-y-4">
+                  {/* F1+F4 元信息条：数据来源标注 + 实际处理 Agent（覆盖全部结果视图） */}
+                  <ResultMetaBar
+                    dataSource={result.data_source}
+                    agentLabel={agentLabelOf(viewAgent)}
+                    selectedLabel={currentAgentInfo?.name ?? null}
+                  />
                   {/* AI 决策辅助（统一展示于各结果视图之上；无 LLM 时自动隐藏） */}
                   <AiInsightPanel insight={result.ai_insight} source={result.ai_insight_source} />
-                  {currentAgent === 'pm_maintenance' ? (
+                  {viewAgent === 'pm_maintenance' ? (
                     <PMResultView result={result as any} onNewGoal={handleNewGoal} />
-                  ) : currentAgent === 'yield_analysis' ? (
+                  ) : viewAgent === 'yield_analysis' ? (
                     <YieldResultView result={result as any} onNewGoal={handleNewGoal} />
-                  ) : currentAgent === 'quality_trace' ? (
+                  ) : viewAgent === 'quality_trace' ? (
                     <TraceResultView result={result as any} onNewGoal={handleNewGoal} />
-                  ) : ['dfm_check','bom_selector','oee_optimizer','eco_change','smt_changeover','aoi_judge','ipc_standard','aps_scheduler','energy_carbon','cost_analysis','demand_order','wms_logistics','compliance_q','executive_cockpit','rd_npi','procurement_manage'].includes(currentAgent) ? (
+                  ) : ['dfm_check','bom_selector','oee_optimizer','eco_change','smt_changeover','aoi_judge','ipc_standard','aps_scheduler','energy_carbon','cost_analysis','demand_order','wms_logistics','compliance_q','executive_cockpit','rd_npi','procurement_manage'].includes(viewAgent) ? (
                     <GenericResultView result={result as any} onNewGoal={handleNewGoal} />
                   ) : (
                     <ExecutionResultView result={result as any} onNewGoal={handleNewGoal} />
                   )}
                 </div>
-              )}
+                );
+              })()}
 
               {stage === 'error' && (
                 <div className="page-transition card border-red-200 text-center py-12">

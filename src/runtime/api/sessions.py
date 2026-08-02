@@ -77,13 +77,17 @@ async def quick_check(req: CreateSessionRequest, tenant: str = Depends(get_tenan
     engine = get_engine()
     session_id = str(uuid.uuid4())
     plan = await engine.plan(session_id, req.goal, req.auth_boundary_id, tenant_id=tenant)
-    await _track_session_start(tenant, "quick_check", req.goal, _routed_agent(engine, session_id))
+    routed = _routed_agent(engine, session_id)
+    await _track_session_start(tenant, "quick_check", req.goal, routed)
     result = await engine.execute(session_id, tenant_id=tenant)
     result["data_source"] = "real" if is_real_source_active(tenant) else "demo"
     return {
         "tenant_id": tenant,
         "session_id": session_id,
         "status": "completed",
+        # F4（路由透明度）：回显实际处理该目标的 Agent——引擎按目标文本路由，
+        # 与侧栏所选 Agent 可能不同，须让用户看见「谁在处理」。
+        "routed_agent": routed,
         "result": result,
     }
 
@@ -95,11 +99,14 @@ async def create_session(req: CreateSessionRequest, tenant: str = Depends(get_te
     engine = get_engine()
     session_id = str(uuid.uuid4())
     plan = await engine.plan(session_id, req.goal, req.auth_boundary_id, tenant_id=tenant)
-    await _track_session_start(tenant, "session", req.goal, _routed_agent(engine, session_id))
+    routed = _routed_agent(engine, session_id)
+    await _track_session_start(tenant, "session", req.goal, routed)
     return {
         "tenant_id": tenant,
         "session_id": session_id,
         "status": "awaiting_approval",
+        # F4（路由透明度）：规划预览阶段即回显实际路由到的 Agent，便于用户在确认前纠偏。
+        "routed_agent": routed,
         "plan": plan,
     }
 
@@ -109,9 +116,16 @@ async def approve_plan(session_id: str, req: ApprovePlanRequest, tenant: str = D
     """人确认/驳回Agent规划"""
     engine = get_engine()
     if req.approved:
+        routed = _routed_agent(engine, session_id)
         result = await engine.execute(session_id, tenant_id=tenant)
         result["data_source"] = "real" if is_real_source_active(tenant) else "demo"
-        return {"tenant_id": tenant, "session_id": session_id, "status": "completed", "result": result}
+        return {
+            "tenant_id": tenant,
+            "session_id": session_id,
+            "status": "completed",
+            "routed_agent": routed,
+            "result": result,
+        }
     else:
         await engine.reject(session_id, req.feedback, tenant_id=tenant)
         return {"tenant_id": tenant, "session_id": session_id, "status": "rejected", "feedback": req.feedback}

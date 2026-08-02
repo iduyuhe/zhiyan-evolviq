@@ -114,6 +114,9 @@ export interface Session {
   result?: ExecutionResult;
   feedback?: string;
   tenant_id?: string;
+  // F4（路由透明度）：后端按目标文本路由后实际处理的 Agent id，
+  // 可能与侧栏所选 Agent 不同——前端须显式回显，避免「说 A 做 B」。
+  routed_agent?: string | null;
 }
 
 export interface SupplyChainMetrics {
@@ -226,7 +229,7 @@ export async function interveneSession(sessionId: string, action: string, newGoa
   return res.json();
 }
 
-export async function quickCheck(goal: string): Promise<{ result: ExecutionResult }> {
+export async function quickCheck(goal: string): Promise<{ result: ExecutionResult; routed_agent?: string | null }> {
   requireLocalToken();
   const res = await fetch(`${API_BASE}/sessions/quick-check`, {
     method: 'POST',

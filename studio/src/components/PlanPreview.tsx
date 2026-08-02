@@ -2,6 +2,10 @@ interface PlanPreviewProps {
   plan: string;
   onApprove: (approved: boolean, feedback?: string) => void;
   loading: boolean;
+  /** F4：后端按目标文本实际路由到的 Agent 显示名（未知时为空） */
+  routedLabel?: string | null;
+  /** F4：侧栏当前选中的 Agent 显示名，用于「说 A 做 B」的差异提示 */
+  selectedLabel?: string | null;
 }
 
 function renderPlan(text: string) {
@@ -63,11 +67,34 @@ function renderPlan(text: string) {
   });
 }
 
-export default function PlanPreview({ plan, onApprove, loading }: PlanPreviewProps) {
+export default function PlanPreview({ plan, onApprove, loading, routedLabel, selectedLabel }: PlanPreviewProps) {
+  const mismatch = !!routedLabel && !!selectedLabel && routedLabel !== selectedLabel;
   return (
     <div className="page-transition">
       <div className="card-highlight relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-zhiyan-400 via-zhiyan-500 to-zhiyan-600" />
+
+        {/* F4 路由透明度：回显系统按目标文本识别出的实际处理 Agent */}
+        {routedLabel && (
+          <div
+            className={`mb-4 rounded-lg border px-3 py-2 text-xs leading-5 ${
+              mismatch
+                ? 'border-amber-200 bg-amber-50 text-amber-800'
+                : 'border-zhiyan-100 bg-zhiyan-50 text-zhiyan-700'
+            }`}
+          >
+            <div className="flex items-center gap-1.5 font-medium">
+              <span>{mismatch ? '⚠️' : '🧭'}</span>
+              <span>系统识别意图：将由「{routedLabel}」处理</span>
+            </div>
+            {mismatch && (
+              <p className="mt-1 text-amber-700">
+                你在左侧选择的是「{selectedLabel}」。系统按目标文本判定实际交由「{routedLabel}」处理；
+                如需改由「{selectedLabel}」处理，请驳回并在目标描述中补充该场景的关键词。
+              </p>
+            )}
+          </div>
+        )}
 
         {/* 头部指示器 */}
         <div className="flex items-center gap-3 mb-4">
