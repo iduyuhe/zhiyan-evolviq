@@ -16,9 +16,11 @@ from __future__ import annotations
 
 import os
 
-# ---------- 三圈成员（24 agent 全集，与 agents_api.AGENT_REGISTRY 对齐） ----------
+# ---------- 三圈成员（25 agent 全集，与 agents_api.AGENT_REGISTRY 对齐） ----------
 
-OUTER_AGENTS = ["executive_cockpit", "supply_chain", "procurement_manage", "compliance_q"]
+# 外圈=纯消费第⑥路环境信号（免费圈）：经营驾驶舱 / 供应链 / 采购 / 合规 / 商机情报
+# （bid_intel 2026-08-02 第 25 个：纯消费 customer_voice+benchmark+market，不依赖租户内部数据）
+OUTER_AGENTS = ["executive_cockpit", "supply_chain", "procurement_manage", "compliance_q", "bid_intel"]
 MIDDLE_AGENTS = [
     "cost_analysis", "demand_order", "bom_selector", "rd_npi",
     # 研究案例范式 + 企业入驻 + 合规闸门：范式与治理类，启用后激活（2026-07-29 24 阵营补齐）

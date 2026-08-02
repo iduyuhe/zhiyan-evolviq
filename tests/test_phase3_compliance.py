@@ -1,7 +1,7 @@
 """Phase 3.2 合规闸门 Agent（#399，2026-07-29）
 
 覆盖：
-- 注册表含 compliance_reviewer（第 24 个 agent）
+- 注册表含 compliance_reviewer（第 25 个 agent）
 - route_goal("合规审查研究案例输出") → compliance_reviewer（且普通「合规」仍归 compliance_q）
 - 合规复核通过：零泄漏 + 双版边界 + research_case 纪律 全部达标
 - 合规 Agent 自身输出零真名外泄
@@ -26,7 +26,7 @@ def _assert_no_leak(result, where: str):
 
 def test_registry_has_compliance_reviewer():
     assert "compliance_reviewer" in AGENT_REGISTRY, "注册表须含 compliance_reviewer"
-    assert len(AGENT_REGISTRY) == 24
+    assert len(AGENT_REGISTRY) == 25
 
 
 def test_route_goal_compliance_review():

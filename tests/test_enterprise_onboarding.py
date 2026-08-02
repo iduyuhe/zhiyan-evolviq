@@ -97,7 +97,7 @@ def _isolate_store():
 
 def test_registry_has_enterprise_onboarding():
     assert "enterprise_onboarding" in AGENT_REGISTRY, "注册表须含 enterprise_onboarding"
-    assert len(AGENT_REGISTRY) == 24
+    assert len(AGENT_REGISTRY) == 25
 
 
 def test_route_goal_triggers_enterprise_onboarding():

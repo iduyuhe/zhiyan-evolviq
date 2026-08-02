@@ -1,7 +1,7 @@
 """S2-3 无感转型三圈解锁进度测试（#310）
 
 覆盖：
-1. 三圈映射完整性——24 agent 全集、无重复、与 AGENT_REGISTRY 对齐
+1. 三圈映射完整性——25 agent 全集、无重复、与 AGENT_REGISTRY 对齐
 2. 圈层判定：外圈（默认）→ 中圈（gateway_config 非空=信任爬梯③）→ 内圈（私有化 env）
 3. API：/environment/unlock-progress 形状 + quota 摘要内嵌 + 租户区分
 4. F4 纪律：next_step 为事实说明（每圈都有文案，不为空）
@@ -30,10 +30,10 @@ def _client():
 # ---------- 1. 三圈映射完整性 ----------
 
 class TestCircleMap:
-    def test_24_agents_no_overlap(self):
+    def test_25_agents_no_overlap(self):
         all_ids = OUTER_AGENTS + MIDDLE_AGENTS + INNER_AGENTS
-        assert len(all_ids) == 24
-        assert len(set(all_ids)) == 24, "三圈成员不得重复"
+        assert len(all_ids) == 25
+        assert len(set(all_ids)) == 25, "三圈成员不得重复"
 
     def test_alignment_with_agent_registry(self):
         from src.runtime.api.agents_api import AGENT_REGISTRY
@@ -45,10 +45,12 @@ class TestCircleMap:
             f"多 {circle_ids - registry_ids}"
         )
 
-    def test_outer_is_g_mode_free_four(self):
-        # 总纲 §3.5：外圈 4 agent 纯环境信号可用（G 模式严格不变）
+    def test_outer_is_g_mode_free_five(self):
+        # 总纲 §3.5：外圈纯环境信号可用（G 模式严格不变）
+        # 2026-08-02：bid_intel（商机情报）加入外圈——纯消费 customer_voice+benchmark+market，
+        # 不依赖租户内部数据，仍符合「外圈纯环境信号」定义（4→5）
         assert set(OUTER_AGENTS) == {
-            "executive_cockpit", "supply_chain", "procurement_manage", "compliance_q",
+            "executive_cockpit", "supply_chain", "procurement_manage", "compliance_q", "bid_intel",
         }
 
     def test_every_circle_has_next_step(self):
@@ -88,8 +90,8 @@ class TestProgressView:
         monkeypatch.delenv("ZHIYAN_PRIVATE_DEPLOYMENT", raising=False)
         v = progress_view("t-nobody")
         assert v["current_circle"] == "outer"
-        assert v["unlocked_agents"] == 4
-        assert v["total_agents"] == 24
+        assert v["unlocked_agents"] == 5
+        assert v["total_agents"] == 25
         by_key = {c["key"]: c for c in v["circles"]}
         assert by_key["outer"]["unlocked"] is True
         assert by_key["middle"]["unlocked"] is False
@@ -99,7 +101,7 @@ class TestProgressView:
     def test_inner_view_all_unlocked(self, monkeypatch):
         monkeypatch.setenv("ZHIYAN_PRIVATE_DEPLOYMENT", "1")
         v = progress_view("t-anyone")
-        assert v["unlocked_agents"] == 24
+        assert v["unlocked_agents"] == 25
         assert all(c["unlocked"] for c in v["circles"])
 
 
@@ -145,8 +147,8 @@ class TestUnlockAPI:
                 assert r.status_code == 200
                 data = r.json()
             assert data["current_circle"] == "middle"
-            # middle=8 + outer=4 = 12 已解锁（2026-07-29 中圈补齐 4 个范式治理类）
-            assert data["unlocked_agents"] == 12
+            # middle=8 + outer=5 = 13 已解锁（2026-07-29 中圈补齐 4 个范式治理类；2026-08-02 外圈+bid_intel）
+            assert data["unlocked_agents"] == 13
             # 信任爬梯③ → 免限额（quota 与解锁语义同源）
             assert data["quota"]["unlimited"] is True
         finally:
