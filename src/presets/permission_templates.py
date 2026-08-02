@@ -77,12 +77,12 @@ GENERIC_TEMPLATES: dict[str, dict[str, Any]] = {
     },
     BusinessRole.FINANCE_CONTROLLER.value: {
         "label": "财务成本控制",
-        "summary": "盯制造成本、能耗成本、经营指标，对生产类智能体只读",
+        "summary": "盯制造成本、能耗成本、经营指标、商机报价，对生产类智能体只读",
         "allowed_agents": [
             "cost_analysis", "energy_carbon", "executive_cockpit",
-            "procurement_manage", "demand_order",
+            "procurement_manage", "demand_order", "bid_intel",
         ],
-        "read_only_agents": ["procurement_manage", "demand_order"],
+        "read_only_agents": ["procurement_manage", "demand_order", "bid_intel"],
         "data_scope": {},
     },
     BusinessRole.PLANT_MANAGER.value: {

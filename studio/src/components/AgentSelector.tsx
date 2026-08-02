@@ -34,7 +34,7 @@ export const SCENARIO_GROUPS: Record<string, { label: string; icon: string; agen
   enterprise: {
     label: '经营决策',
     icon: '🧠',
-    agents: ['aps_scheduler', 'energy_carbon', 'cost_analysis', 'demand_order', 'wms_logistics', 'compliance_q', 'executive_cockpit', 'rd_npi', 'procurement_manage'],
+    agents: ['aps_scheduler', 'energy_carbon', 'cost_analysis', 'demand_order', 'wms_logistics', 'compliance_q', 'executive_cockpit', 'rd_npi', 'procurement_manage', 'bid_intel'],
   },
   industry: {
     label: '行业研究',
@@ -153,6 +153,11 @@ const DEFAULT_EXAMPLES: Record<string, string[]> = {
     '调研通讯行业近 3 年公开披露与对标信号，匿名生成「某某通讯公司」经营画像',
     '基于公开财报与行业智能化对标，推演一家通讯设备商的供应链韧性与合规风险',
     '分析研究案例范式的真实锚定校准报告，输出对内可见的归因结论',
+  ],
+  bid_intel: [
+    '扫描近期客户声音信号，识别在途商机与招投标机会',
+    '评估某集采项目赢单概率与竞争烈度，给出标前评审意见',
+    '结合市场行情与竞品对标，给出重点项目的报价策略',
   ],
   case_curator: [
     '列出当前案例库全部行业案例与对外/对内可见性',

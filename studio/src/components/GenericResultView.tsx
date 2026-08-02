@@ -23,6 +23,7 @@ const AGENT_META: Record<string, { title: string; icon: string }> = {
   executive_cockpit: { title: '经营驾驶舱', icon: '🏢' },
   rd_npi: { title: '研发新产导入', icon: '🔬' },
   procurement_manage: { title: '采购供应商', icon: '📑' },
+  bid_intel: { title: '商机情报', icon: '🎯' },
 };
 
 export default function GenericResultView({ result, onNewGoal }: ResultViewProps) {

@@ -68,6 +68,8 @@ AGENT_REGISTRY: dict[str, tuple[str, str]] = {
     "enterprise_onboarding": ("src.agents.enterprise_onboarding.agent", "enterprise_onboarding_agent"),
     # 合规闸门（Phase 3.2）：研究案例范式合规审查（匿名/真名边界 + 零泄漏 + research_case 纪律）
     "compliance_reviewer": ("src.agents.compliance_reviewer.agent", "compliance_reviewer_agent"),
+    # 商机情报（2026-08-02 第 25 个 Agent，杜总拍板扩边缘）：营销向实体化——标前评审/赢单概率/竞品对标/报价策略
+    "bid_intel": ("src.agents.bid_intel.agent", "bid_intel_agent"),
 }
 
 
@@ -137,6 +139,9 @@ ROUTING_RULES = [
         # —— case_id 直达（case_telecom_2026 / case_semicon_2026 / ...）
         "case_",
     ], "case_curator"),
+    # 商机情报Agent触发词（2026-08-02 第 25 个；营销向实体化。置于 executive_cockpit 之后、行业研究之前，
+    # 靠「投标/标前/赢单/商机」等专属词截获；⚠️ 不用「报价」——会被 cost_analysis 的"报价"先截获（顺序敏感）
+    (["投标", "标前", "赢单", "竞标", "商机", "标书", "招投标", "客户声音", "商机情报", "bid", "win rate", "tender"], "bid_intel"),
     # 行业研究Agent触发词（研究案例范式发动机；置于兜底之前，靠专属复合词截获）
     (["研究案例", "行业研究", "标杆企业", "案例推演", "范式发动机", "industry research", "benchmark study", "匿名画像"], "industry_research"),
 ]

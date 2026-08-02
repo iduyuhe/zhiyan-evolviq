@@ -300,6 +300,21 @@ def _build_default_boundaries() -> list[AuthBoundary]:
         max_daily_autonomous=15,
         enabled=True,
     ))
+    # 商机情报（2026-08-02 第 25 个 Agent，杜总拍板扩边缘）：营销向实体化
+    # 🔴 人留终审：情报分析不自动执行商务动作（auto_execute 为空，一切商务动作须审批）
+    defaults.append(AuthBoundary(
+        id="ab-bid-intel-default",
+        name="商机情报默认边界",
+        agent="bid_intel",
+        allowed_categories=[],
+        price_tolerance_pct=0.0,
+        max_lock_qty=0,
+        confidence_threshold=0.80,
+        auto_execute_actions=[],
+        require_approval_actions=["submit_bid", "issue_quote"],
+        max_daily_autonomous=10,
+        enabled=True,
+    ))
     return defaults
 
 
