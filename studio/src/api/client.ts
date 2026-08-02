@@ -145,6 +145,8 @@ export interface ExecutionResult {
   // AI 决策辅助（L2 推理层下沉到执行阶段）；无 LLM 时为 null
   ai_insight?: string | null;
   ai_insight_source?: 'llm' | 'none';
+  // F1（应用型可信度）：决策结果的数据来源标注——'real' 真实客户信号源 / 'demo' 演示种子数据
+  data_source?: 'real' | 'demo';
 }
 
 export interface CheckDetail {

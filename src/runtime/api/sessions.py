@@ -9,6 +9,7 @@ from src.runtime.agent.engine import AgentEngine
 from src.runtime.behavior_store import behavior_store
 from src.runtime.persistence import get_session as db_get_session, list_sessions as db_list_sessions
 from src.runtime.api.deps import get_tenant
+from src.runtime.real_source.dute_real import is_real_source_active
 from src.runtime.usage_meter import UsageExceeded, usage_meter
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
@@ -78,6 +79,7 @@ async def quick_check(req: CreateSessionRequest, tenant: str = Depends(get_tenan
     plan = await engine.plan(session_id, req.goal, req.auth_boundary_id, tenant_id=tenant)
     await _track_session_start(tenant, "quick_check", req.goal, _routed_agent(engine, session_id))
     result = await engine.execute(session_id, tenant_id=tenant)
+    result["data_source"] = "real" if is_real_source_active(tenant) else "demo"
     return {
         "tenant_id": tenant,
         "session_id": session_id,
@@ -108,6 +110,7 @@ async def approve_plan(session_id: str, req: ApprovePlanRequest, tenant: str = D
     engine = get_engine()
     if req.approved:
         result = await engine.execute(session_id, tenant_id=tenant)
+        result["data_source"] = "real" if is_real_source_active(tenant) else "demo"
         return {"tenant_id": tenant, "session_id": session_id, "status": "completed", "result": result}
     else:
         await engine.reject(session_id, req.feedback, tenant_id=tenant)

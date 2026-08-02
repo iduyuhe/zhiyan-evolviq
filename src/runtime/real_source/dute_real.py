@@ -25,6 +25,27 @@ SIGNAL_FILE = os.path.join(
 SEED_PREFIX = "dute-real-"
 
 
+def _real_tenant() -> str:
+    """读取真实信号清单中声明的租户（默认 dute），仅在文件可读时覆盖。"""
+    try:
+        with open(SIGNAL_FILE, encoding="utf-8") as f:
+            return json.load(f).get("tenant_id", "dute")
+    except Exception:  # noqa: BLE001
+        return "dute"
+
+
+def is_real_source_active(tenant: str) -> bool:
+    """判断某租户是否已接入真实信号源（北极星真实率的来源）。
+
+    用于决策结果卡标注「真实数据 / 演示数据」：仅当 ZHIYAN_DUTE_REAL 启用
+    且租户与真实信号源归属租户一致时才算 real——应用型可信度的底座，
+    绝不把演示种子数据冒充真实客户数据。
+    """
+    if os.environ.get("ZHIYAN_DUTE_REAL", "1") != "1":
+        return False
+    return tenant == _real_tenant()
+
+
 def seed_dute_real() -> dict:
     """注入杜特真实业务信号，使北极星真实率从 0% 起跳。幂等、可开关。"""
     if os.environ.get("ZHIYAN_DUTE_REAL", "1") != "1":

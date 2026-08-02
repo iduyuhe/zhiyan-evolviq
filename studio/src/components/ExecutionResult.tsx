@@ -63,9 +63,25 @@ function CompareRow({ label, before, after, unit = '' }: { label: string; before
 
 export default function ExecutionResultView({ result, onNewGoal }: ExecutionResultProps) {
   const m: SupplyChainMetrics | undefined = result.metrics;
+  const isReal = result.data_source === 'real';
 
   return (
     <div className="page-transition space-y-4">
+      {/* ===== F1 · 数据来源标注（应用型可信度底座） ===== */}
+      <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs ${
+        isReal
+          ? 'bg-green-50 border-green-200 text-green-700'
+          : 'bg-gray-50 border-gray-200 text-gray-500'
+      }`}>
+        <span className={`w-2 h-2 rounded-full ${isReal ? 'bg-green-500' : 'bg-gray-400'}`} />
+        <span className="font-semibold">{isReal ? '真实客户信号' : '演示数据'}</span>
+        <span className="opacity-80">
+          {isReal
+            ? '本结论由已接入的真实客户信号源驱动（不与演示数据混淆）'
+            : '本结论由演示种子数据驱动，用于能力演示，非真实生产数据'}
+        </span>
+      </div>
+
       {/* ===== T3 · 齐套率 ROI 闭环（MVP 门面） ===== */}
       {m && (
         <div className="card-highlight relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50/40">
