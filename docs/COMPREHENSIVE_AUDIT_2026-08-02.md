@@ -406,3 +406,28 @@ cd studio && node_modules/typescript/bin/tsc --noEmit   # EXIT=0
 - 全量回归 **586 passed / 0 failed**（578 + 8 新 wecom）。
 - 核心部署 `6fed8bc`；双入口 smoke PASS。
 - **线上实证**（telecom_admin）：`GET /wecom/status` → `configured:false` / `mode:unconfigured` / 三凭证位全 false（优雅降级零影响）；`POST /wecom/jsapi-signature` → **503**（未配置拒绝，符合预期）。
+
+---
+
+## 十二、前后台分面：角色化 Tab 过滤（2026-08-02，commit `4d735ce`）
+
+> 触发：杜总问「是否有前后台」→ 实答单体 SPA 无物理前后台（Tab 条此前全可见）→ 杜总确认做角色化 Tab 过滤。
+
+### 12.1 现状（改动前）
+
+- 单体前端（`studio/` React SPA）+ 单后端（FastAPI），无独立前台/后台站点。
+- 「一人一面」此前只体现在 **Agent 侧栏**（`capability_scope` 按业务岗位过滤）；**Tab 条 20/21 全可见**（仅 permission 条件渲染）——普通员工能看到审计/租户/网关等管理 Tab。
+
+### 12.2 修复（纯前端、架构零改动）
+
+- `ADMIN_ONLY_TABS`（13 管理类）：console/audit/strategy/governance/federation/supplychain/gateway/twin/writeback/tenant/connect/knowledge/permission → 仅 `tenant_admin/superadmin` 可见。
+- 业务用户（车间/工艺/质量/供应链/财务/厂长岗位）见 **8 个业务 Tab**：studio/monitor/tacit/bluearc/history/symbiosis/caselib/presetlib。
+- `effectiveTab` 兜底：业务用户 state 落管理 Tab（直连/降权）显示回退 studio；setTab 不受影响（业务用户点不到管理 Tab）。
+- permission Tab 并入统一过滤（去掉原独立条件渲染）。
+
+### 12.3 验证
+
+- tsc 0 错误；vite build 水印 `4d735ce`（白屏防御标记在）。
+- 核心 `4d735ce` 部署 + 边缘 release=`4d735ce`；双入口 smoke PASS。
+- agent-browser admin 实拍：**21 Tab 全可见**（含用户权限）无回归。
+- ⚠️ 业务用户视角未经真实账号实测（避免污染生产数据）——filter 逻辑经 tsc + 代码审查；可在「用户权限」建测试岗位账号实证。
