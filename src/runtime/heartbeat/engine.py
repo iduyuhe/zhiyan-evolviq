@@ -50,6 +50,20 @@ def _risk_judge_energy_carbon(result: dict) -> str | None:
     return None
 
 
+def _risk_judge_finance(result: dict) -> str | None:
+    """资金风险：现金安全垫不足（<30 天）或应收 90+ 逾期占比过高。"""
+    days = result.get("days_of_cash")
+    if isinstance(days, (int, float)) and days < 30:
+        return f"现金安全垫不足（{days} 天 < 30 天）"
+    ratio = result.get("overdue_90_ratio")
+    if isinstance(ratio, (int, float)) and ratio >= 15:
+        return f"90+天应收逾期占比 {ratio}%（≥15%）"
+    verdict = result.get("cash_buffer_verdict")
+    if verdict == "紧张":
+        return "3 月现金流预测最低现金 ≤0（资金链紧张）"
+    return None
+
+
 class HeartbeatEngine:
     """心跳引擎：按 per-agent 频率后台触发巡检。"""
 
@@ -65,6 +79,7 @@ class HeartbeatEngine:
         ("supply_chain", "心跳巡检：检查物料齐套与缺料风险", 1800, _risk_judge_supply_chain, "critical", "缺料巡检"),
         ("bid_intel", "心跳巡检：扫描商机情报信号", 14400, _risk_judge_bid_intel, "warning", "商机扫描"),
         ("energy_carbon", "心跳巡检：检查能耗与碳强度异常", 3600, _risk_judge_energy_carbon, "warning", "能耗巡检"),
+        ("executive_cockpit", "心跳巡检：检查现金安全垫与应收风险", 43200, _risk_judge_finance, "critical", "资金巡检"),
     ]
 
     @property
@@ -96,6 +111,7 @@ class HeartbeatEngine:
                 self._PATROLS[0] = (self._PATROLS[0][0], self._PATROLS[0][1], int(settings.heartbeat_interval_supply_chain), *self._PATROLS[0][3:])
                 self._PATROLS[1] = (self._PATROLS[1][0], self._PATROLS[1][1], int(settings.heartbeat_interval_bid_intel), *self._PATROLS[1][3:])
                 self._PATROLS[2] = (self._PATROLS[2][0], self._PATROLS[2][1], int(settings.heartbeat_interval_energy_carbon), *self._PATROLS[2][3:])
+                self._PATROLS[3] = (self._PATROLS[3][0], self._PATROLS[3][1], int(settings.heartbeat_interval_executive_cockpit), *self._PATROLS[3][3:])
             except Exception:
                 pass
         logger.info(f"💓 心跳引擎：{'已启用' if self._enabled else '未启用（ZHIYAN_HEARTBEAT_ENABLED=1 开启）'}")

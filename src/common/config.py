@@ -82,6 +82,7 @@ class Settings(BaseSettings):
     heartbeat_interval_supply_chain: int = 1800    # 缺料巡检（秒，30min）
     heartbeat_interval_bid_intel: int = 14400      # 商机扫描（秒，4h）
     heartbeat_interval_energy_carbon: int = 3600   # 能耗/碳强度巡检（秒，1h）
+    heartbeat_interval_executive_cockpit: int = 43200  # 资金/应收巡检（秒，12h）
 
     model_config = {
         "env_file": ".env",

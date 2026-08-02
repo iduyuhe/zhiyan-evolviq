@@ -43,6 +43,29 @@ class ExecutiveCockpitAgent(BaseAgent):
     async def analyze(self, goal: str, mode: str = "tenant", case_id: str = None) -> dict:
         logger.info(f"[Executive Agent] Analyzing: {goal[:60]}... (mode={mode})")
 
+        # mode=heartbeat（2026-08-02 心跳巡检）：只推演财务决策（现金流/应收/资金安全垫），
+        # 🔴 不执行 create_action_item（无副作用），供心跳引擎资金巡检判定。
+        if mode == "heartbeat":
+            kpi = await self.tools.get_kpi_dashboard()
+            receivables = await self.tools.get_receivables()
+            forecast = await self.tools.cash_forecast(months=3)
+            result = {
+                "status": "completed",
+                "summary": f"资金心跳巡检：现金余额 {kpi['cash_position']} 万元（{kpi['days_of_cash']} 天安全垫），"
+                           f"90+天应收占比 {receivables['overdue_90_ratio']}%（{receivables['risk_level']}），"
+                           f"3 月预测最低现金 {forecast['min_cash']} 万元（{forecast['buffer_days_verdict']}）",
+                "cash_position": kpi["cash_position"],
+                "days_of_cash": kpi["days_of_cash"],
+                "receivable_risk": receivables["risk_level"],
+                "overdue_90_ratio": receivables["overdue_90_ratio"],
+                "cash_forecast_min": forecast["min_cash"],
+                "cash_buffer_verdict": forecast["buffer_days_verdict"],
+                "mode": "heartbeat",
+                "case_id": case_id,
+                "note": "心跳巡检(heartbeat)：财务决策只读推演，不执行改善动作",
+            }
+            return result
+
         kpi = await self.tools.get_kpi_dashboard()
         budgets = await self.tools.get_budget_utilization()
         production = await self.tools.get_production_summary()
@@ -91,13 +114,19 @@ class ExecutiveCockpitAgent(BaseAgent):
             "production": production,
             "recommendations": recommendations,
             "actions_taken": actions_taken,
+            # 财务决策维度（2026-08-02 补全：现金流预测 + 应收账龄风险 + 资金安全垫）
+            # 🔴 战略红线：只读推演（决策），账本归 ERP 不在此层
+            "financial_decision": {
+                "receivables": await self.tools.get_receivables(),
+                "cash_forecast": await self.tools.cash_forecast(months=3),
+            },
             # v30.0 α：环境感知上下文（政策+标杆，含来源溯源）
             "env_signals": env_strategic,
             "env_signal_count": env.get("count", 0),
             # 研究案例模式透传（research_case 下 actions_taken 恒为空，不污染租户）
             "mode": mode,
             "case_id": case_id,
-            **({"note": "研究案例模式(research_case)：经营数据为基准占位，不写租户作用域记忆；真实锚定仅内部可见"} if mode != "tenant" else {}),
+            **({"note": "研究案例模式(research_case)：经营数据为基准占位，不写租户作用域记忆；真实锚定仅内部可见"} if mode == "research_case" else {}),
         }
 
     def _generate_recommendations(self, kpi, budgets, production, prod_pct, overspend, actions_taken) -> list:

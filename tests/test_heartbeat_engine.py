@@ -17,6 +17,7 @@ from src.runtime.heartbeat.engine import (
     _risk_judge_supply_chain,
     _risk_judge_bid_intel,
     _risk_judge_energy_carbon,
+    _risk_judge_finance,
 )
 
 
@@ -38,6 +39,13 @@ class TestRiskJudges:
         assert _risk_judge_energy_carbon({"intensity_gap": 0.5}) is not None
         assert _risk_judge_energy_carbon({"intensity_gap": 0, "green_ratio": 10}) is not None
         assert _risk_judge_energy_carbon({"intensity_gap": 0, "green_ratio": 30}) is None
+
+    def test_finance_risk(self):
+        """资金风险：安全垫 <30 天 / 应收 90+ ≥15% / 预测现金 ≤0。"""
+        assert _risk_judge_finance({"days_of_cash": 20}) is not None
+        assert _risk_judge_finance({"overdue_90_ratio": 18}) is not None
+        assert _risk_judge_finance({"cash_buffer_verdict": "紧张"}) is not None
+        assert _risk_judge_finance({"days_of_cash": 45, "overdue_90_ratio": 5, "cash_buffer_verdict": "充足"}) is None
 
 
 class TestHeartbeatEngine:
@@ -129,3 +137,45 @@ class TestHeartbeatEngine:
         r = await agent.analyze("心跳巡检：扫描商机情报信号", mode="heartbeat")
         assert r["mode"] == "heartbeat"
         assert "research_case" not in r.get("note", "")
+
+    # ===== 财务决策维度（2026-08-02 补全）=====
+
+    @pytest.mark.asyncio
+    async def test_executive_finance_decision_fields(self):
+        """tenant 模式：financial_decision 块含应收账龄 + 现金流预测（只读推演，不碰账本）。"""
+        from src.agents.executive_cockpit.agent import ExecutiveCockpitAgent
+
+        agent = ExecutiveCockpitAgent()
+        r = await agent.analyze("经营财务分析", mode="tenant")
+        fd = r.get("financial_decision", {})
+        assert "receivables" in fd and "cash_forecast" in fd
+        recv = fd["receivables"]
+        assert "buckets" in recv and "overdue_90_ratio" in recv
+        assert "risk_level" in recv
+        fc = fd["cash_forecast"]
+        assert "series" in fc and len(fc["series"]) == 3
+        assert "min_cash" in fc
+
+    @pytest.mark.asyncio
+    async def test_executive_heartbeat_no_side_effects(self):
+        """mode=heartbeat：executive 只推演财务决策，不执行 create_action_item。"""
+        from src.agents.executive_cockpit.agent import ExecutiveCockpitAgent
+
+        agent = ExecutiveCockpitAgent()
+        r = await agent.analyze("心跳巡检：检查现金安全垫与应收风险", mode="heartbeat")
+        assert r["mode"] == "heartbeat"
+        assert "receivable_risk" in r and "days_of_cash" in r
+        assert "actions_taken" not in r or r.get("actions_taken", []) == []
+
+    @pytest.mark.asyncio
+    async def test_patrol_once_finance_fires_on_risk(self):
+        """资金巡检：seed 应收 90+ 占比 = 600/6100≈9.8% → 不触发；验证引擎链路可用（含无风险静默）。"""
+        from src.runtime.monitoring import alert_monitor
+
+        alert_monitor._last_fired.pop("heartbeat:executive_cockpit", None)
+        out = await heartbeat_engine.patrol_once(
+            "executive_cockpit", "心跳巡检：检查现金安全垫与应收风险", _risk_judge_finance, "critical", "资金巡检"
+        )
+        # seed 数据 days_of_cash=45（充足）、90+占比 9.8%（<15%）→ 无风险静默
+        assert out["fired"] is False
+        assert out["detail"] == "无风险，静默"
