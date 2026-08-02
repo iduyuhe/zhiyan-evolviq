@@ -289,8 +289,8 @@ export default function App() {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white [overflow-x:clip]">
       {/* 顶栏 */}
       <header className="border-b border-gray-200 bg-white/80 backdrop-blur-md sticky top-0 z-20 shadow-sm">
-        {/* 移动端：flex-wrap + order 让 Tab 条整行落到第二行；桌面 lg:flex-nowrap 恢复三栏(品牌|Tab居中|右侧) */}
-        <div className="max-w-[1400px] mx-auto px-4 py-2 lg:py-0 lg:h-16 flex flex-wrap items-center justify-between gap-2 lg:gap-2">
+        {/* 移动端 <lg: flex-wrap + order 让 Tab 条整行落到第二行；桌面 lg:flex-nowrap 恢复三栏(品牌|Tab居中|右侧) */}
+        <div className="max-w-[1400px] mx-auto px-4 py-2 lg:py-0 lg:h-16 flex flex-wrap lg:flex-nowrap items-center justify-between gap-2 lg:gap-2">
           {/* 左：品牌 */}
           <div className="flex items-center gap-2.5 flex-shrink-0 order-1">
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-zhiyan-500 to-zhiyan-700 flex items-center justify-center text-white text-sm font-bold shadow-md">
