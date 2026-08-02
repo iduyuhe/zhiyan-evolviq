@@ -468,3 +468,35 @@ cd studio && node_modules/typescript/bin/tsc --noEmit   # EXIT=0
   - supply_chain 心跳：SMIC seed 自动检出 **7 项缺料风险** → `fired:true` → 发布 critical 告警「[心跳·缺料巡检] 缺料风险项 7 项」进告警缓冲（前端 AlertPanel 同源展示）
   - bid_intel 心跳：无商机信号 → `fired:false` **静默**（静默门控生效，不打扰）
   - 引擎统计：runs=2 / alerts=1 / enabled=false（默认关）
+
+---
+
+## 十四、财务决策维度补全（2026-08-02，commit `12c06ab`）
+
+> 触发：杜总问「HR/财务智能体没有，如何考虑」→ 核查归因 → 杜总「听你的建议」执行 A（零扩边缘），B 单独立项暂缓。
+
+### 14.1 现状与归因（代码实证）
+
+- 财务**半覆盖**：executive_cockpit（经营 KPI/损益/现金流/预算）+ cost_analysis（制造成本）——管理会计有，财务会计（应收/应付/税务/资金预测）无。
+- HR **零覆盖**：26 模块无任何 HR Agent；③路人感知（CHANNEL_HUMAN）已落地可衔接。
+- 归因：战略聚焦（北极星产供销核心）+ 🔴 **账本类归 ERP**（路线 A 非原生账本红线）+ 数据源未接。
+- 判断：补「决策层」不补「账本/系统」——财务=现金流预测+应收风险（不是记账）；HR=人效+人员风险（不是招聘考勤系统）。
+
+### 14.2 修复（A：executive_cockpit 财务决策，零扩边缘）
+
+- `tools.py`：应收账龄 seed（4 分桶）+ `get_receivables()`（90+逾期占比/风险级）+ `cash_forecast()`（3 月滚动：现金+回款流入−运营支出，确定性规则）。
+- `agent.py`：tenant 模式加 `financial_decision` 块（receivables+cash_forecast）；`mode=heartbeat` 分支（只推演不执行 create_action_item）。
+- 心跳第 4 个巡检「资金巡检」（executive_cockpit，12h）：现金安全垫<30 天 / 90+应收≥15% / 预测现金≤0 → critical 告警。
+- 🔴 战略红线：只读推演（决策），账本归 ERP 不在此层。
+
+### 14.3 验证
+
+- 心跳专项 **15 passed**（+4：财务字段/心跳无副作用/资金风险判定/资金巡检静默）。
+- 全量回归 **601 passed / 0 failed**（597 + 4）。
+- 核心部署 `12c06ab`；双入口 smoke PASS。
+- **实证**：tenant 模式输出应收总额 6100 万 / 90+逾期 9.8%（medium）/ 3 月预测最低现金 2292 万（充足）；资金心跳当前无风险 → 静默。
+
+### 14.4 HR（B：hr_intel）单独立项暂缓
+
+- 形态=人力效能+人员风险（人效/关键岗位依赖/技能断层/人员风险预警），衔接③路人感知。
+- 🔴 数据源依赖 HR 系统接入——现在做是空壳；等有 HR 数据源再立项（骨架可先行）。
