@@ -46,11 +46,24 @@ interface LibraryData {
   erp: { count: number; items: PresetItem[] };
   mes: { count: number; items: PresetItem[] };
   permission: { role_count: number; industries: string[] };
-  coverage: string;
+  // 🔴 后端 /presets/library 的 coverage 是 dict（见 src/presets/__init__.py estimated_coverage）
+  coverage: {
+    erp?: string;
+    mes?: string;
+    equipment?: string;
+    permission?: string;
+  };
+}
+interface KeyPart {
+  name: string;
+  part_no?: string;
+  life_remaining_pct?: number;
+  risk?: string;
+  replace_lead_days?: number;
 }
 interface EquipmentDetail extends Equipment {
   opcua_tags: { tag: string; default: string | number; unit: string; desc: string }[];
-  key_parts: string[];
+  key_parts: KeyPart[];
   power_kw_peak?: number;
   coolant_flow_lpm?: number;
 }
@@ -122,7 +135,13 @@ export default function PresetLibraryPanel() {
             <Stat label="权限角色" value={data.permission.role_count} unit="个" />
           </div>
           {data.coverage && (
-            <div className="text-[11px] text-gray-400">📡 行业覆盖：{data.coverage}</div>
+            <div className="text-[11px] text-gray-400 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 space-y-0.5">
+              <div className="font-medium text-gray-500">📡 行业覆盖</div>
+              {data.coverage.equipment && <div>设备：{data.coverage.equipment}</div>}
+              {data.coverage.erp && <div>ERP：{data.coverage.erp}</div>}
+              {data.coverage.mes && <div>MES：{data.coverage.mes}</div>}
+              {data.coverage.permission && <div>权限：{data.coverage.permission}</div>}
+            </div>
           )}
 
           {/* 设备库（按行业） */}
@@ -189,9 +208,15 @@ export default function PresetLibraryPanel() {
                         {e.key_parts.length > 0 && (
                           <div>
                             <div className="text-[11px] text-gray-400 mb-1">关键部件（{e.key_parts.length}）</div>
-                            <div className="flex flex-wrap gap-1">
+                            <div className="space-y-1">
                               {e.key_parts.map((k, i) => (
-                                <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">{k}</span>
+                                <div key={i} className="flex items-center justify-between text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">
+                                  <span className="font-medium text-gray-700">{k.name}</span>
+                                  <span className="text-gray-500">
+                                    {k.part_no ? `${k.part_no} · ` : ''}寿命 {k.life_remaining_pct ?? '—'}%
+                                    {k.risk ? ` · 风险 ${k.risk}` : ''}
+                                  </span>
+                                </div>
                               ))}
                             </div>
                           </div>

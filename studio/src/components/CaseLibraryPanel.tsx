@@ -32,13 +32,24 @@ interface DerivedInsight {
   rationale: string;
   key_figures?: string[];
 }
-interface MyCase {
-  bound: boolean;
+interface MyCaseCase {
+  case_id?: string;
   subject_anon?: string;
   industry?: string;
-  disclaimer?: string;
+  recommended_interfaces?: string[];
+  teaching_notes_anon?: string;
+  pilot_scenario?: { scenario: string; label: string; agents?: string[]; note?: string } | null;
   disclosure_facts?: { source: string; fiscal_year: number; facts: DisclosureFact[] };
   derived_insights?: DerivedInsight[];
+}
+interface MyCase {
+  bound: boolean;
+  tenant_id?: string;
+  tenant_kind?: string;
+  data_origin?: string;
+  disclaimer?: string;
+  // 🔴 后端 /cases/my 将案例数据嵌套在 case 字段下（见 src/runtime/api/library.py get_my_case）
+  case?: MyCaseCase;
 }
 interface CaseDetail {
   case_id: string;
@@ -125,7 +136,7 @@ export default function CaseLibraryPanel() {
         <section className="bg-white rounded-xl shadow-sm border border-zhiyan-100 p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-gray-800">
-              我的绑定案例 · {myCase.subject_anon}
+              我的绑定案例 · {myCase.case?.subject_anon}
             </h3>
             <span className="text-[11px] px-2 py-1 rounded-full bg-amber-50 text-amber-700 font-medium">
               研究案例租户 · 未签约
@@ -135,10 +146,10 @@ export default function CaseLibraryPanel() {
             ⚠️ {myCase.disclaimer || '本视图数据来源于公开披露信息推演，非企业内部真实数据，本租户亦非签约客户。'}
           </div>
 
-          {myCase.disclosure_facts && (
+          {myCase.case?.disclosure_facts && (
             <div>
               <div className="text-xs text-gray-400 mb-1">
-                公开披露事实（{myCase.disclosure_facts.source}）
+                公开披露事实（{myCase.case.disclosure_facts.source}）
               </div>
               <div className="overflow-x-auto border border-gray-100 rounded-lg">
                 <table className="w-full text-xs">
@@ -151,7 +162,7 @@ export default function CaseLibraryPanel() {
                     </tr>
                   </thead>
                   <tbody>
-                    {myCase.disclosure_facts.facts.map((f, i) => (
+                    {myCase.case.disclosure_facts.facts.map((f, i) => (
                       <tr key={i} className="border-t border-gray-100 text-gray-700">
                         <td className="py-1.5 px-2 whitespace-nowrap">{f.metric}</td>
                         <td className="py-1.5 px-2 font-medium text-gray-900">{f.value}</td>
@@ -165,10 +176,10 @@ export default function CaseLibraryPanel() {
             </div>
           )}
 
-          {myCase.derived_insights && myCase.derived_insights.length > 0 && (
+          {myCase.case?.derived_insights && myCase.case.derived_insights.length > 0 && (
             <div className="space-y-2">
-              <div className="text-xs text-gray-400">推演结论（{myCase.derived_insights.length}）</div>
-              {myCase.derived_insights.map((ins, i) => (
+              <div className="text-xs text-gray-400">推演结论（{myCase.case.derived_insights.length}）</div>
+              {myCase.case.derived_insights.map((ins, i) => (
                 <div key={i} className="border border-zhiyan-100 bg-zhiyan-50/40 rounded-lg p-3">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zhiyan-100 text-zhiyan-700 font-medium">

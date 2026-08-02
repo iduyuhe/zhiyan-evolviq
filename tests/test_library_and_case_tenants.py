@@ -215,3 +215,66 @@ async def test_cases_my_unbound_tenant_returns_bound_false(async_client_admin):
     # 默认 admin 属于 default 租户，未绑定案例
     assert d["bound"] is False or d["case"]["case_id"].startswith("case_")
     _assert_no_leak(d, "GET /cases/my")
+
+
+# ───────────────────────── #439 质量审计回归（3 个字段错位 Bug）─────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_presets_library_coverage_is_dict(async_client_admin):
+    """Bug 2 回归：/presets/library 的 coverage 必须是 dict（前端按分段渲染）。
+    若被误标为 string 直接渲染，React 会抛 Objects are not valid as a React child → 整页白屏。
+    """
+    r = await async_client_admin.get("/presets/library")
+    assert r.status_code == 200, r.text
+    d = r.json()
+    assert isinstance(d["coverage"], dict), "coverage 必须是 dict（er/mes/equipment/permission 分段）"
+    for k in ("erp", "mes", "equipment", "permission"):
+        assert k in d["coverage"], f"coverage 缺字段 {k}"
+        assert isinstance(d["coverage"][k], str) and d["coverage"][k], f"coverage.{k} 应为非空文本"
+
+
+@pytest.mark.asyncio
+async def test_presets_industry_detail_keyparts_are_dicts(async_client_admin):
+    """Bug 3 回归：/presets/library/{industry} 的 key_parts 必须是 list[dict]（含 name 字段）。
+    若前端按 string[] 渲染会显示 [object Object]。
+    """
+    r = await async_client_admin.get("/presets/library/semiconductor")
+    assert r.status_code == 200, r.text
+    d = r.json()
+    for eq in d["equipments"]:
+        assert isinstance(eq["key_parts"], list), "key_parts 必须是 list"
+        for kp in eq["key_parts"]:
+            assert isinstance(kp, dict), "key_parts 元素必须是 dict"
+            assert "name" in kp and isinstance(kp["name"], str), "key_parts 元素须含 name 文本"
+
+
+@pytest.mark.asyncio
+async def test_cases_my_bound_tenant_nests_case(async_client_admin):
+    """Bug 1 回归：绑定租户 GET /cases/my 必须把案例数据嵌套在 case 字段下；
+    disclosure_facts / derived_insights 在 case 内（前端须读 myCase.case.* 而非顶层）。
+    """
+    from httpx import ASGITransport, AsyncClient
+
+    from src.runtime.authn.security import encode_jwt
+    from src.runtime.main import app
+    from src.runtime.seed_case_tenants import TENANT_CASE_BINDING
+
+    bound_tid = next(iter(TENANT_CASE_BINDING))  # telecom / semicon
+    token = encode_jwt({"sub": "lib_audit", "role": "TENANT_ADMIN", "tenant_id": bound_tid})
+    transport = ASGITransport(app=app)
+    async with AsyncClient(
+        transport=transport, base_url="http://test",
+        headers={"Authorization": f"Bearer {token}"},
+    ) as c:
+        r = await c.get("/cases/my")
+        assert r.status_code == 200, r.text
+        d = r.json()
+        assert d["bound"] is True, "绑定租户须返回 bound=true"
+        assert "case" in d, "绑定案例须嵌套在 case 字段下"
+        cse = d["case"]
+        assert isinstance(cse.get("subject_anon"), str) and cse["subject_anon"], "case.subject_anon 必填"
+        assert "disclosure_facts" in cse, "disclosure_facts 须在 case 内"
+        assert "derived_insights" in cse, "derived_insights 须在 case 内"
+        assert isinstance(cse["derived_insights"], list)
+        _assert_no_leak(d, "GET /cases/my 绑定租户")
