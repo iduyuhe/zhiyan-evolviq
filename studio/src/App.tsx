@@ -49,6 +49,14 @@ type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' 
 /** 可管理用户权限的角色（第②层 RBAC ≥ tenant_admin）。 */
 const ADMIN_ROLES = new Set(['tenant_admin', 'superadmin']);
 
+/** 管理类 Tab：仅租户管理员及以上可见（前后台分面，2026-08-02）。
+ * 业务用户（车间/工艺/质量/供应链/财务/厂长等岗位）只看到业务 Tab，
+ * 管理/运维/审计类 Tab 对普通员工隐藏 —— 单体 SPA 的「前台精简视图」。 */
+const ADMIN_ONLY_TABS = new Set<Tab>([
+  'console', 'audit', 'strategy', 'governance', 'federation', 'supplychain',
+  'gateway', 'twin', 'writeback', 'tenant', 'connect', 'knowledge', 'permission',
+]);
+
 const STEPS = [
   { key: 'input', label: '目标设定', icon: '🎯' },
   { key: 'approving', label: '规划预览', icon: '📋' },
@@ -285,6 +293,11 @@ export default function App() {
     return <Login onLogin={handleLogin} />;
   }
 
+  // 前后台分面：管理类 Tab 仅 admin 可见；业务用户若 state 落在管理 Tab（直连/降权），
+  // 显示上回退 studio（effectiveTab 兜底，防闪烁；setTab 不受影响——业务用户点不到管理 Tab）
+  const isAdmin = ADMIN_ROLES.has(String(me.role).toLowerCase());
+  const effectiveTab: Tab = !isAdmin && ADMIN_ONLY_TABS.has(tab) ? 'studio' : tab;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white [overflow-x:clip]">
       {/* 顶栏 */}
@@ -326,18 +339,16 @@ export default function App() {
                 { key: 'symbiosis' as Tab, label: '共生环', icon: '🤝' },
                 { key: 'caselib' as Tab, label: '研究案例库', icon: '📚' },
                 { key: 'presetlib' as Tab, label: '设备预设库', icon: '🔧' },
-                // 权限第③层管理入口：仅租户管理员及以上可见（普通员工看不到这个 Tab）
-                ...(me && ADMIN_ROLES.has(String(me.role).toLowerCase())
-                  ? [{ key: 'permission' as Tab, label: '用户权限', icon: '🔐' }]
-                  : []),
-              ].map(t => (
+                { key: 'permission' as Tab, label: '用户权限', icon: '🔐' },
+                // 前后台分面：管理类 Tab 仅 admin 可见（业务用户看不到审计/租户/网关等）
+              ].filter(t => !ADMIN_ONLY_TABS.has(t.key) || isAdmin).map(t => (
                 <button
                   key={t.key}
                   // F2：把当前激活 Tab 的 DOM 存起来，切换后自动滚动居中，
                   // 避免 Tab 条横向滚动后「激活项在视野外 / 点到相邻项」的错点。
-                  ref={(el) => { if (tab === t.key) activeTabRef.current = el; }}
+                  ref={(el) => { if (effectiveTab === t.key) activeTabRef.current = el; }}
                   className={`px-3 py-2 lg:py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
-                    tab === t.key
+                    effectiveTab === t.key
                       ? 'bg-white text-zhiyan-600 shadow-sm'
                       : 'text-gray-500 hover:text-gray-700'
                   }`}
@@ -399,7 +410,7 @@ export default function App() {
         </div>
 
         {/* Studio进度条 */}
-        {tab === 'studio' && stage !== 'input' && (
+        {effectiveTab === 'studio' && stage !== 'input' && (
           <div className="max-w-[1400px] mx-auto px-4 pb-2">
             <div className="hidden sm:flex items-center gap-1 text-xs text-gray-400">
               {STEPS.slice(0, totalSteps).map((step, i) => {
@@ -422,7 +433,7 @@ export default function App() {
       </header>
 
       {/* 主内容 */}
-      {tab === 'studio' ? (
+      {effectiveTab === 'studio' ? (
         <div className="max-w-7xl mx-auto flex">
           {/* 左侧 Agent 侧栏（桌面常驻，可收起） */}
           {!sidebarCollapsed && (
@@ -631,26 +642,26 @@ export default function App() {
         </div>
       ) : (
         <main className="max-w-3xl mx-auto px-4 py-8 space-y-4 overflow-x-auto">
-          {tab === 'monitor' && (<><DeviceMonitor /><AlertPanel /></>)}
-          {tab === 'tacit' && <TacitCapturePanel />}
-          {tab === 'bluearc' && <BlueArcPanel />}
-          {tab === 'history' && <SessionHistory onSelect={() => { setTab('studio'); }} />}
-          {tab === 'audit' && <AuditLogView />}
-          {tab === 'console' && <ConsoleTab />}
-          {tab === 'knowledge' && <KnowledgeGraphTab />}
-          {tab === 'strategy' && <StrategyTuningTab />}
-          {tab === 'governance' && <HolonGovernance />}
-          {tab === 'federation' && <FederationPanel />}
-          {tab === 'supplychain' && <SupplyChainFederation />}
-          {tab === 'gateway' && <GatewayTab />}
-          {tab === 'twin' && <TwinDashboard />}
-          {tab === 'writeback' && <WritebackPanel />}
-          {tab === 'tenant' && <TenantManagement />}
-          {tab === 'connect' && (<><UnlockProgressPanel /><BomMarginPanel /><EnvPerceptionPanel /><ConnectivityPanel /></>)}
-          {tab === 'symbiosis' && <FeedbackPanel />}
-          {tab === 'caselib' && <CaseLibraryPanel />}
-          {tab === 'presetlib' && <PresetLibraryPanel />}
-          {tab === 'permission' && me && ADMIN_ROLES.has(String(me.role).toLowerCase()) && (
+          { effectiveTab === 'monitor' && (<><DeviceMonitor /><AlertPanel /></>)}
+          { effectiveTab === 'tacit' && <TacitCapturePanel />}
+          { effectiveTab === 'bluearc' && <BlueArcPanel />}
+          { effectiveTab === 'history' && <SessionHistory onSelect={() => { setTab('studio'); }} />}
+          { effectiveTab === 'audit' && <AuditLogView />}
+          { effectiveTab === 'console' && <ConsoleTab />}
+          { effectiveTab === 'knowledge' && <KnowledgeGraphTab />}
+          { effectiveTab === 'strategy' && <StrategyTuningTab />}
+          { effectiveTab === 'governance' && <HolonGovernance />}
+          { effectiveTab === 'federation' && <FederationPanel />}
+          { effectiveTab === 'supplychain' && <SupplyChainFederation />}
+          { effectiveTab === 'gateway' && <GatewayTab />}
+          { effectiveTab === 'twin' && <TwinDashboard />}
+          { effectiveTab === 'writeback' && <WritebackPanel />}
+          { effectiveTab === 'tenant' && <TenantManagement />}
+          { effectiveTab === 'connect' && (<><UnlockProgressPanel /><BomMarginPanel /><EnvPerceptionPanel /><ConnectivityPanel /></>)}
+          { effectiveTab === 'symbiosis' && <FeedbackPanel />}
+          { effectiveTab === 'caselib' && <CaseLibraryPanel />}
+          { effectiveTab === 'presetlib' && <PresetLibraryPanel />}
+          { effectiveTab === 'permission' && me && ADMIN_ROLES.has(String(me.role).toLowerCase()) && (
             <UserPermissionPanel me={me} />
           )}
         </main>
