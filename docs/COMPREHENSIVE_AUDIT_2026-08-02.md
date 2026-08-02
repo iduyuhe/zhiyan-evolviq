@@ -431,3 +431,35 @@ cd studio && node_modules/typescript/bin/tsc --noEmit   # EXIT=0
 - 核心 `4d735ce` 部署 + 边缘 release=`4d735ce`；双入口 smoke PASS。
 - agent-browser admin 实拍：**21 Tab 全可见**（含用户权限）无回归。
 - ⚠️ 业务用户视角未经真实账号实测（避免污染生产数据）——filter 逻辑经 tsc + 代码审查；可在「用户权限」建测试岗位账号实证。
+
+---
+
+## 十三、半年复盘 + Agent 心跳自触发（2026-08-02，commit `10c4bf1`）
+
+> 触发：杜总「总结近半年经验教训，先讨论方案再动手」→ OpenClaw（小龙虾）架构讨论后拍板借鉴 HEARTBEAT 模式，实现「从被动应答到主动巡检」。
+
+### 13.1 半年复盘（docs/HALF_YEAR_RETROSPECTIVE_2026-08-02.md，15 条）
+
+- 战略：路线 A 定调终结讨论期；研究案例范式（不等客户）；先有后优范围纪律。
+- 教训：工程自嗨陷阱（08-01 审计：工程✅业务❌，真实决策实时化率=0%）；事实锚点铁律。
+- 架构：通道级消费=零改动扩展；韧性降级全栈铁律。
+- 安全：GH013 凭证教训；企微/数据源凭证只进 .env。
+- 工程：全量回归连锁断言；白屏三层防御；vite 构建顺序；沙箱坑。
+- 产品：移动端三阶；前后台分面。
+- **缺口：Agent 全部被动（人提问才动）——北极星名不副实，是「演示系统」到「决策系统」的分水岭。**
+
+### 13.2 心跳自触发（方案 → 落地，杜总拍板：默认关/复用现有告警/全量实施）
+
+- `src/runtime/heartbeat/engine.py`：HeartbeatEngine（async 调度器，per-agent 频率；静默门控=无风险不产生告警；幂等=复用 AlertMonitor cooldown 300s 去重；统计端点）。
+- 巡检复用 `analyze(mode="heartbeat")`，**0 新 Agent**：
+  - supply_chain：缺料风险扫描（不 execute，无锁料/补货副作用）
+  - bid_intel：商机信号扫描（本就无副作用）
+  - energy_carbon：碳强度/绿电异常（非 tenant 不创建节能任务）
+- 风险告警复用 `AlertMonitor._fire`（UNS system 路 + /monitoring/alerts + AlertPanel，**零新端点零新界面**）；企微凭证到位接 /wecom/push。
+- 默认关闭 `ZHIYAN_HEARTBEAT_ENABLED=1` 开启（先有后优）。
+- 🔴 韧性：单次巡检失败静默；heartbeat 不写租户记忆（视同 research_case 纪律）。
+
+### 13.3 验证
+
+- 心跳专项 **11 passed**（风险判定/静默门控/幂等去重/无副作用/不污染租户）；bid_intel+supply_chain 13 passed。
+- 全量回归（待最终确认）；部署 + 双入口 smoke（待跑）。
