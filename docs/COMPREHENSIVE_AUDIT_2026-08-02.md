@@ -462,4 +462,9 @@ cd studio && node_modules/typescript/bin/tsc --noEmit   # EXIT=0
 ### 13.3 验证
 
 - 心跳专项 **11 passed**（风险判定/静默门控/幂等去重/无副作用/不污染租户）；bid_intel+supply_chain 13 passed。
-- 全量回归（待最终确认）；部署 + 双入口 smoke（待跑）。
+- 全量回归 **597 passed / 0 failed**（261s，586 + 11 新心跳）。
+- 核心部署 `0887a8d`；双入口 smoke PASS（默认关闭 ZHIYAN_HEARTBEAT_ENABLED 未开，平台零影响）。
+- **主动巡检实证**（本地真实跑 patrol_once）：
+  - supply_chain 心跳：SMIC seed 自动检出 **7 项缺料风险** → `fired:true` → 发布 critical 告警「[心跳·缺料巡检] 缺料风险项 7 项」进告警缓冲（前端 AlertPanel 同源展示）
+  - bid_intel 心跳：无商机信号 → `fired:false` **静默**（静默门控生效，不打扰）
+  - 引擎统计：runs=2 / alerts=1 / enabled=false（默认关）
