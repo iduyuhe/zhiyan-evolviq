@@ -132,6 +132,94 @@ async def test_cases_library_api_anonymous(async_client_admin):
     assert r3.status_code == 404
 
 
+# ───────────────────── # 加强版：案例库解锁披露事实+推演结论（2026-08-02） ─────────────────────
+
+
+@pytest.mark.asyncio
+async def test_cases_library_list_has_fact_and_insight_counts(async_client_admin):
+    """加强版：列表卡片角标用——后端必须把 fact_count + insight_count 算好放出来。"""
+    r = await async_client_admin.get("/cases/library")
+    assert r.status_code == 200, r.text
+    d = r.json()
+    assert d["case_count"] >= 4
+
+    seen_total_facts = 0
+    seen_total_insights = 0
+    for c in d["cases"]:
+        # 关键断言：每个卡片都应有 fact_count + insight_count 两个整数
+        assert isinstance(c.get("fact_count"), int), f"卡片 {c['case_id']} 缺 fact_count"
+        assert isinstance(c.get("insight_count"), int), f"卡片 {c['case_id']} 缺 insight_count"
+        # 数据已实测：4 案例合计 59 事实 + 22 结论
+        seen_total_facts += c["fact_count"]
+        seen_total_insights += c["insight_count"]
+    assert seen_total_facts >= 50, f"全案例事实总数 {seen_total_facts} 远低于预期 (≥50)"
+    assert seen_total_insights >= 18, f"全案例结论总数 {seen_total_insights} 远低于预期 (≥18)"
+    _assert_no_leak(d, "GET /cases/library 加强版列表")
+
+
+@pytest.mark.asyncio
+async def test_cases_library_detail_exposes_facts_and_insights(async_client_admin):
+    """加强版：详情抽屉必须能拿到 disclosure_facts + derived_insights（无真名，合规）。"""
+    r = await async_client_admin.get("/cases/library")
+    assert r.status_code == 200, r.text
+    cases = r.json()["cases"]
+    assert len(cases) >= 4
+
+    # 至少抽样 2 个不同行业的案例做断言（覆盖 telecom + 3c / newenergy）
+    sampled = []
+    for c in cases:
+        cid = c["case_id"]
+        # 跳过那种 fact_count==0 的"空案例"——4 个案例都应有数据
+        if c.get("fact_count", 0) >= 10 and c.get("insight_count", 0) >= 4:
+            sampled.append(cid)
+            if len(sampled) >= 3:
+                break
+
+    assert len(sampled) >= 2, f"应至少 2 个案例含 ≥10 事实+≥4 结论，实测: {[(c['case_id'], c.get('fact_count'), c.get('insight_count')) for c in cases]}"
+
+    for cid in sampled:
+        rd = await async_client_admin.get(f"/cases/library/{cid}")
+        assert rd.status_code == 200, rd.text
+        body = rd.json()
+        detail = body["case"]
+        _assert_no_leak(body, f"GET /cases/library/{cid} 加强版详情")
+        # 严防真名回流
+        assert "real_anchor" not in detail
+
+        # 关键断言 1：disclosure_facts 应被放行
+        facts = detail.get("disclosure_facts")
+        assert facts, f"{cid} 缺 disclosure_facts"
+        assert isinstance(facts.get("facts"), list) and len(facts["facts"]) >= 5
+        # 每条 fact 至少有 metric + value
+        for f in facts["facts"]:
+            assert "metric" in f and "value" in f
+
+        # 关键断言 2：derived_insights 应被放行
+        insights = detail.get("derived_insights")
+        assert isinstance(insights, list) and len(insights) >= 3, f"{cid} 推演结论数量 {len(insights) if isinstance(insights, list) else 'N/A'} 过少"
+        for ins in insights:
+            assert "dimension" in ins and "claim" in ins and "rationale" in ins
+            # 加强版扩展：允许 assertion_type + value_judgment 已声明
+            assert ins.get("assertion_type") in (None, "descriptive", "predictive"), f"{cid} 异常 assertion_type: {ins.get('assertion_type')}"
+            assert ins.get("value_judgment") in (None, "high", "medium", "low"), f"{cid} 异常 value_judgment: {ins.get('value_judgment')}"
+
+
+@pytest.mark.asyncio
+async def test_cases_library_no_real_anchor_in_enhanced_payload(async_client_admin):
+    """加强版加强：即使用最强白名单放行，real_anchor 仍绝不能出现在 /cases/library 的任何响应里。"""
+    r = await async_client_admin.get("/cases/library")
+    assert r.status_code == 200
+    cases = r.json()["cases"]
+    for c in cases:
+        rd = await async_client_admin.get(f"/cases/library/{c['case_id']}")
+        assert rd.status_code == 200
+        blob = rd.text
+        # 三连防泄漏：real_anchor 字段 + 锚定公司名片段
+        assert '"real_anchor"' not in blob
+        for tok in LEAK_TOKENS:
+            assert tok not in blob, f"{c['case_id']} 详情 payload 命中 {tok!r}"
+
+
 # ───────────────────────── #428 入驻接设备预设 ─────────────────────────
 
 

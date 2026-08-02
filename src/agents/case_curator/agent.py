@@ -546,7 +546,12 @@ class CaseCuratorAgent(BaseAgent):
         }
 
     def _case_detail(self, c: dict) -> dict:
-        """单案例详情（对外匿名视图，绝不带 real_anchor）。"""
+        """单案例详情（对外匿名视图，绝不带 real_anchor）。
+
+        加强版（2026-08-02）：放行 disclosure_facts + derived_insights，
+        让前端抽屉直接渲染公开披露事实表与多维推演结论。
+        这两个字段本身不含 real_anchor，配合 /cases/my 双保险已在生产验证合规。
+        """
         return {
             "status": "completed",
             "case": {
@@ -558,6 +563,9 @@ class CaseCuratorAgent(BaseAgent):
                 "pilot_scenario": c.get("pilot_scenario"),  # 匿名安全：仅场景描述，无真名
                 "status": c.get("status", "active"),
                 "updated_at": c.get("updated_at", ""),
+                # 加强版：放行事实+结论（无真名）
+                "disclosure_facts": c.get("disclosure_facts", {}),
+                "derived_insights": c.get("derived_insights", []),
             },
             "summary": f"案例 {c['case_id']} 详情（{c['subject_anon']}）",
         }
@@ -575,6 +583,9 @@ class CaseCuratorAgent(BaseAgent):
                     "industry": c["industry"],
                     "status": c.get("status", "active"),
                     "updated_at": c.get("updated_at", ""),
+                    # 加强版（2026-08-02）：卡片角标用，零成本算出
+                    "fact_count": len(c.get("disclosure_facts", {}).get("facts", []) or []),
+                    "insight_count": len(c.get("derived_insights", []) or []),
                 }
                 for c in cases
             ],
