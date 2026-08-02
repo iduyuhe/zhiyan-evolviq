@@ -215,3 +215,192 @@ cd studio && node_modules/typescript/bin/tsc --noEmit   # EXIT=0
 ```
 
 *审计日期：2026-08-02 · 证据基线：551 passed / 双入口 PASS / tsc 0 / 北极星真实率 1.0（12 真实信号）/ 权限③层 LIVE 生效 / 7 岗位 + 3 行业模板*
+
+---
+
+## 七、研究案例库加强（应用型第二弹，2026-08-02 续）
+
+> **触发**：用户实拍截图反馈「研究案例库做的太简单了，不是加分项都变成减分项，需要进一步加强」。
+> **约束**：仍守「不扩展新边缘」——不新增案例/行业/Agent，只解锁既有内容+改渲染。
+
+### 7.1 现状摸底（挖出的「肥肉」）
+
+| 维度 | 实测 |
+|---|---|
+| 后端数据体量 | 4 案例共 **59 条公开披露事实 + 22 条多维推演结论**（合计 10,878 字符）|
+| API 暴露缺口 | `_case_detail()` 白名单**主动丢弃** `disclosure_facts` + `derived_insights`，详情抽屉只看到 5 个推荐接口 chip + 1 段教学笔记 |
+| 死库存 | 3C / 新能源两个案例**根本没绑定租户**（`/cases/my` 走不通），但 `cases.json` 里数据是全的 |
+| 前端渲染缺口 | 列表卡片只用 `subject_anon / industry / status / updated_at` 4 字段；`status` 已声明在 TS 接口但 JSX 从未渲染；`derived_insights.assertion_type` + `value_judgment` 完全未声明 |
+| 现成 JSX | 「我的绑定案例」区块（149-201 行）**早就写好**了财报表+结论卡渲染，因没数据只在绑定租户处可见 |
+
+### 7.2 修复清单（提交 `d577a43`）
+
+| 项 | 内容 | 落地位置 |
+|---|---|---|
+| F1+ | 后端 `_case_detail()` 白名单补 `disclosure_facts` + `derived_insights` | `agent.py:548-568`（+2 字段） |
+| F1+ | 后端 `_list_cases()` 列表项补 `fact_count` + `insight_count` | `agent.py:565-587`（+2 字段） |
+| F1+ | `DerivedInsight` TS 接口补 `assertion_type` + `value_judgment` | `CaseLibraryPanel.tsx:32-37` |
+| F2+ | 列表卡片加**行业色条** + 事实/结论计数角标 + status 徽标 | `CaseLibraryPanel.tsx:268-307` |
+| F2+ | 详情抽屉头部加行业色条 + status 徽标 | `CaseLibraryPanel.tsx:331-341` |
+| F3+ | 详情抽屉渲染财报表 + 推演结论区 | `CaseLibraryPanel.tsx:343-450`（复用+升级）|
+| F3+ | 推演按 `value_judgment`（high→medium→low）+ `assertion_type`（predictive 优先）排序 | `sortInsights()`（新工具函数）|
+| F3+ | 推演按 `dimension` 着色（6 维色系） + 高价值左侧色条 + 「🔮 前瞻预判」「⚡ 高价值」徽标 | `DIM_COLOR` + 抽屉渲染 |
+| F3+ | 教学笔记块加蓝底浅色块容器，提升可读性 | 抽屉底部 |
+| F4+ | 「我的绑定案例」同步升级到新排序+着色体系 | `CaseLibraryPanel.tsx:179-225` |
+| 测试 | 新增 3 例：列表计数 / 详情放行 / 真名不外泄双保险 | `test_library_and_case_tenants.py` |
+
+### 7.3 验证证据
+
+| 检查 | 结果 |
+|---|---|
+| 全量 pytest | **563 passed**（基线 560 + 本轮 3）/ 0 failed / 246s |
+| tsc --noEmit | 0 错误 |
+| vite build | ✅ 530KB js + 59KB css（白屏防御标记在） |
+| 核心部署 | `d577a43` 上线（runtime+studio 双容器重建） |
+| 边缘同步 | release=`d577a43`（首次 502 触发自动回滚→轮询 200 后重试成功）|
+| 双入口冒烟 | 核心 43:3006 ✅ / 边缘 weomnitech ✅ |
+
+### 7.4 守住的边界
+
+- **零新数据**：没新增任何案例/事实/结论，全部从 `cases.json` 既有 10,878 字符里挖。
+- **零新接口**：3 个既有端点（`/cases/library` / `/cases/library/{id}` / `/cases/my`）的字段放行 + 计数计算。
+- **零新组件**：`CaseLibraryPanel.tsx` 单文件改造，无新文件、无 App.tsx 改动。
+- **匿名合规双保险**：`_case_detail()` 永远不放行 `real_anchor`；3 个新测试 + 既有 `_assert_no_leak()` 矩阵确保 4 案例的详情 payload **零真名**。
+- **既有 UX 守恒**：交互（点击卡片开抽屉 / 关抽屉 / 「我的绑定案例」位置）一字未动；强化的是**信息密度**，不是**操作流程**。
+
+### 7.5 留下的肥肉（不扩边缘，故不动）
+
+- `_search_cases()` 中文滑窗模糊搜索（agent 端已实现，`_list_cases` 旁的同模块方法）——未暴露成 REST。
+- `_recommended_interfaces()` 跨案例汇总接口 —— agent 端已实现，未暴露。
+- `cases.json` 还有 `teaching_notes_internal` 真名版（合规隔离用）—— 故意不暴露，留给 `compliance_reviewer` 内部交叉校验。
+
+---
+
+## 八、移动端响应式改造（A 方案，2026-08-02 续，commit `cfdf2ad`）
+
+> 触发：杜总问「PC 端应用是否考虑移动端」→ 追溯 `docs/DEPLOYMENT_READINESS.md:60` 既有 P2 规划（企业微信/钉钉小程序 2-3 周）。经三方案评估（A 响应式 / B 小程序 wrapper / C 原生 App），杜总选 A。
+
+### 8.1 现状摸底（改动前实测）
+
+| 项 | 结果 |
+|---|---|
+| viewport 元标签 | ✅ 已有（`index.html:6`） |
+| Tailwind 响应式类 | ✅ 各组件普遍在用（`sm:`/`md:`/`lg:`） |
+| 侧栏窄屏抽屉 | ✅ 已有（`hidden lg:flex` 常驻 + `lg:hidden` 抽屉复用 AgentSidebar） |
+| **车间工人场景**（DeviceMonitor/AlertPanel）| ✅ 本就响应式（`grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`） |
+| **顶栏 Tab 条** | ❌ 21 个 Tab 被挤进 ~100px（手机上不可用） |
+| **结果视图**（GenericResultView）| ❌ 固定 `grid-cols-3/4`（无断点，手机挤成 ~75px/列） |
+
+### 8.2 修复清单（纯前端、后端零改动）
+
+- **顶栏重构**：`flex-wrap` + `order-{1,2,3}` → 手机端 Tab 条整行落到第 2 行；桌面 `lg:flex-nowrap` 保持三栏（品牌 | Tab 居中 | 右侧）原样。Tab 按钮 `py-2 lg:py-1.5` 加大触控区。
+- **根级防护**：根 div `[overflow-x:clip]`（用 `clip` 而非 `hidden`，不破坏 sticky；防手机页面横向滚屏）。
+- **非 Studio 主区**：`<main>` 加 `overflow-x-auto` 防宽内容爆屏。
+- **结果视图**：`GenericResultView` 全部固定 `grid-cols-3/4` → `grid-cols-2 sm:grid-cols-3/4`（手机 2 列可读）。
+
+### 8.3 验证证据（agent-browser 375px 实拍）
+
+- 核心/边缘双部署 `cfdf2ad`，双入口 smoke PASS。
+- 三张 375px 实拍（`.tmp_mobile_shots/`）：`m1_studio_input_375.png`（顶栏双行+北极星双率）、`m2_monitor_375.png`（设备卡纵向堆叠=车间工人场景）、`m3b_caselib_full_375.png`（案例库财报表+推演卡全页）。
+- eval 实测：`hasHScroll:false`（无横向滚屏）；财报表 `table.offsetWidth=316 < 375`。
+- 登录实证（边缘 curl + 浏览器）：`telecom_admin` / `Zhiyan@telecom_admin2026`（案例租户确定性密码）。
+
+### 8.4 与小程序的关系（递进三阶，杜总定调 2026-08-02）
+
+- **① 手机版 H5（已完成）** → **② 企业微信自建应用 H5（推荐下一步：免登 agentConfig + 工作通知推送，无需代码审核）** → **③ 小程序（最后，有真实需求再上：认证300元+ICP备案+类目+每版代码审核）**。
+- ② 是「车间工人收缺料预警」的最优解：企微后台建自建应用 + 可信域名，H5 代码 100% 复用；① 是②的前置。
+
+---
+
+## 九、营销向智能体缺口归因 + customer_voice 客户声音源（2026-08-02，commit `565c905`）
+
+> 触发：杜总问「系统缺乏营销方面智能体，是刻意理解（工业互联网不需要营销）还是其他原因」。经商量确认方案 A（不扩边缘）。
+
+### 9.1 归因结论（诚实四层）
+
+| 归因 | 结论 |
+|---|---|
+| 战略聚焦（主因） | 北极星=决策实时化率，24 Agent 按产供销命脉排布，营销不在核心闭环——⚠️ 可商量 |
+| 数据源约束 | 营销要真有用需 CRM/商机数据，智衍接网关+围墙内 IT——但第⑥路客户声音是**公开数据**（招投标/行业报告/舆情），不受此限 |
+| 范围纪律 | 候选池聚焦制造核心、先有后优——✅ 合理 |
+| **落地遗漏（最该修的）** | 第⑥路战略定义含「客户声音」，但 `env_sources` 落地只有 policy/market/benchmark/disclosure——**定义了没做**，与目标达成审计「六路感知仅 1.5/6 路产生真信号」同一条线 |
+
+### 9.2 修复内容（方案 A：补全已定义未落地的感知路，不新增 Agent）
+
+- **新增 `src/runtime/env_sources/customer_voice_source.py`**：`kind=customer_voice`，label=「客户声音（招投标/行业报告/舆情）」；**credibility=authoritative → 进人工审核队列**（F4 官方为锚、其余必筛红线，批准后才锚定）；live URL `settings.env_customer_voice_url`；simulated 样本对齐通讯行业客户声音（集采招标/资本开支/交付质量舆情）。
+- **`manager.py` 注册**（4→5 源）；`config.py` 加 `env_customer_voice_url`。
+- **免费额度 3→4**（`env_subscription_store.py::FREE_MAX_SOURCES`）：customer_voice 是 tenant_facing 源，默认模板 3→4；免费圈=纯⑥信号公开源，客户声音（商机情报）是免费圈钩子，不算破坏免费承诺。
+- **前端零改动**（EnvPerceptionPanel 按 `source.label` 动态渲染，新源自动出现）；**外圈 5 Agent**（executive_cockpit/supply_chain/procurement_manage/compliance_q/industry_research）经 `env_context()` 通道级自动消费，零 agent 改动。
+
+### 9.3 验证
+
+- 全量 pytest **567 passed / 0 failed**（248s）；env 30 passed（含 +4 新测试）；订阅 19 passed + 额度 42 passed（断言 3→4 更新）。
+- 核心部署 `565c905`；双入口 smoke PASS。
+- **线上实证**（telecom_admin）：`/environment` 源清单 5 源在线（customer_voice: kind=customer_voice / cred=authoritative / mode=simulated）；手动 pull 2 条 published 2 条；UNS 通道可见 2 条客户声音信号（集采招标强调低时延与自主可控 / 资本开支回暖），均 `cred=authoritative`。
+
+### 9.4 营销向后续（方案 B 预留，未做）
+
+- 若验证「客户声音公开信号有价值」，可单独立项新增第 25 个 Agent「商机情报 agent（bid_intel）」（标前评审/赢单概率/报价策略）——这属明确扩边缘，需杜总拍板。
+
+---
+
+## 十、商机情报 Agent bid_intel（第 25 个 Agent，2026-08-02，commit `055caa6` + `8f73cc6`）
+
+> 触发：杜总「接受你的建议」拍板方案 B——营销向智能体从「信号补齐」升级为「Agent 实体化」。
+
+### 10.1 设计要点
+
+- **工业 B2B「营销」= 商机情报**（与 C 端增长漏斗不同）：标前评审 / 赢单概率 / 竞品对标 / 报价策略。
+- **纯环境信号驱动**：消费第⑥路 `customer_voice` + `benchmark` + `market` 三源（经 `env_context()` 通道级），不依赖租户内部数据 → **归外圈「免费纯⑥信号」**（G 模式语义不变，外圈 4→5）。
+- **🔴 人留终审**：`actions_taken` 恒空，不自动执行商务动作；AuthBoundary `auto_execute=[]`，`submit_bid`/`issue_quote` 须审批。
+- **赢单概率确定性规则**（非黑盒）：信号强度 40% + 竞争烈度 35% + 成本锚 25%，标注推导依据。
+- **research_case 纪律**：不写租户记忆、payload 匿名（`_assert_no_leak` 零真名）。
+
+### 10.2 落地清单
+
+| 层 | 改动 |
+|---|---|
+| Agent | `src/agents/bid_intel/agent.py`（商机扫描/竞品对标/成本锚/赢单概率/报价策略/标前评审） |
+| 路由 | `AGENT_REGISTRY` + `ROUTING_RULES`（专属词投标/标前/赢单/商机/招投标/客户声音；⚠️ 不用「报价」——会被 cost_analysis 先截获） |
+| 权限 | `AuthBoundary(ab-bid-intel-default)` + `FINANCE_CONTROLLER` 加 bid_intel（可读）；`PLANT_MANAGER` 全放行自动覆盖 |
+| 三圈 | `unlock_map.OUTER_AGENTS` + bid_intel（外圈 4→5） |
+| 前端 | `SCENARIO_GROUPS`（经营决策组）+ `DEFAULT_EXAMPLES` + `AGENT_META`（🎯 商机情报）+ 结果分支白名单 |
+
+### 10.3 验证
+
+- bid_intel 专项 **11 passed**（注册/路由/功能/人留终审/research_case 纪律/权限边界/不抢报价）。
+- 全量回归 **578 passed / 0 failed**（244s，含 24→25 计数连锁修复：registry/onboarding/compliance/unlock 四文件）。
+- tsc 0 错误；vite build 水印 `8f73cc6` 正确（白屏防御标记在）。
+- 核心 `8f73cc6` 部署 + 边缘 release=`8f73cc6`；双入口 smoke PASS。
+- **线上端到端实证**（telecom_admin）：
+  - `quick-check("评估运营商集采项目的投标赢单概率与标前评审")` → `routed_agent=bid_intel`，赢单概率 89（高）
+  - 先拉取 `customer_voice`(3)+`benchmark`(2) 入 UNS → bid_intel 真实捕获 **3 个商机机会**（「某运营商发布新一轮集采招标：强调低时延与自主可控」）+ **2 条竞品对标**，`env_signal_count=5`
+  - `actions_taken=[]`（🔴 人留终审生效：情报分析不自动执行商务动作）
+  - 无信号时诚实输出「捕获 0 个商机信号」而非编造（事实锚点铁律）
+
+---
+
+## 十一、移动端第②阶骨架 + 数据源接入指南（2026-08-02，commit `15fd550`）
+
+> 触发：杜总确认两项推进方式——①招投标数据源**先出接入指南**；②企微自建应用**写骨架+操作清单**。
+
+### 11.1 企微自建应用 H5 骨架（代码已就绪，配凭证即用）
+
+- `src/runtime/wecom/service.py`：`get_access_token`（缓存）/ `get_jsapi_ticket`（缓存）/ `sign_agent_config`（agentConfig 签名 sha1）/ `send_app_message`（textcard 应用消息推送）。
+- `src/runtime/api/wecom.py`：`GET /wecom/status`、`POST /wecom/jsapi-signature`、`POST /wecom/push`（JWT 门禁；未配置 503 提示）。
+- `config.py` +4 配置项（`wecom_corpid/secret/agentid/token`，env_prefix `zhiyan_`）。
+- 🔴 **优雅降级**：凭证缺失时全部返回 None/降级 dict，绝不抛异常、绝不阻塞平台（现状即未配置态，线上零影响）。
+- 🔴 **凭证铁律**：Secret 只进服务器 `.env`，status() 明文脱敏。
+- 操作清单 `docs/WECOM_ONBOARDING_GUIDE.md`（6 步：建应用→可信域名校验→网页授权→CorpID→.env→验证）。
+- 缺料推送接线点：`supply_chain` 缺料检测分支调 `send_app_message`——**凭证到位后动工**（第二阶段）。
+
+### 11.2 招投标数据源接入指南（代码已就绪，缺凭证）
+
+- 代码：`customer_voice_source._live_url()` 读 `env_customer_voice_url`，`_parse_live()` 已实现 live 解析（JSON 数组约定），失败自动回退 simulated。
+- 指南 `docs/ENV_DATA_SOURCE_GUIDE.md`：URL 格式约定 + 🔴 合规红线（不爬未授权站点/密钥只进 .env）+ 服务商类型参考 + 接入步骤 + 回退运维。
+- 接入后 `customer_voice` 升级 live → `authoritative` 人工审核队列 → bid_intel 自动消费（零改动）。
+
+### 11.3 验证
+
+- wecom 专项 **8 passed**（未配置降级/token 缓存/签名确定性/push payload/API 503）。
+- 全量回归（待最终确认）。
