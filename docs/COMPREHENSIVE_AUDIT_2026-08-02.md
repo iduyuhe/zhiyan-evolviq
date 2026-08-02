@@ -500,3 +500,25 @@ cd studio && node_modules/typescript/bin/tsc --noEmit   # EXIT=0
 
 - 形态=人力效能+人员风险（人效/关键岗位依赖/技能断层/人员风险预警），衔接③路人感知。
 - 🔴 数据源依赖 HR 系统接入——现在做是空壳；等有 HR 数据源再立项（骨架可先行）。
+
+---
+
+## 十五、北极星主动决策实时化率子指标（2026-08-02，commit `d8623ff`）
+
+> 「继续」：把 OpenClaw 心跳借鉴成果**锚定进北极星**——北极星从「被动实时化率」升级为「被动+主动」双口径。
+
+### 15.1 改动
+
+- `metrics.py::north_star_report()` 新增：
+  - `proactive_decision_count`：心跳主动检出的风险告警数（heartbeat_engine.stats()["alerts"]）
+  - `proactive_decision_rate`：心跳告警 ÷ (决策事件 + 心跳告警)——「系统主动发现并推达」占全部决策触达的比例
+  - `proactive_source`：诚实标注「当前 seed 演示态，真实源接入后自动升级」
+- 事实锚点：无心跳告警时 count=0/rate=None 或 0（0 触达不虚报）。
+
+### 15.2 验证
+
+- 测试 +2（维度存在 / 率=3÷(12+3)=0.2）；dute+heartbeat 20 passed。
+- 全量回归 **603 passed / 0 failed**（601 + 2）。
+- 核心部署 `d8623ff`；双入口 smoke PASS。
+- **线上实证**：`/reports/north-star` 返回 `decision_realization_rate_real=1.0`(12 真实)、`proactive_decision_count=0`、`proactive_decision_rate=0.0`（心跳默认关，纯被动诚实呈现）、`proactive_source=heartbeat（当前 seed 演示态…）`。
+- 意义：开启 `ZHIYAN_HEARTBEAT_ENABLED=1` 后，心跳每检出一次风险告警，主动决策率随之起跳——北极星首次能区分「人问出来的决策」和「系统自己发现的决策」。
