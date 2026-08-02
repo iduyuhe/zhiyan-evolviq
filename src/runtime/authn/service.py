@@ -299,6 +299,7 @@ class AuthnService:
             "display_name": p.get("name", p.get("sub")),
             # 权限第③层（旧 token 无此字段 → normalize 归一为全放行，平滑过渡）
             "business_role": p.get("business_role"),
+            "business_role_label": business_role_label(p.get("business_role")),
             "capability_scope": normalize_scope(p.get("capability_scope")),
         }
 

@@ -35,13 +35,17 @@ import BomMarginPanel from './components/BomMarginPanel';
 import FeedbackPanel from './components/FeedbackPanel';
 import CaseLibraryPanel from './components/CaseLibraryPanel';
 import PresetLibraryPanel from './components/PresetLibraryPanel';
+import UserPermissionPanel from './components/UserPermissionPanel';
 import { createSession, approveSession, quickCheck, authHeaders, apiUrl } from './api/client';
 import type { Session, ExecutionResult } from './api/client';
 import Login from './components/Login';
 import { getToken, fetchMe, logout, requireLocalToken, AuthExpiredError, type AuthUser } from './api/client';
 
 type Stage = 'input' | 'planning' | 'approving' | 'executing' | 'result' | 'error';
-type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'twin' | 'governance' | 'federation' | 'supplychain' | 'writeback' | 'tacit' | 'bluearc' | 'tenant' | 'connect' | 'symbiosis' | 'caselib' | 'presetlib';
+type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'twin' | 'governance' | 'federation' | 'supplychain' | 'writeback' | 'tacit' | 'bluearc' | 'tenant' | 'connect' | 'symbiosis' | 'caselib' | 'presetlib' | 'permission';
+
+/** 可管理用户权限的角色（第②层 RBAC ≥ tenant_admin）。 */
+const ADMIN_ROLES = new Set(['tenant_admin', 'superadmin']);
 
 const STEPS = [
   { key: 'input', label: '目标设定', icon: '🎯' },
@@ -123,16 +127,31 @@ export default function App() {
     // 挂载时若未登录不拉取——否则 effect 只在挂载跑一次、token 尚未就绪 → 401 静默失败，
     // 登录后永不重拉 → agents 永远为空 → 侧边栏无可点项（"点击没反应"）。
     if (!me) return;
-    fetch(apiUrl('/agents'), { headers: authHeaders() })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then((d) => {
-        const list = (d.agents || []) as AgentInfo[];
-        setAgents(list);
-        if (list.length > 0) handleAgentChange(list[0]);
-      })
-      .catch((e) => {
-        console.warn('[App] /api/agents 加载失败:', e?.message || e);
-      });
+    // 权限第③层：菜单只渲染当前用户「岗位可见」的智能体。
+    // /authn/my-agents 是唯一真相源（后端按 capability_scope 过滤）；
+    // 该端点异常时回退到 /agents 全量，绝不让侧边栏空掉（白屏铁律）。
+    const loadAgents = async () => {
+      const tryFetch = async (path: string) => {
+        const r = await fetch(apiUrl(path), { headers: authHeaders() });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return (await r.json()) as { agents?: AgentInfo[] };
+      };
+      let list: AgentInfo[] = [];
+      try {
+        list = (await tryFetch('/authn/my-agents')).agents || [];
+      } catch (e) {
+        console.warn('[App] /api/authn/my-agents 不可用，回退全量:', (e as Error)?.message || e);
+        try {
+          list = (await tryFetch('/agents')).agents || [];
+        } catch (e2) {
+          console.warn('[App] /api/agents 加载失败:', (e2 as Error)?.message || e2);
+          return;
+        }
+      }
+      setAgents(list);
+      if (list.length > 0) handleAgentChange(list[0]);
+    };
+    void loadAgents();
   }, [me]);
 
   const handleQuickCheck = useCallback(async (goal: string) => {
@@ -260,6 +279,10 @@ export default function App() {
                 { key: 'symbiosis' as Tab, label: '共生环', icon: '🤝' },
                 { key: 'caselib' as Tab, label: '研究案例库', icon: '📚' },
                 { key: 'presetlib' as Tab, label: '设备预设库', icon: '🔧' },
+                // 权限第③层管理入口：仅租户管理员及以上可见（普通员工看不到这个 Tab）
+                ...(me && ADMIN_ROLES.has(String(me.role).toLowerCase())
+                  ? [{ key: 'permission' as Tab, label: '用户权限', icon: '🔐' }]
+                  : []),
               ].map(t => (
                 <button
                   key={t.key}
@@ -284,7 +307,20 @@ export default function App() {
               <div className="flex items-center gap-2 pl-1.5 border-l border-gray-200 ml-0.5">
                 <div className="hidden sm:flex flex-col items-end leading-tight">
                   <span className="text-xs font-medium text-gray-700">{me.display_name || me.username}</span>
-                  <span className="text-[10px] text-gray-400">{me.role}</span>
+                  <span className="text-[10px] text-gray-400">
+                    {me.role}
+                    {me.business_role && (
+                      <>
+                        {' · '}
+                        <span
+                          className="text-amber-600"
+                          title={`业务岗位：${me.business_role_label || me.business_role}（决定可见哪些智能体）`}
+                        >
+                          {me.business_role_label || me.business_role}
+                        </span>
+                      </>
+                    )}
+                  </span>
                 </div>
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-zhiyan-500 to-zhiyan-700 flex items-center justify-center text-white text-xs font-bold">
                   {((me.display_name || me.username) || '?').slice(0, 1).toUpperCase()}
@@ -490,6 +526,9 @@ export default function App() {
           {tab === 'symbiosis' && <FeedbackPanel />}
           {tab === 'caselib' && <CaseLibraryPanel />}
           {tab === 'presetlib' && <PresetLibraryPanel />}
+          {tab === 'permission' && me && ADMIN_ROLES.has(String(me.role).toLowerCase()) && (
+            <UserPermissionPanel me={me} />
+          )}
         </main>
       )}
 

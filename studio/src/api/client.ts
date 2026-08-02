@@ -36,6 +36,14 @@ export interface AuthUser {
   role: string;
   tenant_id: string;
   auth_source: string;
+  /** 权限第③层：业务岗位（未设置 → null，表示不限制） */
+  business_role?: string | null;
+  business_role_label?: string | null;
+  capability_scope?: {
+    allowed_agents?: string[];
+    read_only_agents?: string[];
+    data_scope?: Record<string, unknown>;
+  } | null;
 }
 
 export function authHeaders(extra?: Record<string, string>, key?: string | null): Record<string, string> {

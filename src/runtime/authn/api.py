@@ -92,25 +92,54 @@ async def backend_status(_: dict = Depends(get_current_user)):
     }
 
 
+def _is_super(u: dict) -> bool:
+    return str(u.get("role", "")).lower() == "superadmin"
+
+
+def _scoped_tenant(actor: dict, requested: str | None) -> str | None:
+    """租户作用域收敛：非 superadmin 一律强制锁定到自己的租户。
+
+    🔴 修复越权：此前 tenant_admin 调 `GET /authn/users`（不带 tenant_id）
+    会列出**全平台**用户，跨企业泄漏账号清单。
+    """
+    if _is_super(actor):
+        return requested  # 平台管理员可跨租户（None = 全部）
+    return actor.get("tenant_id") or "default"
+
+
+async def _assert_same_tenant(actor: dict, user_id: str) -> dict:
+    """确认被操作用户与操作者同租户（superadmin 除外）。跨租户一律 404（不泄露存在性）。"""
+    target = await authn_service.get_user(user_id)
+    if not target:
+        raise HTTPException(status_code=404, detail="用户不存在")
+    if not _is_super(actor) and target.get("tenant_id") != actor.get("tenant_id"):
+        raise HTTPException(status_code=404, detail="用户不存在")
+    return target
+
+
 @router.get("/users")
 async def list_users(
     tenant_id: str | None = Query(None),
-    _: dict = Depends(require_role("tenant_admin")),
+    actor: dict = Depends(require_role("tenant_admin")),
 ):
-    """列出用户（租户管理员及以上）。"""
-    users = await authn_service.list_users(tenant_id)
+    """列出用户（租户管理员及以上；非 superadmin 强制只见本租户）。"""
+    users = await authn_service.list_users(_scoped_tenant(actor, tenant_id))
     return {"total": len(users), "users": users}
 
 
 @router.post("/users")
-async def create_user(req: CreateUserRequest, _: dict = Depends(require_role("tenant_admin"))):
-    """创建用户（租户管理员及以上）。"""
+async def create_user(req: CreateUserRequest, actor: dict = Depends(require_role("tenant_admin"))):
+    """创建用户（租户管理员及以上；非 superadmin 只能在本租户内建号）。"""
+    tenant_id = req.tenant_id if _is_super(actor) else (actor.get("tenant_id") or "default")
+    # 越权提升防线：租户管理员不得创建超级管理员
+    if not _is_super(actor) and str(req.role).lower() == "superadmin":
+        raise HTTPException(status_code=403, detail="租户管理员不可创建超级管理员")
     try:
         rec = await authn_service.create_user(
             username=req.username,
             password=req.password,
             role=req.role,
-            tenant_id=req.tenant_id,
+            tenant_id=tenant_id,
             email=req.email,
             display_name=req.display_name,
             business_role=req.business_role,
@@ -148,13 +177,15 @@ async def list_business_roles(
 async def set_capability(
     user_id: str,
     req: SetCapabilityRequest,
-    _: dict = Depends(require_role("tenant_admin")),
+    actor: dict = Depends(require_role("tenant_admin")),
 ):
     """设置用户的业务角色 / 功能作用域（权限第③层，租户管理员及以上）。
 
     - 传 business_role 不传 capability_scope → 自动套用权限模板库标准作用域；
-    - business_role 传空串 → 清空限制（恢复全部智能体可见）。
+    - business_role 传空串 → 清空限制（恢复全部智能体可见）；
+    - 非 superadmin 只能改**本租户**用户（跨租户 404）。
     """
+    await _assert_same_tenant(actor, user_id)
     try:
         rec = await authn_service.set_capability(
             user_id,

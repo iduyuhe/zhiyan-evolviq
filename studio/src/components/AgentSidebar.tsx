@@ -21,15 +21,22 @@ export default function AgentSidebar({ agents, current, onSelect, onItemClick }:
     });
   };
 
+  // 权限第③层：agents 由 /authn/my-agents 过滤后传入。
+  // 分组必须按「实际可见」计数并隐藏空组，否则受限岗位会看到 (9) 却只列出 3 个。
+  const visibleIds = new Set(agents.map((a) => a.id));
+  const visibleGroups = Object.entries(SCENARIO_GROUPS)
+    .map(([key, group]) => [key, group, group.agents.filter((id) => visibleIds.has(id))] as const)
+    .filter(([, , ids]) => ids.length > 0);
+
   return (
     <div className="p-3">
       <div className="flex items-center justify-between px-1 mb-3">
         <h3 className="text-sm font-semibold text-gray-900">选择 Agent</h3>
-        <span className="text-[10px] text-gray-400">{agents.length} · {Object.keys(SCENARIO_GROUPS).length} 场景</span>
+        <span className="text-[10px] text-gray-400">{agents.length} · {visibleGroups.length} 场景</span>
       </div>
 
       <div className="space-y-3">
-        {Object.entries(SCENARIO_GROUPS).map(([groupKey, group]) => (
+        {visibleGroups.map(([groupKey, group, groupAgentIds]) => (
           <div key={groupKey}>
             <button
               type="button"
@@ -39,11 +46,11 @@ export default function AgentSidebar({ agents, current, onSelect, onItemClick }:
               <span className="text-[10px] text-gray-400 w-3 flex-shrink-0">{collapsedGroups.has(groupKey) ? '▸' : '▾'}</span>
               <span className="text-sm">{group.icon}</span>
               <span className="text-xs font-semibold text-gray-500">{group.label}</span>
-              <span className="text-[10px] text-gray-400">({group.agents.length})</span>
+              <span className="text-[10px] text-gray-400">({groupAgentIds.length})</span>
             </button>
             {!collapsedGroups.has(groupKey) && (
             <div className="space-y-1">
-              {group.agents.map((agentId) => {
+              {groupAgentIds.map((agentId) => {
                 const agent = agents.find((a) => a.id === agentId);
                 if (!agent) return null;
                 const isCurrent = current === agentId;

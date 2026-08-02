@@ -35,6 +35,10 @@ CASE_TENANTS: list[dict] = [
         "admin_display": "通讯研究案例管理员",
         "viewer_user": "telecom_viewer",
         "viewer_display": "通讯研究案例观察员",
+        # 权限第③层：岗位（business_role）+ 行业模板键
+        "permission_industry": "telecom_equipment",
+        "admin_business_role": "plant_manager",     # 厂长视角：全量可见（含成本/驾驶舱）
+        "viewer_business_role": "supply_manager",   # 供应链经理：看不到成本分析/财务驾驶舱
     },
     {
         "tenant_id": "semicon",
@@ -45,6 +49,10 @@ CASE_TENANTS: list[dict] = [
         "admin_display": "半导体研究案例管理员",
         "viewer_user": "semicon_viewer",
         "viewer_display": "半导体研究案例观察员",
+        # 权限第③层：岗位（business_role）+ 行业模板键
+        "permission_industry": "semiconductor_fab",
+        "admin_business_role": "plant_manager",     # 厂长视角：全量可见
+        "viewer_business_role": "device_engineer",  # 设备工程师：无成本类，但半导体模板额外可读良率
     },
 ]
 
@@ -61,6 +69,41 @@ def default_password(username: str) -> str:
         or os.environ.get("ZHIYAN_CASE_PW", "")
         or f"Zhiyan@{username}2026"
     )
+
+
+def _scope_of(business_role: str | None, industry: str | None) -> dict | None:
+    """按岗位 + 行业取权限模板库的标准作用域；取不到则 None（= 全放行，向后兼容）。"""
+    if not business_role:
+        return None
+    try:
+        from src.presets.permission_templates import scope_for_business_role
+
+        return scope_for_business_role(business_role, industry=industry)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("⚠️ 权限模板取用失败（降级为全放行）：%s/%s → %s", business_role, industry, e)
+        return None
+
+
+async def _apply_capability(username: str, business_role: str | None, scope: dict | None) -> bool:
+    """给"已存在"的账号幂等补齐岗位作用域；已一致则跳过。失败绝不阻断启动。"""
+    if not business_role:
+        return False
+    try:
+        from src.runtime.authn.service import authn_service
+
+        rec = await authn_service._load(username)
+        if not rec:
+            return False
+        if rec.get("business_role") == business_role:
+            return False
+        await authn_service.set_capability(
+            rec["id"], business_role=business_role, capability_scope=scope
+        )
+        logger.info("🔐 研究案例账号岗位已补齐：%s → %s", username, business_role)
+        return True
+    except Exception as e:  # noqa: BLE001
+        logger.warning("⚠️ 补齐岗位失败（不阻断启动）：%s → %s", username, e)
+        return False
 
 
 def _build_profile(spec: dict, case: dict | None) -> dict:
@@ -129,20 +172,32 @@ async def seed_case_tenants() -> dict:
         else:
             logger.info("🏢 研究案例租户已存在（跳过）：%s", tid)
 
-        for uname, role, disp in (
-            (spec["admin_user"], "tenant_admin", spec["admin_display"]),
-            (spec["viewer_user"], "viewer", spec["viewer_display"]),
+        industry = spec.get("permission_industry")
+        for uname, role, disp, biz_role in (
+            (spec["admin_user"], "tenant_admin", spec["admin_display"], spec.get("admin_business_role")),
+            (spec["viewer_user"], "viewer", spec["viewer_display"], spec.get("viewer_business_role")),
         ):
             pw = default_password(uname)
+            scope = _scope_of(biz_role, industry)
             try:
                 await authn_service.create_user(
                     username=uname, password=pw, role=role,
                     tenant_id=tid, display_name=disp,
+                    business_role=biz_role, capability_scope=scope,
                 )
-                item["accounts"].append({"username": uname, "role": role, "password": pw})
-                logger.info("👤 研究案例账号已建：%s（%s）", uname, role)
+                item["accounts"].append(
+                    {"username": uname, "role": role, "password": pw, "business_role": biz_role}
+                )
+                logger.info("👤 研究案例账号已建：%s（%s / 岗位 %s）", uname, role, biz_role or "未设")
             except ValueError:
-                item["accounts"].append({"username": uname, "role": role, "password": None})
+                # 已存在：幂等补齐权限第③层岗位（生产上已建号的账号也能被"升级"）
+                applied = await _apply_capability(uname, biz_role, scope)
+                item["accounts"].append(
+                    {
+                        "username": uname, "role": role, "password": None,
+                        "business_role": biz_role, "capability_backfilled": applied,
+                    }
+                )
 
         # 企业画像（匿名，标注研究案例来源）
         case = None

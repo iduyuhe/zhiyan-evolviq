@@ -15,6 +15,7 @@
 
 import json
 import os
+import uuid
 
 import pytest
 
@@ -35,28 +36,51 @@ def _assert_no_leak(result, where: str):
         assert tok not in blob, f"❌ {where} 外泄真实锚定名片段 {tok!r}"
 
 
+_TMP_ARTIFACTS = ("enterprise_profiles.json", "credential_vault.json", "vault.key")
+
+
+def _purge_tmp_artifacts(target_dir: str):
+    """尽力清理产物文件，**绝不做目录级 rmtree**，且失败不阻断。
+
+    隔离性由「每个用例一个全新子目录」保证，本函数只是顺手回收磁盘。
+    受控/沙箱环境常拦截删除（回收站不可用 fail-closed、批量删除阈值保护），
+    目录级删除被拦时甚至会抛 SystemExit 打断整个测试会话——那是环境噪音，
+    不该伪装成业务回归，所以这里连 BaseException 一起吞掉。
+    """
+    for fname in _TMP_ARTIFACTS:
+        fp = os.path.join(target_dir, fname)
+        if os.path.exists(fp):
+            try:
+                os.remove(fp)
+            except BaseException:  # noqa: BLE001
+                pass
+
+
 @pytest.fixture(autouse=True)
 def _isolate_store():
-    """每个用例前重置进程级单例 + 清空 tmp vault。
+    """每个用例分配**全新的独立目录** + 重置进程级单例。
 
     单例重置后，同步给已加载的 API 模块（enterprise.py 静态 import 了单例），
-    保证 API 端点也指向新的 tmp 隔离实例。显式传 path 以隔离到 _TMP，
-    不依赖 _DATA_DIR 在模块导入期是否已被捕获。
-    """
-    import shutil
+    保证 API 端点也指向新的隔离实例。显式传 path，不依赖 _DATA_DIR
+    在模块导入期是否已被捕获。
 
-    if os.path.exists(_TMP):
-        shutil.rmtree(_TMP)
-    os.makedirs(_TMP, exist_ok=True)
+    隔离策略（2026-08-01 改）：过去靠「每次删空同一个 tmp 目录」实现隔离，
+    在拦截删除的受控环境里会退化成用例间互相污染甚至打断会话。
+    现在改为每个用例一个唯一子目录——隔离不再依赖删除是否成功。
+    """
+    case_dir = os.path.join(_TMP, uuid.uuid4().hex[:12])
+    os.makedirs(case_dir, exist_ok=True)
+    os.environ["ZHIYAN_ENTERPRISE_DATA_DIR"] = case_dir
+
     from src.runtime import enterprise_store
 
-    enterprise_store._DATA_DIR = _TMP  # 覆盖模块级常量，兜底
+    enterprise_store._DATA_DIR = case_dir  # 覆盖模块级常量，兜底
     enterprise_store.profile_store = enterprise_store.EnterpriseProfileStore(
-        path=os.path.join(_TMP, "enterprise_profiles.json")
+        path=os.path.join(case_dir, "enterprise_profiles.json")
     )
     enterprise_store.credential_vault = enterprise_store.CredentialVault(
-        path=os.path.join(_TMP, "credential_vault.json"),
-        key_path=os.path.join(_TMP, "vault.key"),
+        path=os.path.join(case_dir, "credential_vault.json"),
+        key_path=os.path.join(case_dir, "vault.key"),
     )
     try:
         import src.runtime.api.enterprise as ent
@@ -66,8 +90,7 @@ def _isolate_store():
     except ImportError:
         pass
     yield
-    if os.path.exists(_TMP):
-        shutil.rmtree(_TMP)
+    _purge_tmp_artifacts(case_dir)
 
 
 # ===== 1. 注册表 + 路由 =====
