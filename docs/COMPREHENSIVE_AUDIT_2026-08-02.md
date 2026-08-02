@@ -403,4 +403,6 @@ cd studio && node_modules/typescript/bin/tsc --noEmit   # EXIT=0
 ### 11.3 验证
 
 - wecom 专项 **8 passed**（未配置降级/token 缓存/签名确定性/push payload/API 503）。
-- 全量回归（待最终确认）。
+- 全量回归 **586 passed / 0 failed**（578 + 8 新 wecom）。
+- 核心部署 `6fed8bc`；双入口 smoke PASS。
+- **线上实证**（telecom_admin）：`GET /wecom/status` → `configured:false` / `mode:unconfigured` / 三凭证位全 false（优雅降级零影响）；`POST /wecom/jsapi-signature` → **503**（未配置拒绝，符合预期）。
