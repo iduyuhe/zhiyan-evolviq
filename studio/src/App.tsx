@@ -286,12 +286,13 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white [overflow-x:clip]">
       {/* 顶栏 */}
       <header className="border-b border-gray-200 bg-white/80 backdrop-blur-md sticky top-0 z-20 shadow-sm">
-        <div className="max-w-[1400px] mx-auto px-4 h-16 flex items-center justify-between gap-2">
+        {/* 移动端：flex-wrap + order 让 Tab 条整行落到第二行；桌面 lg:flex-nowrap 恢复三栏(品牌|Tab居中|右侧) */}
+        <div className="max-w-[1400px] mx-auto px-4 py-2 lg:py-0 lg:h-16 flex flex-wrap items-center justify-between gap-2 lg:gap-2">
           {/* 左：品牌 */}
-          <div className="flex items-center gap-2.5 flex-shrink-0">
+          <div className="flex items-center gap-2.5 flex-shrink-0 order-1">
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-zhiyan-500 to-zhiyan-700 flex items-center justify-center text-white text-sm font-bold shadow-md">
               智
             </div>
@@ -301,8 +302,8 @@ export default function App() {
             </div>
           </div>
 
-          {/* 中：Tab + Agent选择器 */}
-          <div className="flex items-center gap-2 flex-1 min-w-0 justify-center">
+          {/* 中：Tab + Agent选择器 —— 手机整行(basis-full)，桌面居中(flex-1) */}
+          <div className="flex items-center gap-2 flex-1 min-w-0 justify-center order-3 lg:order-2 basis-full lg:basis-auto lg:flex-1 lg:min-w-0 mt-1 lg:mt-0">
             <div className="flex items-center bg-gray-100 rounded-lg p-0.5 gap-0.5 overflow-x-auto max-w-full">
               {[
                 { key: 'studio' as Tab, label: 'Studio', icon: '🤖' },
@@ -335,7 +336,7 @@ export default function App() {
                   // F2：把当前激活 Tab 的 DOM 存起来，切换后自动滚动居中，
                   // 避免 Tab 条横向滚动后「激活项在视野外 / 点到相邻项」的错点。
                   ref={(el) => { if (tab === t.key) activeTabRef.current = el; }}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
+                  className={`px-3 py-2 lg:py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
                     tab === t.key
                       ? 'bg-white text-zhiyan-600 shadow-sm'
                       : 'text-gray-500 hover:text-gray-700'
@@ -349,7 +350,7 @@ export default function App() {
           </div>
 
           {/* 右：租户切换 + 通知 + 用户 */}
-          <div className="flex items-center gap-1 flex-shrink-0">
+          <div className="flex items-center gap-1 flex-shrink-0 order-2 lg:order-3">
             <TenantSwitcher onManage={() => setTab('tenant')} />
             <NotificationBell />
             {me && (
@@ -629,7 +630,7 @@ export default function App() {
           )}
         </div>
       ) : (
-        <main className="max-w-3xl mx-auto px-4 py-8 space-y-4">
+        <main className="max-w-3xl mx-auto px-4 py-8 space-y-4 overflow-x-auto">
           {tab === 'monitor' && (<><DeviceMonitor /><AlertPanel /></>)}
           {tab === 'tacit' && <TacitCapturePanel />}
           {tab === 'bluearc' && <BlueArcPanel />}

@@ -169,7 +169,7 @@ function getDFMTabs(result: any) {
       label: '概览',
       content: (
         <div className="space-y-3">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <StatCard label="评级" value={result.overall_grade} color={gradeColor} />
             <StatCard label="总检查项" value={result.total_checks || 0} />
             <StatCard label="不合格" value={result.fail_count || 0} color="text-red-600" />
@@ -206,7 +206,7 @@ function getBOMTabs(result: any) {
       label: '目标器件',
       content: (
         <div className="space-y-3">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <StatCard label="当前单价" value={`$${result.target_component?.unit_price || 0}`} />
             <StatCard label="生命周期" value={result.target_component?.lifecycle || ''} />
             <StatCard label="交期" value={`${result.target_component?.lead_time || 0}天`} />
@@ -238,7 +238,7 @@ function getBOMTabs(result: any) {
       label: '成本分析',
       content: (
         <div className="space-y-3">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <StatCard label="年用量" value={result.cost_analysis?.annual_qty || 0} unit="pcs" />
             <StatCard label="年节省" value={`$${result.cost_analysis?.annual_savings_usd || 0}`} color="text-green-600" />
             <StatCard label="节省比例" value={`${result.cost_analysis?.savings_pct || 0}%`} color="text-green-600" />
@@ -255,7 +255,7 @@ function getOEETabs(result: any) {
       label: 'OEE总览',
       content: (
         <div className="space-y-3">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <StatCard label="平均OEE" value={`${result.avg_oee || 0}%`} color={(result.avg_oee || 0) >= 85 ? 'text-green-600' : 'text-amber-600'} />
             <StatCard label="目标" value={`${result.oee_target || 85}%`} />
             <StatCard label="差距" value={`${result.gap_to_target || 0}%`} color={(result.gap_to_target || 0) < 0 ? 'text-red-600' : 'text-green-600'} />
@@ -274,7 +274,7 @@ function getOEETabs(result: any) {
                 <p className="text-sm font-medium text-gray-900">{l.line_name}</p>
                 <Badge status={l.status}>{l.oee}%</Badge>
               </div>
-              <div className="grid grid-cols-3 gap-2 text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                 <span className="text-gray-600">可用率: <span className="font-medium text-gray-900">{l.availability}%</span></span>
                 <span className="text-gray-600">性能率: <span className="font-medium text-gray-900">{l.performance}%</span></span>
                 <span className="text-gray-600">质量率: <span className="font-medium text-gray-900">{l.quality}%</span></span>
@@ -298,7 +298,7 @@ function getECOTabs(result: any) {
       label: '变更概览',
       content: (
         <div className="space-y-3">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <StatCard label="优先级" value={result.priority || ''} color={result.priority === 'high' ? 'text-red-600' : 'text-amber-600'} />
             <StatCard label="库存暴露" value={`$${(result.inventory_exposure_usd || 0).toLocaleString()}`} color="text-red-600" />
             <StatCard label="年节省" value={`$${(result.annual_savings_usd || 0).toLocaleString()}`} color="text-green-600" />
@@ -355,7 +355,7 @@ function getChangeoverTabs(result: any) {
       label: '换线计划',
       content: (
         <div className="space-y-3">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <StatCard label="预估时间" value={`${result.estimated_time_min || 0}min`} />
             <StatCard label="历史平均" value={`${result.avg_history_time_min || 0}min`} />
             <StatCard label="SMED优化后" value={`${result.optimized_time_min || 0}min`} color="text-green-600" />
@@ -405,7 +405,7 @@ function getAOITabs(result: any) {
       label: '误报概览',
       content: (
         <div className="space-y-3">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <StatCard label="当前误报率" value={`${result.false_alarm_rate || 0}%`} color="text-red-600" />
             <StatCard label="优化后" value={`${result.optimized_false_alarm_rate || 0}%`} color="text-green-600" />
             <StatCard label="复判工时" value={`${result.operator_review_time_min || 0}min`} />
@@ -450,7 +450,7 @@ function getIPCTabs(result: any) {
             <p className="text-sm font-medium text-gray-900 mb-2">{j.defect_type || '缺陷判定'}</p>
             <p className="text-sm text-gray-700">{j.explanation || ''}</p>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div className="bg-gray-50 rounded-lg p-3">
               <p className="text-xs text-gray-500 mb-1">Class 1 (通用)</p>
               <p className="text-sm font-medium text-gray-900">{j.class_1_limit || 'N/A'}</p>
@@ -498,7 +498,7 @@ function getAPSTabs(result: any) {
       label: '排程总览',
       content: (
         <div className="space-y-3">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <StatCard label="产能负荷" value={`${result.avg_utilization || 0}%`} color={(result.avg_utilization || 0) >= 85 ? 'text-red-600' : 'text-green-600'} />
             <StatCard label="交期准时率" value={`${result.on_time_rate || 0}%`} color={(result.on_time_rate || 0) >= 90 ? 'text-green-600' : 'text-amber-600'} />
             <StatCard label="瓶颈" value={result.bottleneck_wc?.slice(-3) || ''} color="text-red-600" />
@@ -555,7 +555,7 @@ function getEnergyTabs(result: any) {
       label: '碳概览',
       content: (
         <div className="space-y-3">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <StatCard label="周能耗" value={`${((result.total_energy_kwh || 0) / 1000).toFixed(0)}MWh`} />
             <StatCard label="碳排放" value={`${result.total_carbon_t || 0}t`} color="text-red-600" />
             <StatCard label="绿电比例" value={`${result.green_ratio || 0}%`} color={(result.green_ratio || 0) >= 30 ? 'text-green-600' : 'text-amber-600'} />
@@ -610,7 +610,7 @@ function getCostTabs(result: any) {
       label: '成本总览',
       content: (
         <div className="space-y-3">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <StatCard label="平均单位成本" value={`¥${result.avg_unit_cost || 0}`} />
             <StatCard label="平均毛利率" value={`${result.avg_margin_pct || 0}%`} color={(result.avg_margin_pct || 0) >= 25 ? 'text-green-600' : 'text-amber-600'} />
             <StatCard label="超目标" value={result.over_target_count || 0} color="text-red-600" />
@@ -681,7 +681,7 @@ function getDemandTabs(result: any) {
       label: '需求总览',
       content: (
         <div className="space-y-3">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <StatCard label="本季需求" value={`${result.total_forecast || 0}万片`} />
             <StatCard label="已接订单" value={`${result.total_booked || 0}万片`} />
             <StatCard label="未交付" value={`${result.total_backlog || 0}万片`} color={(result.total_backlog || 0) > 30 ? 'text-red-600' : 'text-amber-600'} />
@@ -739,7 +739,7 @@ function getWmsTabs(result: any) {
       label: '库存总览',
       content: (
         <div className="space-y-3">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <StatCard label="库存总额" value={`${result.total_stock_value_wan || 0}万`} />
             <StatCard label="加权周转" value={`${result.turnover || 0}次`} />
             <StatCard label="呆滞占比" value={`${result.obsolete_pct || 0}%`} color={(result.obsolete_pct || 0) > 5 ? 'text-amber-600' : 'text-green-600'} />
@@ -793,7 +793,7 @@ function getComplianceTabs(result: any) {
       label: '合规概览',
       content: (
         <div className="space-y-3">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <StatCard label="有效认证" value={result.valid_certs || 0} />
             <StatCard label="进行中" value={result.in_progress_certs || 0} color="text-amber-600" />
             <StatCard label="未关闭发现" value={result.open_findings || 0} color={(result.open_findings || 0) > 0 ? 'text-red-600' : 'text-green-600'} />
@@ -847,7 +847,7 @@ function getExecutiveTabs(result: any) {
       label: '经营总览',
       content: (
         <div className="space-y-3">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <StatCard label="季度营收" value={`${result.revenue_quarter || 0}万`} />
             <StatCard label="毛利率" value={`${result.gross_margin_pct || 0}%`} color={(result.gross_margin_pct || 0) >= 30 ? 'text-green-600' : 'text-amber-600'} />
             <StatCard label="净利率" value={`${result.net_margin_pct || 0}%`} />
@@ -863,7 +863,7 @@ function getExecutiveTabs(result: any) {
       label: '产出',
       content: (
         <div className="space-y-2">
-          <div className="grid grid-cols-4 gap-3 mb-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
             <StatCard label="产出完成率" value={`${result.prod_completion_pct || 0}%`} color={(result.prod_completion_pct || 0) >= 95 ? 'text-green-600' : 'text-amber-600'} />
             <StatCard label="超预算部门" value={result.overspend_depts || 0} color={(result.overspend_depts || 0) > 0 ? 'text-red-600' : 'text-green-600'} />
             <StatCard label="订单未交付" value={`${result.order_backlog_value || 0}万`} color="text-amber-600" />
@@ -905,7 +905,7 @@ function getNpiTabs(result: any) {
       label: '项目总览',
       content: (
         <div className="space-y-3">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <StatCard label="NPI项目" value={result.total_projects || 0} />
             <StatCard label="覆盖阶段" value={`${result.stage_coverage || 0}个`} />
             <StatCard label="按时项目" value={result.on_schedule_count || 0} color="text-green-600" />
@@ -944,7 +944,7 @@ function getProcurementTabs(result: any) {
       label: '采购总览',
       content: (
         <div className="space-y-3">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <StatCard label="供应商" value={result.supplier_count || 0} />
             <StatCard label="平均评分" value={result.avg_score || 0} color={(result.avg_score || 0) >= 80 ? 'text-green-600' : 'text-amber-600'} />
             <StatCard label="低绩效" value={result.low_performer_count || 0} color={(result.low_performer_count || 0) > 0 ? 'text-red-600' : 'text-green-600'} />
