@@ -85,4 +85,5 @@
 - 刀3 决策引擎 + 决策事件：✅ 完成（新 `src/runtime/decision.py`：DecisionProposal 结构=候选动作+多目标权衡(成本/交期/风险/质量/合规)+约束校验(治理前置，不通过抑制推荐)+证据链(case_id/kg_node 零真名)；DecisionStore 决策事件持久化(SQLite 复用 writeback 同源韧性降级)+`north_star()` 北极星=决策实时化率 executed/total(MVP 0.40/稳态 0.85，不 round 保全精度)；`build_proposal` 约束前置抑制；`tests/test_decision.py` 8 测全绿；**全量 635 测 0 回归**；纯后端未部署）。
 - 刀4 自我进化闭环：
   - 迭代1（评估信号采集）：✅ 完成（新 `src/runtime/evolution_loop.py`：EvaluationSignal 归一信号 dataclass + EvolutionLoop.collect 从 consequence(蓝弧) + feedback_store(共生环) 挖存量采集、去重、SQLite 持久化(韧性降级纯内存)、stats 分源统计；路由规则 validated→阈值/contradicted→技能/关联事实→图谱、like→记忆/dislike→阈值/idea→技能；零真名：执行信号不携业务数字、反馈信号含 LEAK_TOKENS 残留一律丢弃；`feedback_store.py` 加 `list_all()` 只读方法（1 处小改）；`tests/test_evolution_iter1.py` 8 测全绿；纯后端未部署）。
-  - 迭代2（资产更新通道 + L0→L3 阶梯）：⚪ 未开始（按串行纪律，迭代1 验证通过后开迭代2）。
+  - 迭代2（资产更新通道 + L0→L3 阶梯）：✅ 完成（evolution_loop.py 加 `AssetUpdateIntent` + `apply_signals`（信号→四类资产通道：记忆→experience.record_feedback 真实回灌 / 图谱→记录置信调整提议 / 技能→复盘候选 / 阈值→strategy_tuner.suggest 仅提议，绝不自动应用，status 全 proposed）+ `_make_intent` 幂等 + `evolution_ladder()` L0→L3 可观测（L1 已采集/L2 已产意图/L3 跨≥2 agent 复利）；SQLite 持久化(韧性降级纯内存)；`tests/test_evolution_iter2.py` 7 测全绿；纯后端未部署）。
+  - **刀4 自我进化闭环：✅ 全刀完成（迭代1/2 单测全绿 + 挖存量 consequence/feedback_store/experience/strategy_tuner，零真名，符合串行纪律）**。
