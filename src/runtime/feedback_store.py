@@ -191,6 +191,10 @@ class FeedbackStore:
         out.sort(key=lambda d: d["created_at"] or "", reverse=True)
         return out
 
+    def list_all(self) -> list[dict]:
+        """平台级全量反馈读取（供自我进化环采集评估信号用，只读、不暴露 PII 原文）。"""
+        return [fb.to_dict() for fb in self._by_id.values()]
+
     # ---------- 审核门：脱敏 → 提报开源 Issue ----------
     async def escalate(self, fb_id: str, reviewer: str, tenant_name: str = "") -> dict:
         """脱敏审核门：把反馈转为 GitHub Issue（from-customer），回链 + 写响应时刻。
