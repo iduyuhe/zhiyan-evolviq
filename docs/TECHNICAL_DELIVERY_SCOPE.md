@@ -87,3 +87,16 @@
   - 迭代1（评估信号采集）：✅ 完成（新 `src/runtime/evolution_loop.py`：EvaluationSignal 归一信号 dataclass + EvolutionLoop.collect 从 consequence(蓝弧) + feedback_store(共生环) 挖存量采集、去重、SQLite 持久化(韧性降级纯内存)、stats 分源统计；路由规则 validated→阈值/contradicted→技能/关联事实→图谱、like→记忆/dislike→阈值/idea→技能；零真名：执行信号不携业务数字、反馈信号含 LEAK_TOKENS 残留一律丢弃；`feedback_store.py` 加 `list_all()` 只读方法（1 处小改）；`tests/test_evolution_iter1.py` 8 测全绿；纯后端未部署）。
   - 迭代2（资产更新通道 + L0→L3 阶梯）：✅ 完成（evolution_loop.py 加 `AssetUpdateIntent` + `apply_signals`（信号→四类资产通道：记忆→experience.record_feedback 真实回灌 / 图谱→记录置信调整提议 / 技能→复盘候选 / 阈值→strategy_tuner.suggest 仅提议，绝不自动应用，status 全 proposed）+ `_make_intent` 幂等 + `evolution_ladder()` L0→L3 可观测（L1 已采集/L2 已产意图/L3 跨≥2 agent 复利）；SQLite 持久化(韧性降级纯内存)；`tests/test_evolution_iter2.py` 7 测全绿；纯后端未部署）。
   - **刀4 自我进化闭环：✅ 全刀完成（迭代1/2 单测全绿 + 挖存量 consequence/feedback_store/experience/strategy_tuner，零真名，符合串行纪律）**。
+
+## 8. 对外可见阶段（2026-08-03 杜总指令：双入口部署 / 前端角标 / 案例库扩锚定）
+
+- 触发条件：四刀技术落地全刀完成（650 测 0 回归），进入「对外可见」——延迟部署纪律解除，核心+边缘双入口上线。
+- 案例库扩锚定（适度补缺）：✅ 完成。通讯/3C/新能源 各补到 5（国际3+国内2），共 +12；半导体不动（10 满额）。每行业配额=国际≤5+国内≤5=≤10（铁律）。新锚 case_id 全部**匿名化**（无公司名片段，规避 LEAK_TOKENS 命中）；对外字段(subject_anon/derived_insights/disclosure_facts)零真名；real_anchor 仅 internal 视图。案例库总量=25（半导体10+通讯5+3C5+新能源5）。
+- 前端常驻角标：✅ 完成。`studio/src/App.tsx` 右下角常驻「智衍 · 决策孪生 v{版本}」（非交互、不挡 UI）；版本经 vite `define __APP_VERSION__`（Docker build-arg GIT_SHA / 本地 git HEAD）注水印 = `2f0c5cc`。
+- 双入口部署：✅ 完成。
+  - 核心 `http://43.153.172.52:3006`：`_push_sync.py --deploy`（bundle→SCP→服务器 reset→build runtime+studio→up），GitHub 同步 OK。
+  - 边缘 `https://zhiyan.weomnitech.com.cn`：`edge_sync_release.py`（本地 `vite build` → 上传 dist → 切软链，失败自动回滚），校验骨架屏+版本水印+/api/health=200 通过。
+  - 双端 `smoke_check.py` 均 PASS（前端不会白屏，三层防御生效）。
+  - 活体校验：/cases/library 返回 25 个锚（12 新锚全在），逐案例 payload 扫描 LEAK_TOKENS + `real_anchor` = **零命中**。
+- 全量回归：✅ `pytest` 652 passed（1 条 asyncio teardown 警告，非失败）。
+- 纪律校验：✅ 白屏三层防御、鉴权三铁律、配额铁律、零真名铁律、vite 先 commit 再 build、部署后 smoke_check 全部遵守。
