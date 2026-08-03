@@ -45,6 +45,36 @@ def test_kg_build_basic():
     assert len(semicon_comp) >= 5, f"半导体对标边应≥5，实际 {len(semicon_comp)}"
 
 
+def test_kg_supplies_topology():
+    """刀1 迭代2：价值链拓扑生成 SUPPLIES 供应边（开放获取产业常识，跨节点）。"""
+    g = build_from_cases(DEFAULT_CASES)
+    supplies = [e for e in g.edges if e.relation == "SUPPLIES"]
+    assert supplies, "半导体价值链拓扑应生成 SUPPLIES 边"
+
+    # 每条 SUPPLIES 的 source 须是上游节点企业锚、target 须是下游节点企业锚
+    node_by_id = {n.id: n for n in g.nodes}
+    for e in supplies:
+        s, t = node_by_id[e.source], node_by_id[e.target]
+        assert s.props.get("industry_key") == "semiconductor"
+        assert t.props.get("industry_key") == "semiconductor"
+        assert e.props.get("upstream_node") is not None
+        assert s.props.get("node_category") == e.props["upstream_node"], \
+            "SUPPLIES source 须属于上游节点类别"
+        assert t.props.get("node_category") == e.props["downstream_node"], \
+            "SUPPLIES target 须属于下游节点类别"
+
+    # 方向校验：设计→代工、设备→代工、设备→封测、代工→封测 均应存在
+    pairs = {(e.props["upstream_node"], e.props["downstream_node"]) for e in supplies}
+    for expect in [("设计", "代工"), ("设备", "代工"),
+                   ("设备", "封测"), ("代工", "封测")]:
+        assert expect in pairs, f"缺失 SUPPLIES 方向 {expect}"
+
+    # 不臆造未授权行业的供应关系（telecom/3c/new_energy 无拓扑声明）
+    other_ind = [e for e in supplies
+                 if node_by_id[e.source].props.get("industry_key") != "semiconductor"]
+    assert not other_ind, "SUPPLIES 不应出现在未声明拓扑的行业"
+
+
 def test_kg_zero_real_name_leak():
     """图谱对外序列化不得含任何真实锚定片段。"""
     g = build_from_cases(DEFAULT_CASES)

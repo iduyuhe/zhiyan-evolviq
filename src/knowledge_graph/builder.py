@@ -20,7 +20,11 @@ import re
 from dataclasses import dataclass, field, asdict
 from typing import Any, Dict, List
 
-from src.knowledge_graph.taxonomy import SPINE_LEVELS, RELATION_TYPES
+from src.knowledge_graph.taxonomy import (
+    SPINE_LEVELS,
+    RELATION_TYPES,
+    VALUE_CHAIN_TOPOLOGY,
+)
 
 # 价值链节点类别同义归并（仅 builder 内映射，不污染数据）
 _NODE_CATEGORY_ALIAS = {
@@ -157,5 +161,28 @@ def build_from_cases(cases: List[Dict[str, Any]]) -> KGGraph:
                     ent_ids[i], ent_ids[j], "COMPETES_WITH",
                     {"basis": "同价值链节点对标"},
                 ))
+
+    # 5) SUPPLIES：按价值链拓扑（开放获取产业常识）连接上下游企业锚。
+    #    拓扑 key 形如 f"{industry_key}|{node_category}"，与 enterprises_by_node 同构，
+    #    故可直接索引；仅对已在拓扑中声明的行业/节点生效（范围护栏：不臆造未授权行业）。
+    for up_key, down_keys in VALUE_CHAIN_TOPOLOGY.items():
+        up_ents = enterprises_by_node.get(up_key, [])
+        if not up_ents:
+            continue
+        up_cat = up_key.split("|", 1)[1]
+        for down_key in down_keys:
+            down_ents = enterprises_by_node.get(down_key, [])
+            if not down_ents:
+                continue
+            down_cat = down_key.split("|", 1)[1]
+            for s in up_ents:
+                for t in down_ents:
+                    if s == t:
+                        continue
+                    edges.append(KGEdge(
+                        s, t, "SUPPLIES",
+                        {"basis": "价值链拓扑供需", "upstream_node": up_cat,
+                         "downstream_node": down_cat},
+                    ))
 
     return KGGraph(nodes, edges)
