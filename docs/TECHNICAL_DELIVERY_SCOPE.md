@@ -81,4 +81,5 @@
 - 刀1 迭代2：✅ 完成（taxonomy 加 `VALUE_CHAIN_TOPOLOGY` 半导体 5 节点上下游拓扑常量；builder 据拓扑生成 `SUPPLIES` 供应边，连接上下游企业锚；新增 `test_kg_supplies_topology` 断言拓扑方向/零真名/不臆造未授权行业；共 5 测全绿；纯后端未部署）。
 - 刀1 迭代3：✅ 完成（新 `src/knowledge_graph/retrieval.py`：`get_graph()` 懒加载工厂 + `get_enterprises_by_node/get_competitors/get_upstream/get_downstream` 匿名检索视图 + `resolve_binding_target` 绑定钩子骨架；KGGraph 加 enterprises_by_node/competitors_of/upstream_of/downstream_of 方法；`tests/test_kg_iter3.py` 7 测全绿；对外零真名；纯后端未部署）。
 - **刀1 知识图谱升级：✅ 全刀完成（迭代1/2/3 单测全绿 + 全量 618 测试 0 回归，符合串行纪律）**。
-- 刀2/3/4：⚪ 未开始（按串行纪律，刀1 验证通过后开刀2）。
+- 刀2 行动层统一执行总线：✅ 完成（迭代1 = `src/runtime/action_bus.py` ActionBus wrapper 复用 TOOL_REGISTRY + ActionSpec + 闸门接口 confirm/authorize/rollback/receipt + 不可逆动作 `require_gate` 分类；迭代2 = 闸门接 `writeback.py` 审计三合一（pending 落盘可恢复），execute 即留审计 pending、rollback 取消未过账记录；`tests/test_action_bus.py` 9 测全绿；纯后端未部署）。
+- 刀3/4：⚪ 未开始（按串行纪律，刀2 验证通过后开刀3）。

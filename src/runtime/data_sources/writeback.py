@@ -257,6 +257,25 @@ class WritebackBridge:
 
     # ---------------- 查询 ----------------
 
+    def cancel_pending(self, record_id: str, tenant_id: str | None = None) -> dict:
+        """人工回滚：取消一条尚未发送的 pending 回写审计记录（落账本未过账前撤回）。
+
+        审计三合一：pending 在连接器不可达时落盘可恢复，故回滚须在 sent 之前；
+        一旦 sent（已写入业务系统账本）则不可撤销，符合「智衍不篡夺执行系统权威账本」。
+        """
+        before = len(self._pending)
+        self._pending = [
+            r for r in self._pending
+            if not (r.id == record_id
+                    and (tenant_id is None or r.tenant_id == tenant_id))
+        ]
+        removed = before - len(self._pending)
+        if removed:
+            self._db_remove(record_id)
+            logger.info(f"↩️ 回写审计记录已取消（未过账）：{record_id}")
+            return {"status": "cancelled", "record_id": record_id}
+        return {"status": "not_found", "record_id": record_id}
+
     def pending(self, tenant_id: str | None = None) -> list[dict]:
         if tenant_id:
             return [r.to_dict() for r in self._pending if r.tenant_id == tenant_id]
