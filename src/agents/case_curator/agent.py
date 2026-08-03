@@ -137,6 +137,7 @@ DEFAULT_CASES = [
         "industry": "通讯设备 / 信息通信",
         "industry_key": "telecom",  # 🔴 配额分组键（每行业 国际5+国内5）
         "real_anchor": "中兴通讯（000063.SZ）",  # 🔴 内部锚定真实上市公司，仅 internal 视图
+        "scope": "domestic",  # 2026-08-03 对外可见：显式标注国内范围，构成国际/国内对照
         "recommended_interfaces": [
             "industry_research",
             "executive_cockpit",
@@ -1225,6 +1226,7 @@ DEFAULT_CASES = [
         "industry": "消费电子 / 3C 精密制造",
         "industry_key": "consumer_electronics",  # 🔴 配额分组键（每行业 国际5+国内5）
         "real_anchor": "立讯精密（002475.SZ）",  # 🔴 内部锚定真实上市公司，仅 internal 视图
+        "scope": "domestic",  # 2026-08-03 对外可见：显式标注国内范围
         "recommended_interfaces": [
             "industry_research",
             "pm_maintenance",
@@ -1313,6 +1315,7 @@ DEFAULT_CASES = [
         "industry": "新能源 / 动力电池与储能",
         "industry_key": "new_energy",  # 🔴 配额分组键（每行业 国际5+国内5）
         "real_anchor": "宁德时代（300750.SZ）",  # 🔴 内部锚定真实上市公司，仅 internal 视图
+        "scope": "domestic",  # 2026-08-03 对外可见：显式标注国内范围
         "recommended_interfaces": [
             "industry_research",
             "pm_maintenance",
@@ -1391,6 +1394,386 @@ DEFAULT_CASES = [
                 "assertion_type": "descriptive",
                 "value_judgment": "high",
                 "key_figures": ["30%+", "数百台分容柜", "OEE"],
+            },
+        ],
+    },
+    # ══════════════════════════════════════════════════════════════════════════
+    # 2026-08-03 「对外可见」阶段 · 案例库扩锚定（适度补缺）
+    # 通讯 / 3C(consumer_electronics) / 新能源(new_energy) 各 +4（国际3 + 国内1），共 +12；
+    # 国内1 为新增，叠加既有国内锚（中兴/立讯/宁德，已显式标 scope=domestic）凑成 国内2，
+    # 故每行业 = 国际3 + 国内2 = 5，共 +12，不碰已满额的半导体（10）。
+    # 🔴 匿名铁律：对外字段(subject_anon/teaching_notes_anon/derived_insights/disclosure_facts)
+    #   严禁出现任何真实公司名/代码；real_anchor 仅 internal 视图。
+    # ══════════════════════════════════════════════════════════════════════════
+    {
+        "case_id": "case_telecom_global_1_2026",
+        "subject_anon": "某某全球通讯设备龙头（研究案例·公开披露·全球）",
+        "industry": "通讯设备 / 信息通信",
+        "industry_key": "telecom",
+        "real_anchor": "爱立信 Ericsson（ERIC B.ST / ERIC NASDAQ）",
+        "scope": "global",
+        "value_chain_node": "网络设备（全球交付）",
+        "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "compliance_q"],
+        "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在通讯设备标杆上的产业级推演，与同行业国际/国内标杆构成对照。",
+        "teaching_notes_internal": "内部锚定爱立信(ERIC B.ST)公开年报，用于建立「通讯设备」国际基线；真名仅本视图出现，对外一律匿名。",
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "公开信息整理（公司官网投资者关系页 / 年报；财务细化待补充）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "主营业务", "value": "通信网络设备、云与企业软件、全球专业服务"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "全球通信设备主设备代表企业，与同行业国内标杆构成国际/国内对标基线。",
+                "rationale": "与国内标杆同属运营商网络设备主设备商，业务结构可比，适合作为行业国际标杆对照。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["通讯主设备"],
+            },
+        ],
+    },
+    {
+        "case_id": "case_telecom_global_2_2026",
+        "subject_anon": "某某全球通讯设备龙头（研究案例·公开披露·全球）",
+        "industry": "通讯设备 / 信息通信",
+        "industry_key": "telecom",
+        "real_anchor": "诺基亚 Nokia（NOKIA.HE / NOK NYSE）",
+        "scope": "global",
+        "value_chain_node": "网络设备（全球交付）",
+        "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "compliance_q"],
+        "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在通讯设备标杆上的产业级推演，与同行业国际/国内标杆构成对照。",
+        "teaching_notes_internal": "内部锚定诺基亚(NOKIA.HE)公开年报，用于建立「通讯设备」国际基线；真名仅本视图出现，对外一律匿名。",
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "公开信息整理（公司官网投资者关系页 / 年报；财务细化待补充）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "主营业务", "value": "通信网络设备、云与网络服务、专利许可"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "全球通信设备主设备代表企业，与同行业国内标杆构成国际/国内对标基线。",
+                "rationale": "与国内标杆同属运营商网络设备主设备商，网络业务高度可比，适合作为行业国际标杆对照。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["通讯主设备"],
+            },
+        ],
+    },
+    {
+        "case_id": "case_telecom_global_3_2026",
+        "subject_anon": "某某全球企业网络龙头（研究案例·公开披露·全球）",
+        "industry": "通讯设备 / 信息通信",
+        "industry_key": "telecom",
+        "real_anchor": "思科 Cisco（CSCO NASDAQ）",
+        "scope": "global",
+        "value_chain_node": "企业网络（路由交换）",
+        "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "compliance_q"],
+        "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在企业网络标杆上的产业级推演，与同行业国内标杆在政企网络侧构成对照。",
+        "teaching_notes_internal": "内部锚定思科(CSCO NASDAQ)公开年报，用于建立「企业网络」国际基线；真名仅本视图出现，对外一律匿名。",
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "公开信息整理（公司官网投资者关系页 / 年报；财务细化待补充）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "主营业务", "value": "企业网络（路由/交换）、安全、协作与云"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "企业网路由交换全球领导者，与同行业国内标杆在政企网络侧形成对照，拓展行业对标维度。",
+                "rationale": "主导企业网市场，国内标杆政企业务为其国内对标面，二者可比性体现在政企网络交付。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["企业网络"],
+            },
+        ],
+    },
+    {
+        "case_id": "case_telecom_cn_2_2026",
+        "subject_anon": "某某国内光通信企业（研究案例·公开披露·国内）",
+        "industry": "通讯设备 / 信息通信",
+        "industry_key": "telecom",
+        "real_anchor": "烽火通信（600498.SH）",
+        "scope": "domestic",
+        "value_chain_node": "光通信（光纤光缆/系统）",
+        "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "compliance_q"],
+        "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在国内光通信标杆上的推演，与同行业全球标杆在光网络细分互补。",
+        "teaching_notes_internal": "内部锚定烽火通信(600498.SH)公开年报，用于建立「光通信」国内基线；真名仅本视图出现，对外一律匿名。",
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "公开信息整理（公司官网投资者关系页 / 年报；财务细化待补充）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "主营业务", "value": "光通信设备、光纤光缆、光网络系统"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "国内光通信骨干企业，与同行业全球标杆在光网络细分互补，构成「设备—光网络」对照。",
+                "rationale": "以光通信系统与光纤光缆见长，业务聚焦传输网，与无线主设备全球标杆形成细分互补。",
+                "assertion_type": "descriptive",
+                "value_judgment": "low",
+                "key_figures": ["光通信"],
+            },
+        ],
+    },
+    {
+        "case_id": "case_3c_global_1_2026",
+        "subject_anon": "某某全球消费电子龙头（研究案例·公开披露·全球）",
+        "industry": "消费电子 / 智能终端",
+        "industry_key": "consumer_electronics",
+        "real_anchor": "苹果 Apple（AAPL NASDAQ）",
+        "scope": "global",
+        "value_chain_node": "整机品牌（全球）",
+        "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "cost_analysis"],
+        "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在消费电子品牌标杆上的推演，与同行业国内代工标杆构成品牌—制造对照。",
+        "teaching_notes_internal": "内部锚定苹果(AAPL NASDAQ)公开年报，用于建立「消费电子」国际基线；真名仅本视图出现，对外一律匿名。",
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "公开信息整理（公司官网投资者关系页 / 年报；财务细化待补充）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "主营业务", "value": "智能手机、个人电脑、可穿戴与生态服务"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "全球消费电子代表企业，与同行业国内代工标杆构成「品牌—制造」对照，体现价值链分工。",
+                "rationale": "掌握品牌与生态，制造高度依赖国内代工体系，与国内锚形成天然对照。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["品牌生态"],
+            },
+        ],
+    },
+    {
+        "case_id": "case_3c_global_2_2026",
+        "subject_anon": "某某全球电子垂直整合龙头（研究案例·公开披露·全球）",
+        "industry": "消费电子 / 智能终端",
+        "industry_key": "consumer_electronics",
+        "real_anchor": "三星电子 Samsung Electronics（005930.KS）",
+        "scope": "global",
+        "value_chain_node": "整机+零部件（垂直整合）",
+        "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "cost_analysis"],
+        "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在电子垂直整合标杆上的推演，与同行业国内代工标杆构成对照。",
+        "teaching_notes_internal": "内部锚定三星电子(005930.KS)公开年报，用于建立「消费电子」国际基线；真名仅本视图出现，对外一律匿名。",
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "公开信息整理（公司官网投资者关系页 / 年报；财务细化待补充）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "主营业务", "value": "智能手机、存储芯片、显示面板（垂直整合）"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "全球电子垂直整合标杆（整机+存储+显示），与同行业国内代工标杆构成「自研—代工」对照。",
+                "rationale": "自研存储与显示并自产整机，与国内代工体系形成垂直整合 vs 分工的对照样本。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["垂直整合"],
+            },
+        ],
+    },
+    {
+        "case_id": "case_3c_global_3_2026",
+        "subject_anon": "某某全球电子代工龙头（研究案例·公开披露·全球）",
+        "industry": "消费电子 / 智能终端",
+        "industry_key": "consumer_electronics",
+        "real_anchor": "鸿海精密 Foxconn（2317.TW）",
+        "scope": "global",
+        "value_chain_node": "整机组装（代工）",
+        "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "cost_analysis"],
+        "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在电子代工标杆上的推演，与同行业国内代工标杆构成规模对照。",
+        "teaching_notes_internal": "内部锚定鸿海精密(2317.TW)公开年报，用于建立「电子代工」国际基线；真名仅本视图出现，对外一律匿名。",
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "公开信息整理（公司官网投资者关系页 / 年报；财务细化待补充）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "主营业务", "value": "电子代工制造（智能手机/PC/云设备组装）"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "全球电子代工龙头，与同行业国内代工标杆构成「规模—专精」对照。",
+                "rationale": "以超大规模代工见长，国内锚以细分专精切入，形成代工梯队对照。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["电子代工"],
+            },
+        ],
+    },
+    {
+        "case_id": "case_3c_cn_2_2026",
+        "subject_anon": "某某国内声学组件企业（研究案例·公开披露·国内）",
+        "industry": "消费电子 / 智能终端",
+        "industry_key": "consumer_electronics",
+        "real_anchor": "歌尔股份（002241.SZ）",
+        "scope": "domestic",
+        "value_chain_node": "声学/精密组件",
+        "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "cost_analysis"],
+        "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在国内声学组件标杆上的推演，与同行业全球代工标杆构成细分对照。",
+        "teaching_notes_internal": "内部锚定歌尔股份(002241.SZ)公开年报，用于建立「声学组件」国内基线；真名仅本视图出现，对外一律匿名。",
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "公开信息整理（公司官网投资者关系页 / 年报；财务细化待补充）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "主营业务", "value": "声学器件、微电子、智能硬件代工"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "国内声学精密组件龙头，与同行业全球代工标杆构成「专精—规模」对照，体现产业链分工位势。",
+                "rationale": "以声学与精密制造专精切入全球供应链，与规模代工形成互补对照。",
+                "assertion_type": "descriptive",
+                "value_judgment": "low",
+                "key_figures": ["声学组件"],
+            },
+        ],
+    },
+    {
+        "case_id": "case_newenergy_global_1_2026",
+        "subject_anon": "某某全球动力电池龙头（研究案例·公开披露·全球）",
+        "industry": "新能源 / 动力电池",
+        "industry_key": "new_energy",
+        "real_anchor": "LG新能源 LG Energy Solution（373220.KS）",
+        "scope": "global",
+        "value_chain_node": "动力电池（全球供给）",
+        "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "cost_analysis"],
+        "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在动力电池标杆上的推演，与同行业国内标杆构成国际/国内对标。",
+        "teaching_notes_internal": "内部锚定LG新能源(373220.KS)公开年报，用于建立「动力电池」国际基线；真名仅本视图出现，对外一律匿名。",
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "公开信息整理（公司官网投资者关系页 / 年报；财务细化待补充）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "主营业务", "value": "动力电池、储能电池"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "全球动力电池第一梯队，与同行业国内标杆构成国际/国内对标基线。",
+                "rationale": "与国内标杆同属全球动力电池供给主力，客户结构与技术路线可比，适合作为行业国际标杆。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["动力电池"],
+            },
+        ],
+    },
+    {
+        "case_id": "case_newenergy_global_2_2026",
+        "subject_anon": "某某全球电池与储能龙头（研究案例·公开披露·全球）",
+        "industry": "新能源 / 动力电池",
+        "industry_key": "new_energy",
+        "real_anchor": "松下 Panasonic（6752.T）",
+        "scope": "global",
+        "value_chain_node": "动力电池/储能",
+        "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "cost_analysis"],
+        "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在电池与储能标杆上的推演，与同行业国内标杆在储能与车用电池侧构成对照。",
+        "teaching_notes_internal": "内部锚定松下(6752.T)公开年报，用于建立「电池与储能」国际基线；真名仅本视图出现，对外一律匿名。",
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "公开信息整理（公司官网投资者关系页 / 年报；财务细化待补充）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "主营业务", "value": "动力电池、储能、工业与消费电子"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "全球电池与储能老牌龙头，与同行业国内标杆在储能与车用电池侧构成对照。",
+                "rationale": "在车用圆柱电池与储能具备长期积累，与国内标杆形成技术路线对照。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["电池储能"],
+            },
+        ],
+    },
+    {
+        "case_id": "case_newenergy_global_3_2026",
+        "subject_anon": "某某全球高端动力电池龙头（研究案例·公开披露·全球）",
+        "industry": "新能源 / 动力电池",
+        "industry_key": "new_energy",
+        "real_anchor": "三星SDI Samsung SDI（006400.KS）",
+        "scope": "global",
+        "value_chain_node": "动力电池（高端）",
+        "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "cost_analysis"],
+        "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在高端动力电池标杆上的推演，与同行业国内标杆在高端路线侧构成对照。",
+        "teaching_notes_internal": "内部锚定三星SDI(006400.KS)公开年报，用于建立「高端动力电池」国际基线；真名仅本视图出现，对外一律匿名。",
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "公开信息整理（公司官网投资者关系页 / 年报；财务细化待补充）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "主营业务", "value": "动力电池、储能电池（高端路线）"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "全球高端动力电池代表，与同行业国内标杆在高端路线侧构成对照。",
+                "rationale": "聚焦高镍与高端动力电池，与规模路线形成高端—规模的对照。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["高端动力电池"],
+            },
+        ],
+    },
+    {
+        "case_id": "case_newenergy_cn_2_2026",
+        "subject_anon": "某某国内动力电池与整车龙头（研究案例·公开披露·国内）",
+        "industry": "新能源 / 动力电池",
+        "industry_key": "new_energy",
+        "real_anchor": "比亚迪（002594.SZ / 1211.HK）",
+        "scope": "domestic",
+        "value_chain_node": "动力电池+整车（垂直整合）",
+        "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "cost_analysis"],
+        "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在动力电池与整车垂直整合标杆上的推演，与同行业全球标杆构成对照。",
+        "teaching_notes_internal": "内部锚定比亚迪(002594.SZ)公开年报，用于建立「动力电池+整车」国内基线；真名仅本视图出现，对外一律匿名。",
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "公开信息整理（公司官网投资者关系页 / 年报；财务细化待补充）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "主营业务", "value": "动力电池、新能源汽车（垂直整合）"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "国内动力电池与整车垂直整合龙头，与同行业全球标杆构成「自供—外供」对照。",
+                "rationale": "电池自供整车并外供，与纯外供路线形成垂直整合对照。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["垂直整合"],
             },
         ],
     },

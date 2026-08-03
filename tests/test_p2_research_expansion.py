@@ -239,3 +239,63 @@ def test_p2b_preset_summary_exposes_industry_breakdown():
     assert by_ind["3c"]["industry_cn"].startswith("3C")
     # 三行业设备模板数之和 == 总数
     assert sum(v["profile_count"] for v in by_ind.values()) == summary["equipment_count"]
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# 2026-08-03 「对外可见」阶段 · 案例库扩锚定（适度补缺）验收
+# 通讯 / 3C / 新能源 各补到 5（国际3 + 国内2），共 +12；半导体不动。
+# ══════════════════════════════════════════════════════════════════════════
+
+def _count_scope(cases, key):
+    bucket = {"global": 0, "domestic": 0, "other": 0}
+    for c in cases:
+        if c["industry_key"] != key:
+            continue
+        sc = c.get("scope")
+        if sc == "global":
+            bucket["global"] += 1
+        elif sc == "domestic":
+            bucket["domestic"] += 1
+        else:
+            bucket["other"] += 1
+    return bucket
+
+
+def test_p2c_benchmark_expansion_quota():
+    """扩锚定后三行业配额：国际=3、国内=2（叠加既有国内锚），合计=5≤10；半导体仍满额不动。"""
+    assert _count_scope(DEFAULT_CASES, "telecom") == {
+        "global": 3, "domestic": 2, "other": 0}, "通讯应 国际3+国内2"
+    assert _count_scope(DEFAULT_CASES, "consumer_electronics") == {
+        "global": 3, "domestic": 2, "other": 0}, "3C 应 国际3+国内2"
+    assert _count_scope(DEFAULT_CASES, "new_energy") == {
+        "global": 3, "domestic": 2, "other": 0}, "新能源应 国际3+国内2"
+    # 半导体保持满额（10），不受本次扩锚定影响
+    semi = _count_scope(DEFAULT_CASES, "semiconductor")
+    assert semi["global"] == 5 and semi["domestic"] == 5, "半导体须仍=10"
+
+
+def test_p2c_new_anchor_ids_present_and_well_formed():
+    ids = {c["case_id"] for c in DEFAULT_CASES}
+    expected = [
+        # 通讯（+4，叠既有中兴=国内2）：国际3 + 国内1新增
+        "case_telecom_global_1_2026", "case_telecom_global_2_2026",
+        "case_telecom_global_3_2026", "case_telecom_cn_2_2026",
+        # 3C（+4，叠既成立讯=国内2）：国际3 + 国内1新增
+        "case_3c_global_1_2026", "case_3c_global_2_2026",
+        "case_3c_global_3_2026", "case_3c_cn_2_2026",
+        # 新能源（+4，叠既有宁德=国内2）：国际3 + 国内1新增
+        "case_newenergy_global_1_2026", "case_newenergy_global_2_2026",
+        "case_newenergy_global_3_2026", "case_newenergy_cn_2_2026",
+    ]
+    for cid in expected:
+        assert cid in ids, f"缺扩锚定 {cid}"
+    # 每个新锚必须含内部真名（real_anchor）与对外匿名（subject_anon），且零真名泄漏
+    by_id = {c["case_id"]: c for c in DEFAULT_CASES}
+    for cid in expected:
+        c = by_id[cid]
+        assert c["real_anchor"], f"{cid} 缺 real_anchor（内部锚定）"
+        assert c["subject_anon"] and "real_anchor" not in c["subject_anon"]
+        _assert_no_leak(c["subject_anon"], f"subject_anon[{cid}]")
+        assert c["scope"] in ("global", "domestic")
+        assert c["industry_key"] in ("telecom", "consumer_electronics", "new_energy")
+

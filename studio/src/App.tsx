@@ -43,6 +43,9 @@ import type { Session, ExecutionResult } from './api/client';
 import Login from './components/Login';
 import { getToken, fetchMe, logout, requireLocalToken, AuthExpiredError, type AuthUser } from './api/client';
 
+declare const __APP_VERSION__: string;
+const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev';
+
 type Stage = 'input' | 'planning' | 'approving' | 'executing' | 'result' | 'error';
 type Tab = 'studio' | 'monitor' | 'history' | 'audit' | 'console' | 'knowledge' | 'strategy' | 'gateway' | 'twin' | 'governance' | 'federation' | 'supplychain' | 'writeback' | 'tacit' | 'bluearc' | 'tenant' | 'connect' | 'symbiosis' | 'caselib' | 'presetlib' | 'permission';
 
@@ -300,6 +303,11 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white [overflow-x:clip]">
+      {/* 对外可见 · 平台标识角标（右下角常驻，非交互，不挡 UI） */}
+      <div className="fixed bottom-3 right-3 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-600/90 text-white text-[11px] font-medium shadow-lg backdrop-blur pointer-events-none select-none">
+        <span className="w-1.5 h-1.5 rounded-full bg-white/90 animate-pulse" aria-hidden />
+        智衍 · 决策孪生 v{APP_VERSION}
+      </div>
       {/* 顶栏 */}
       <header className="border-b border-gray-200 bg-white/80 backdrop-blur-md sticky top-0 z-20 shadow-sm">
         {/* 移动端 <lg: flex-wrap + order 让 Tab 条整行落到第二行；桌面 lg:flex-nowrap 恢复三栏(品牌|Tab居中|右侧) */}
