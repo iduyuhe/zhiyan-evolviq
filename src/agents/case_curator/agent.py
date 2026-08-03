@@ -45,6 +45,21 @@ ANON_SCRUB_MAP = [
     ("300750", "***"),
     ("CATL", "***"),
     ("catl", "***"),
+    # 半导体·全球晶圆代工龙头（2026-08-03 杜总定调：第一批全球化锚，总数封顶 6）
+    ("台积电", "某某全球晶圆代工龙头"),
+    ("台積電", "某某全球晶圆代工龙头"),
+    ("TSMC", "GLOBAL-FOUNDRY-A"),
+    ("tsmc", "global-foundry-a"),
+    ("TSM", "***"),  # 须在 "TSMC" 之后，防子串错洗
+    ("2330", "***"),
+    ("魏哲家", "***"),
+    # 半导体·全球光刻设备龙头（2026-08-03）
+    ("阿斯麦", "某某全球光刻设备公司"),
+    ("阿斯麥", "某某全球光刻设备公司"),
+    ("ASML", "GLOBAL-LITHO-A"),
+    ("asml", "global-litho-a"),
+    ("Fouquet", "***"),
+    ("傅恪礼", "***"),
 ]
 
 # 🔴 案例种子（先有后优；2026-07-29 杜总两批定调：
@@ -250,6 +265,205 @@ DEFAULT_CASES = [
                 "assertion_type": "predictive",
                 "value_judgment": "high",
                 "key_figures": ["85%"],
+            },
+        ],
+    },
+    {
+        # 🌍 全球化锚 ①：晶圆代工全球标杆（2026-08-03 杜总定调「第一批必须全球化」）
+        # 与 case_semicon_2026（国内制造龙头）构成同支柱国际/国内对照组。
+        "case_id": "case_semicon_foundry_global_2026",
+        "subject_anon": "某某全球晶圆代工龙头（研究案例·公开披露·全球）",
+        "industry": "半导体 / 晶圆代工（全球标杆）",
+        "real_anchor": "台积电 TSMC（2330.TW / TSM.NYSE）",  # 🔴 内部锚定，仅 internal 视图
+        "scope": "global",
+        "value_chain_node": "制造（先进制程产能咽喉）",
+        "recommended_interfaces": [
+            "industry_research",
+            "executive_cockpit",
+            "supply_chain",
+            "cost_analysis",
+            "compliance_q",
+        ],
+        "teaching_notes_anon": (
+            "对外以匿名案例呈现，演示「研究案例范式」在全球晶圆代工标杆上的产业级推演："
+            "先进制程结构 → 定价权 → 毛利率传导链，为国内同支柱企业提供标杆差距对照基线。"
+        ),
+        "teaching_notes_internal": (
+            "内部锚定台积电(2330.TW)公开年报，用于建立「制造支柱」国际标杆基线，"
+            "与中芯国际案例形成国际/国内同支柱对照；真名仅本视图出现，对外一律匿名。"
+        ),
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "2025 年度年报及 2025Q4 财报新闻稿（2026-01-15 发布；公司投资人关系官网年报页交叉核对）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "营业收入净额", "value": "新台币 38,090.5 亿元", "yoy": "+32%"},
+                {"metric": "营业收入（美元口径）", "value": "1,222.4 亿美元", "yoy": "+35.6%"},
+                {"metric": "归属母公司净利", "value": "新台币 17,178.8 亿元", "yoy": "+46%"},
+                {"metric": "营业毛利", "value": "新台币 22,812.9 亿元", "yoy": "+40%"},
+                {"metric": "全年毛利率", "value": "59.9%", "yoy": "较上年提升（营收增速 32% 显著高于成本增速 20%）"},
+                {"metric": "营业净利", "value": "新台币 19,360.9 亿元", "yoy": "+46%"},
+                {"metric": "净利率（美元口径）", "value": "45.1%", "yoy": "净利同比 +50.9%"},
+                {"metric": "四季度营收", "value": "33.73 亿美元级单季 337.3 亿美元", "yoy": "+25.5%（美元口径）"},
+                {"metric": "四季度毛利率 / 营业利益率 / 净利率", "value": "62.3% / 54.0% / 48.3%", "yoy": "单季毛利率高于全年 59.9%"},
+                {"metric": "四季度制程结构（占晶圆营收）", "value": "3nm 28% / 5nm 35% / 7nm 14%", "yoy": "—"},
+                {"metric": "先进制程占比（7nm 及以下）", "value": "77%", "yoy": "四季度晶圆营收口径"},
+                {"metric": "资本支出", "value": "411.6 亿美元", "yoy": "占营收 33.7%"},
+                {"metric": "经营活动现金流 / 自由现金流", "value": "754.2 亿美元 / 345.9 亿美元", "yoy": "—"},
+                {"metric": "净资产收益率 ROE", "value": "36.4%", "yoy": "资产回报率 ROA 24.2%"},
+                {"metric": "2026Q1 营收指引", "value": "346 亿 ~ 358 亿美元", "yoy": "公司管理层公开指引"},
+                {"metric": "全球产能布局", "value": "本土先进制程基地 + 日本熊本合资厂 + 美国厂 + 中国大陆 8 英寸厂", "yoy": "年报披露的多地制造网络"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "先进制程占比与毛利率高度同向——技术代差即定价权，制程领先度是毛利率的一阶决定变量，而非规模。",
+                "rationale": "7nm 及以下先进制程占四季度晶圆营收 77%（3nm 28% + 5nm 35% + 7nm 14%），同期全年毛利率 59.9%、四季度 62.3%；同业成熟制程厂商毛利率普遍在 20% 量级，差距主要来自制程结构而非产能规模。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["77%", "59.9%", "62.3%", "3nm 28%"],
+            },
+            {
+                "dimension": "cost",
+                "claim": "资本支出占营收三分之一形成刚性折旧前置，产能爬坡速度成为单位成本的决定性变量——重资产模式下时间就是成本。",
+                "rationale": "2025 年资本支出 411.6 亿美元，占营收 33.7%；折旧随产能落地即刻计入，唯有产出快速爬坡可摊薄。经营现金流 754.2 亿美元支撑了这一强度而未损伤自由现金流（345.9 亿美元）。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["411.6 亿美元", "33.7%", "345.9 亿美元"],
+            },
+            {
+                "dimension": "supply_chain",
+                "claim": "制造网络由单一区域集中转向多地分散，地缘驱动的产能布局将长期抬升单位制造成本与协同复杂度。",
+                "rationale": "年报披露产能已覆盖本土先进制程基地、日本合资厂、美国厂与中国大陆 8 英寸厂；海外新厂在人力、供应链配套与爬坡效率上通常弱于本土成熟基地，属于以成本换韧性的战略选择。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["多地制造网络"],
+            },
+            {
+                "dimension": "cost",
+                "claim": "单季毛利率高于全年均值，说明盈利弹性主要来自产能利用与良率爬坡的季度节奏，而非价格谈判。",
+                "rationale": "四季度毛利率 62.3% 高于全年 59.9%，营业利益率 54.0%；在制程结构季度内基本稳定的前提下，差额主要由稼动率与良率爬坡贡献。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["62.3%", "59.9%", "54.0%"],
+            },
+            {
+                "dimension": "strategy",
+                "claim": "管理层对下一季度给出环比继续增长的指引，指向先进制程需求在 AI 驱动下延续，产能紧张短期难缓解。",
+                "rationale": "2026Q1 营收指引 346 亿 ~ 358 亿美元，高于 2025Q4 的 337.3 亿美元；公司自述受益于先进制程需求强劲。对下游客户意味着先进产能仍需提前锁定。",
+                "assertion_type": "predictive",
+                "value_judgment": "high",
+                "key_figures": ["346 亿 ~ 358 亿美元", "337.3 亿美元"],
+            },
+            {
+                "dimension": "compliance",
+                "claim": "先进制程产能高度集中于少数节点与少数基地，使其成为全球供应链的单点风险，也是各国产业政策的首要干预对象。",
+                "rationale": "先进制程占比 77% 且主要产能集中于有限基地；多地建厂本身即为对政策与地缘风险的响应。对国内企业而言，该结构决定了先进制程可获得性属外部约束变量而非采购变量。",
+                "assertion_type": "predictive",
+                "value_judgment": "high",
+                "key_figures": ["77%"],
+            },
+        ],
+    },
+    {
+        # 🌍 全球化锚 ②：光刻设备全球卡点（2026-08-03）
+        # 决定所有晶圆制造企业（含国内锚）先进制程天花板的上游控制点。
+        "case_id": "case_semicon_litho_global_2026",
+        "subject_anon": "某某全球光刻设备公司（研究案例·公开披露·全球）",
+        "industry": "半导体 / 光刻设备（全球卡点）",
+        "real_anchor": "阿斯麦 ASML（ASML.AS / ASML.NASDAQ）",  # 🔴 内部锚定，仅 internal 视图
+        "scope": "global",
+        "value_chain_node": "设备（先进制程准入卡点）",
+        "recommended_interfaces": [
+            "industry_research",
+            "executive_cockpit",
+            "supply_chain",
+            "compliance_q",
+            "bid_intel",
+        ],
+        "teaching_notes_anon": (
+            "对外以匿名案例呈现，演示「研究案例范式」在全球光刻设备卡点企业上的产业级推演："
+            "其订单结构与区域收入结构，是判断全球晶圆产能扩张节奏与设备可得性的领先指标。"
+        ),
+        "teaching_notes_internal": (
+            "内部锚定阿斯麦(ASML.AS)公开年报，用于建立「设备支柱」国际基线；"
+            "该锚是国内制造锚（中芯国际）先进制程天花板的上游解释变量。真名仅本视图出现。"
+        ),
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "2025 年第四季度及全年财报（2026-01-28 公司官网新闻稿发布；财经媒体交叉核对）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "全年净销售额", "value": "326.67 亿欧元", "yoy": "+15.6%（上年 282.63 亿欧元）"},
+                {"metric": "全年净利润", "value": "96.09 亿欧元", "yoy": "+26.9%（上年 75.72 亿欧元）"},
+                {"metric": "全年毛利率", "value": "52.8%", "yoy": "同比 +1.5 个百分点（上年 51.3%）"},
+                {"metric": "每股收益（基本）", "value": "24.73 欧元", "yoy": "上年 19.25 欧元"},
+                {"metric": "四季度净销售额", "value": "97.18 亿欧元", "yoy": "创单季历史纪录"},
+                {"metric": "四季度净利润 / 毛利率", "value": "28.40 亿欧元 / 52.2%", "yoy": "—"},
+                {"metric": "四季度新增订单", "value": "131.58 亿欧元", "yoy": "其中 EUV 订单 74 亿欧元，创纪录"},
+                {"metric": "全年新增订单", "value": "280.35 亿欧元", "yoy": "上年 188.99 亿欧元"},
+                {"metric": "年末在手订单（backlog）", "value": "388.0 亿欧元", "yoy": "三季度末为 359.4 亿欧元"},
+                {"metric": "装机基础管理销售（服务与现场选件）", "value": "81.93 亿欧元", "yoy": "+26.2%（上年 64.94 亿欧元）"},
+                {"metric": "新光刻系统销售台数", "value": "300 台", "yoy": "上年 380 台（台数下降而营收增长）"},
+                {"metric": "二手光刻系统销售台数", "value": "27 台", "yoy": "上年 38 台"},
+                {"metric": "产品收入结构（美元口径）", "value": "EUV 35.5% / ArF 浸没式 31.6% / 服务与现场选件 25.1% / KrF 3.1% / 量测检测 2.5%", "yoy": "—"},
+                {"metric": "High-NA 进展", "value": "四季度确认两台 High-NA 系统收入", "yoy": "下一代节点设备进入商业化确认阶段"},
+                {"metric": "2026 全年指引", "value": "净销售额 340 亿 ~ 390 亿欧元，毛利率 51% ~ 53%", "yoy": "高于市场普遍预期区间"},
+                {"metric": "中国大陆收入占比（2026 预期）", "value": "约 20%", "yoy": "与在手订单中的中国占比基本一致"},
+                {"metric": "股票回购计划", "value": "最高 120 亿欧元，2028-12-31 前执行完毕", "yoy": "新计划"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "系统出货台数下降而营收显著增长，证明价值中心已从台数转向单机价值——设备行业的增长引擎是技术代际升级，不是产能堆量。",
+                "rationale": "新光刻系统销售 300 台，较上年 380 台减少约 21%，同期净销售额仍增长 15.6% 至 326.67 亿欧元；EUV 占收入 35.5% 且四季度 EUV 订单达 74 亿欧元，结构升级抵消了台数下滑。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["300 台", "380 台", "+15.6%", "35.5%"],
+            },
+            {
+                "dimension": "supply_chain",
+                "claim": "在手订单已超过全年营收规模，使该企业的订单簿成为全球晶圆产能扩张节奏的领先指标——它比任何晶圆厂的公告都提前反映真实扩产意图。",
+                "rationale": "年末在手订单 388.0 亿欧元，高于全年净销售额 326.67 亿欧元，覆盖倍数约 1.19 倍；四季度单季新增订单 131.58 亿欧元创纪录。设备订单通常领先产能落地 12~24 个月。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["388.0 亿欧元", "326.67 亿欧元", "131.58 亿欧元"],
+            },
+            {
+                "dimension": "strategy",
+                "claim": "创纪录订单集中于 EUV，确认 AI 算力资本开支已完成向上游设备端的传导，先进制程扩产周期进入加速段。",
+                "rationale": "四季度新增订单 131.58 亿欧元中 EUV 占 74 亿欧元（约 56%）；公司自述客户基于 AI 需求可持续性上调中期产能计划，逻辑与存储客户同步加速。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["74 亿欧元", "131.58 亿欧元"],
+            },
+            {
+                "dimension": "cost",
+                "claim": "服务与装机基础收入占比已达四分之一且增速高于整体，形成年金化收入垫——这是设备商穿越资本开支周期的结构性缓冲。",
+                "rationale": "装机基础管理销售 81.93 亿欧元，同比 +26.2%，高于整体营收增速 15.6%，占美元口径收入 25.1%；该部分与存量装机量挂钩，受新机订单波动影响较小。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["81.93 亿欧元", "+26.2%", "25.1%"],
+            },
+            {
+                "dimension": "compliance",
+                "claim": "中国大陆收入占比回落至约两成且与在手订单结构一致，说明区域收入结构已由出口管制政策而非市场需求决定。",
+                "rationale": "公司公开指引 2026 年中国大陆营收占比约 20%，并明确该比例与当前在手订单中的中国占比基本一致——占比由可交付范围决定，属政策变量而非商务变量。",
+                "assertion_type": "predictive",
+                "value_judgment": "high",
+                "key_figures": ["约 20%"],
+            },
+            {
+                "dimension": "equipment",
+                "claim": "High-NA 首批系统完成收入确认，标志下一代节点的设备准入门槛开始形成——先进制程的代际差距将由设备可得性直接锁定。",
+                "rationale": "四季度确认两台 High-NA 系统收入，是该技术从研发验证转入商业交付的分界点；对无法获得该类设备的制造企业，节点推进将转为依赖多重曝光等成本更高的替代路径。",
+                "assertion_type": "predictive",
+                "value_judgment": "high",
+                "key_figures": ["两台 High-NA"],
             },
         ],
     },
@@ -566,6 +780,9 @@ class CaseCuratorAgent(BaseAgent):
                 # 加强版：放行事实+结论（无真名）
                 "disclosure_facts": c.get("disclosure_facts", {}),
                 "derived_insights": c.get("derived_insights", []),
+                # 全球化锚标识（2026-08-03）：匿名安全
+                "scope": c.get("scope", "domestic"),
+                "value_chain_node": c.get("value_chain_node", ""),
             },
             "summary": f"案例 {c['case_id']} 详情（{c['subject_anon']}）",
         }
@@ -586,6 +803,9 @@ class CaseCuratorAgent(BaseAgent):
                     # 加强版（2026-08-02）：卡片角标用，零成本算出
                     "fact_count": len(c.get("disclosure_facts", {}).get("facts", []) or []),
                     "insight_count": len(c.get("derived_insights", []) or []),
+                    # 全球化锚标识（2026-08-03）：匿名安全，仅范围与价值链节点，无真名
+                    "scope": c.get("scope", "domestic"),
+                    "value_chain_node": c.get("value_chain_node", ""),
                 }
                 for c in cases
             ],

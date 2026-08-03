@@ -26,6 +26,8 @@ interface CaseItem {
   updated_at?: string;
   fact_count?: number;
   insight_count?: number;
+  scope?: string;            // global = 全球化锚（2026-08-03）
+  value_chain_node?: string; // 价值链节点（制造/设备…）
 }
 interface DisclosureFact {
   metric: string;
@@ -322,6 +324,11 @@ export default function CaseLibraryPanel() {
                 <div className="text-xs text-gray-500">{c.industry}</div>
                 {/* 加强版：事实/结论计数角标 */}
                 <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                  {c.scope === 'global' && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
+                      🌍 全球{c.value_chain_node ? ` · ${c.value_chain_node.split('（')[0]}` : ''}
+                    </span>
+                  )}
                   {fc > 0 && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100">
                       📊 事实 {fc}

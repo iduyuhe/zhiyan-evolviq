@@ -21,7 +21,10 @@ logger = logging.getLogger(__name__)
 # 🔴 真实锚定名片段（与测试 / 各 agent 匿名铁律完全一致）
 # 2026-07-29 腿 B 首客 P3 扩展：第 2 案例（半导体·case_semicon_2026）真名片段一并封禁
 LEAK_TOKENS = ["中兴", "000063", "ZTE", "zte",
-               "中芯", "688981", "00981", "SMIC", "smic"]
+               "中芯", "688981", "00981", "SMIC", "smic",
+               # 2026-08-03 第一批全球化锚（总数封顶 6）：晶圆代工 + 光刻设备
+               "台积电", "台積電", "TSMC", "tsmc", "2330",
+               "阿斯麦", "阿斯麥", "ASML", "asml"]
 
 
 class ComplianceReviewerAgent(BaseAgent):

@@ -46,8 +46,37 @@ def test_p2a_case_count_four_industries():
     assert "case_semicon_2026" in ids
     assert "case_3c_2026" in ids
     assert "case_newenergy_2026" in ids
-    # 仅做 4 行业，不主动扩展（范围纪律）
-    assert len(DEFAULT_CASES) == 4, f"预期 4 案例，实际 {len(DEFAULT_CASES)}"
+    # 2026-08-03 杜总定调：第一批全球化锚（晶圆代工 + 光刻设备）
+    assert "case_semicon_foundry_global_2026" in ids
+    assert "case_semicon_litho_global_2026" in ids
+    # 🔴 范围纪律铁律：研究案例锚定企业总数封顶 6，不得再扩（2026-08-03 杜总定调）
+    assert len(DEFAULT_CASES) == 6, f"预期 6 案例（封顶），实际 {len(DEFAULT_CASES)}"
+    assert len(DEFAULT_CASES) <= 6, "❌ 违反范围纪律：锚定企业总数不得超过 6"
+
+
+def test_p2a_global_anchors_scope_and_fields():
+    """全球化锚：须标 scope=global + 价值链节点 + 完整事实与洞察（2026-08-03）。"""
+    by_id = {c["case_id"]: c for c in DEFAULT_CASES}
+    for cid in ("case_semicon_foundry_global_2026", "case_semicon_litho_global_2026"):
+        c = by_id[cid]
+        assert c["scope"] == "global", f"{cid} 缺 scope=global"
+        assert c["value_chain_node"], f"{cid} 缺 value_chain_node"
+        assert c["real_anchor"]
+        assert len(c["disclosure_facts"]["facts"]) >= 10
+        dims = {d["dimension"] for d in c["derived_insights"]}
+        assert "strategy" in dims and len(dims) >= 3
+    # 全球锚须与国内制造锚同属半导体，构成国际/国内对照组
+    assert "半导体" in by_id["case_semicon_foundry_global_2026"]["industry"]
+    assert "半导体" in by_id["case_semicon_2026"]["industry"]
+
+
+def test_p2a_global_anchor_scrub_tokens():
+    """全球锚真名片段须进擦洗表，且长 token 在前（防子串错洗）。"""
+    toks = [a for a, _ in ANON_SCRUB_MAP]
+    flat = " ".join(toks)
+    for tok in ["台积电", "TSMC", "2330", "阿斯麦", "ASML"]:
+        assert tok in flat, f"ANON_SCRUB_MAP 缺擦洗项 {tok}"
+    assert toks.index("TSMC") < toks.index("TSM"), "TSMC 必须排在 TSM 之前，否则子串错洗"
 
 
 def test_p2a_new_cases_have_required_fields():
