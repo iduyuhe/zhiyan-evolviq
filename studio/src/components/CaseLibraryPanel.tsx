@@ -131,6 +131,7 @@ export default function CaseLibraryPanel() {
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [busy, setBusy] = useState(true);
   const [msg, setMsg] = useState('');
+  const [benchIndustry, setBenchIndustry] = useState<string>('');
 
   const load = useCallback(async () => {
     if (!getToken()) return; // 🔴 鉴权守卫
@@ -169,6 +170,38 @@ export default function CaseLibraryPanel() {
     () => (detail?.status ? STATUS_LABEL[detail.status] || null : null),
     [detail?.status]
   );
+
+  // ── 行业对标可视化（新增）：按 industry 前缀分组，纯前端派生，零真名 ──
+  const IND_ORDER = ['半导体', '通讯', '消费电子', '新能源'];
+  const benchGroups = useMemo(() => {
+    const map = new Map<string, CaseItem[]>();
+    for (const c of cases) {
+      const label = (c.industry || '').split(' / ')[0] || '其他';
+      if (!map.has(label)) map.set(label, []);
+      map.get(label)!.push(c);
+    }
+    const keys = [...map.keys()];
+    const ordered = IND_ORDER.filter((k) => map.has(k)).map((k) => ({ label: k, cases: map.get(k)! }));
+    const rest = keys.filter((k) => !IND_ORDER.includes(k)).map((k) => ({ label: k, cases: map.get(k)! }));
+    return [...ordered, ...rest];
+  }, [cases]);
+
+  const benchView = useMemo(() => {
+    const group = benchGroups.find((g) => g.label === benchIndustry) || benchGroups[0];
+    if (!group) return null;
+    const cs = group.cases;
+    const global = cs.filter((c) => c.scope === 'global');
+    const domestic = cs.filter((c) => c.scope === 'domestic');
+    const nodes = new Map<string, { global: boolean; domestic: boolean }>();
+    for (const c of cs) {
+      const node = (c.value_chain_node || '').split('（')[0].trim() || '其他';
+      if (!nodes.has(node)) nodes.set(node, { global: false, domestic: false });
+      const e = nodes.get(node)!;
+      if (c.scope === 'global') e.global = true;
+      else if (c.scope === 'domestic') e.domestic = true;
+    }
+    return { cs, global, domestic, nodes: [...nodes.entries()] };
+  }, [benchGroups, benchIndustry]);
 
   const openDetail = useCallback(async (caseId: string) => {
     setActiveCaseId(caseId);
@@ -297,6 +330,92 @@ export default function CaseLibraryPanel() {
       <section className="space-y-2">
         <h3 className="font-semibold text-gray-800">研究案例库（公开匿名 · {cases.length} 个）</h3>
         {busy && <div className="text-xs text-gray-400">加载中…</div>}
+
+        {/* ③ 行业对标可视化（新增）：国际 vs 国内 标杆对照 + 价值链节点覆盖矩阵 */}
+        {benchGroups.length > 0 && benchView && (
+          <section className="bg-gradient-to-br from-zhiyan-50/70 to-white rounded-xl border border-zhiyan-100 p-4 space-y-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <h4 className="font-semibold text-gray-800 flex items-center gap-1.5">
+                <span>🎯</span> 行业对标总览
+              </h4>
+              <div className="flex flex-wrap gap-1">
+                {benchGroups.map((g) => {
+                  const active = benchIndustry === g.label || (!benchIndustry && g === benchGroups[0]);
+                  return (
+                    <button
+                      key={g.label}
+                      onClick={() => setBenchIndustry(g.label)}
+                      className={`text-[11px] px-2.5 py-1 rounded-full font-medium transition ${
+                        active ? 'bg-zhiyan-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {g.label} · {g.cases.length}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 对标总览条：国际/国内 占比 */}
+            <div className="flex items-center gap-3 text-xs text-gray-500">
+              <span>🌍 国际 <b className="text-amber-700">{benchView.global.length}</b></span>
+              <span>🏠 国内 <b className="text-emerald-700">{benchView.domestic.length}</b></span>
+              <span>共 <b className="text-gray-900">{benchView.cs.length}</b> 个标杆</span>
+              <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden flex min-w-[80px]">
+                <div className="bg-amber-400" style={{ width: `${benchView.cs.length ? (benchView.global.length / benchView.cs.length) * 100 : 0}%` }} />
+                <div className="bg-emerald-400" style={{ width: `${benchView.cs.length ? (benchView.domestic.length / benchView.cs.length) * 100 : 0}%` }} />
+              </div>
+            </div>
+
+            {/* 两栏对照：国际标杆 vs 国内标杆（点击复用详情抽屉） */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <div className="text-[11px] font-medium text-amber-700 flex items-center gap-1">🌍 国际标杆（{benchView.global.length}）</div>
+                {benchView.global.map((c) => (
+                  <button key={c.case_id} onClick={() => openDetail(c.case_id)}
+                    className="w-full text-left bg-white border border-amber-100 rounded-lg p-2.5 hover:shadow-sm transition">
+                    <div className="text-sm font-medium text-gray-900 leading-tight">{c.subject_anon}</div>
+                    <div className="text-[11px] text-gray-500 mt-0.5">
+                      {c.value_chain_node ? c.value_chain_node.split('（')[0] : '—'} · 💡{c.insight_count ?? 0}
+                    </div>
+                  </button>
+                ))}
+                {benchView.global.length === 0 && <div className="text-[11px] text-gray-400 bg-gray-50 rounded-lg p-2">暂无国际标杆</div>}
+              </div>
+              <div className="space-y-2">
+                <div className="text-[11px] font-medium text-emerald-700 flex items-center gap-1">🏠 国内标杆（{benchView.domestic.length}）</div>
+                {benchView.domestic.map((c) => (
+                  <button key={c.case_id} onClick={() => openDetail(c.case_id)}
+                    className="w-full text-left bg-white border border-emerald-100 rounded-lg p-2.5 hover:shadow-sm transition">
+                    <div className="text-sm font-medium text-gray-900 leading-tight">{c.subject_anon}</div>
+                    <div className="text-[11px] text-gray-500 mt-0.5">
+                      {c.value_chain_node ? c.value_chain_node.split('（')[0] : '—'} · 💡{c.insight_count ?? 0}
+                    </div>
+                  </button>
+                ))}
+                {benchView.domestic.length === 0 && <div className="text-[11px] text-gray-400 bg-gray-50 rounded-lg p-2">暂无国内标杆</div>}
+              </div>
+            </div>
+
+            {/* 价值链节点对照矩阵：同节点国际/国内覆盖 */}
+            <div>
+              <div className="text-[11px] font-medium text-gray-500 mb-1.5">
+                价值链节点对照（同一节点上的国际 / 国内标杆覆盖）
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {benchView.nodes.map(([node, cov]) => (
+                  <span key={node} className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-lg bg-gray-50 border border-gray-100">
+                    <span className="text-gray-700">{node}</span>
+                    {cov.global && <span className="text-[10px] px-1 rounded bg-amber-100 text-amber-700">国际</span>}
+                    {cov.domestic && <span className="text-[10px] px-1 rounded bg-emerald-100 text-emerald-700">国内</span>}
+                    {!cov.global && !cov.domestic && <span className="text-[10px] px-1 rounded bg-gray-100 text-gray-400">—</span>}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {cases.map((c) => {
             const status = STATUS_LABEL[c.status || ''] || null;
