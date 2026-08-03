@@ -60,17 +60,82 @@ ANON_SCRUB_MAP = [
     ("asml", "global-litho-a"),
     ("Fouquet", "***"),
     ("傅恪礼", "***"),
+    # 半导体·全球 AI 算力芯片龙头（2026-08-03 第二批：每行业国际5+国内5）
+    ("英伟达", "某某全球AI算力芯片公司"),
+    ("輝達", "某某全球AI算力芯片公司"),
+    ("NVIDIA", "GLOBAL-AICHIP-A"),
+    ("nvidia", "global-aichip-a"),
+    ("NVDA", "***"),
+    ("Jensen Huang", "***"),
+    ("黄仁勋", "***"),
+    ("黃仁勳", "***"),
+    # 半导体·全球存储与 IDM 巨头（2026-08-03）
+    ("三星电子", "某某全球存储与IDM巨头"),  # 须在 "三星" 之前
+    ("三星電子", "某某全球存储与IDM巨头"),
+    ("三星", "某全球存储巨头"),
+    ("Samsung", "GLOBAL-MEMORY-A"),
+    ("samsung", "global-memory-a"),
+    ("005930", "***"),
+    # 半导体·全球封测龙头（2026-08-03）
+    # ⚠️ 绝不收裸 "ASE"（会误伤 CASE / database / phase 等），仅收长 token
+    ("日月光投控", "某某全球封测龙头"),  # 须在 "日月光" 之前
+    ("日月光", "某全球封测厂"),
+    ("ASE Technology", "GLOBAL-OSAT-A"),
+    ("ASEH", "***"),
+    ("3711", "***"),
+    ("吴田玉", "***"),
+    ("吳田玉", "***"),
+    # 半导体·国内半导体设备龙头（2026-08-03）
+    ("北方华创", "某某国内半导体设备公司"),
+    ("002371", "***"),
+    ("NAURA", "***"),
+    ("naura", "***"),
+    ("芯源微", "***"),
+    # 半导体·国内图像传感器龙头（2026-08-03；2025 年由「韦尔股份」更名「豪威集团」，新旧两名都要擦）
+    ("豪威集团", "某某国内图像传感器公司"),  # 须在 "豪威" 之前
+    ("韦尔股份", "某某国内图像传感器公司"),  # 须在 "韦尔" 之前
+    ("豪威", "某国内CIS厂商"),
+    ("韦尔", "某国内CIS厂商"),
+    ("603501", "***"),
+    ("OmniVision", "***"),
+    ("omnivision", "***"),
+    # 半导体·国内存储与 MCU 公司（2026-08-03）
+    ("兆易创新", "某某国内存储与MCU公司"),  # 须在 "兆易" 之前
+    ("兆易", "某国内存储厂商"),
+    ("603986", "***"),
+    ("GigaDevice", "***"),
+    ("gigadevice", "***"),
+    ("青耘科技", "***"),
+    # 半导体·国内封测龙头（2026-08-03；长 token 在前：长电科技 > 长电微电子 > 长电微 > 长电）
+    ("长电科技", "某某国内封测公司"),
+    ("长电微电子", "***"),
+    ("长电微", "***"),
+    ("长电", "某国内封测厂"),
+    ("600584", "***"),
+    ("JCET", "***"),
+    ("jcet", "***"),
+    ("晟碟", "***"),
 ]
+
+# 🔴 行业配额铁律（2026-08-03 杜总校正口径）
+# 上限是「每个行业」而非全局：每行业 国际(global) ≤5 + 国内(domestic) ≤5，合计 ≤10。
+# 分组依据是 industry_key（大行业键），不是 industry（细分描述，含价值链节点，仅展示用）。
+# 扩张纪律：同一行业内先补齐国际/国内对照，再考虑开新行业；超配额必须先替换、不得叠加。
+MAX_ANCHORS_PER_SCOPE = 5  # 每行业·每范围（国际 / 国内）锚定上限
+MAX_ANCHORS_PER_INDUSTRY = MAX_ANCHORS_PER_SCOPE * 2  # 每行业合计上限 = 10
 
 # 🔴 案例种子（先有后优；2026-07-29 杜总两批定调：
 #   ①通讯·中兴通讯（研究案例首例）
 #   ②半导体·中芯国际（P3 首客试点，场景 A=设备健康/能耗孪生））
+# 2026-08-03 第二批：半导体行业补齐「国际5 + 国内5」同价值链节点对照组
+#   代工 / 设备 / 设计 / 存储 / 封测 五个节点，各一组国际 vs 国内。
 # real_anchor 仅内部可见；subject_anon 对外呈现。
 DEFAULT_CASES = [
     {
         "case_id": "case_telecom_2026",
         "subject_anon": "某某通讯公司（研究案例·公开披露）",
         "industry": "通讯设备 / 信息通信",
+        "industry_key": "telecom",  # 🔴 配额分组键（每行业 国际5+国内5）
         "real_anchor": "中兴通讯（000063.SZ）",  # 🔴 内部锚定真实上市公司，仅 internal 视图
         "recommended_interfaces": [
             "industry_research",
@@ -167,6 +232,9 @@ DEFAULT_CASES = [
         "case_id": "case_semicon_2026",
         "subject_anon": "某某半导体公司（研究案例·公开披露）",
         "industry": "半导体 / 集成电路晶圆代工",
+        "industry_key": "semiconductor",  # 🔴 配额分组键（每行业 国际5+国内5）
+        "scope": "domestic",
+        "value_chain_node": "晶圆代工（国内制程追赶主轴）",
         "real_anchor": "中芯国际（688981.SH / 00981.HK）",  # 🔴 内部锚定，仅 internal 视图
         "pilot_scenario": {
             "scenario": "A",
@@ -274,6 +342,7 @@ DEFAULT_CASES = [
         "case_id": "case_semicon_foundry_global_2026",
         "subject_anon": "某某全球晶圆代工龙头（研究案例·公开披露·全球）",
         "industry": "半导体 / 晶圆代工（全球标杆）",
+        "industry_key": "semiconductor",  # 🔴 配额分组键（每行业 国际5+国内5）
         "real_anchor": "台积电 TSMC（2330.TW / TSM.NYSE）",  # 🔴 内部锚定，仅 internal 视图
         "scope": "global",
         "value_chain_node": "制造（先进制程产能咽喉）",
@@ -373,6 +442,7 @@ DEFAULT_CASES = [
         "case_id": "case_semicon_litho_global_2026",
         "subject_anon": "某某全球光刻设备公司（研究案例·公开披露·全球）",
         "industry": "半导体 / 光刻设备（全球卡点）",
+        "industry_key": "semiconductor",  # 🔴 配额分组键（每行业 国际5+国内5）
         "real_anchor": "阿斯麦 ASML（ASML.AS / ASML.NASDAQ）",  # 🔴 内部锚定，仅 internal 视图
         "scope": "global",
         "value_chain_node": "设备（先进制程准入卡点）",
@@ -468,9 +538,692 @@ DEFAULT_CASES = [
         ],
     },
     {
+        # 🌍 全球化锚 ③：AI 算力芯片设计全球定义者（2026-08-03 杜总定调「每行业国际5+国内5」）
+        # 与国内设计链（兆易创新/豪威）构成「设计定义权」国际/国内对照组。
+        "case_id": "case_semicon_design_global_2026",
+        "subject_anon": "某某全球AI算力芯片公司（研究案例·公开披露·全球）",
+        "industry": "半导体 / AI 算力芯片设计（全球标杆）",
+        "industry_key": "semiconductor",  # 🔴 配额分组键（每行业 国际5+国内5）
+        "real_anchor": "英伟达 NVIDIA（NVDA.NASDAQ）",  # 🔴 内部锚定，仅 internal 视图
+        "scope": "global",
+        "value_chain_node": "设计（AI 算力定义权）",
+        "recommended_interfaces": [
+            "industry_research",
+            "executive_cockpit",
+            "supply_chain",
+            "cost_analysis",
+            "compliance_q",
+            "bid_intel",
+        ],
+        "teaching_notes_anon": (
+            "对外以匿名案例呈现，演示「研究案例范式」在全球 AI 算力芯片设计标杆上的产业级推演："
+            "从单芯片销售向全栈机架系统（GB200 NVL72）的商业模式跃迁，及其对国内设计链的'天花板参照'意义。"
+        ),
+        "teaching_notes_internal": (
+            "内部锚定英伟达(NVDA)2026 财年公开年报，用于建立「设计支柱」国际基线；"
+            "其全栈生态绑定与对华出口受限，是国内设计/制造链的关键外部解释变量。真名仅本视图出现。"
+        ),
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "某全球AI算力芯片公司 2026 财年第四季度及全年财报（2026-02-25 发布；公司投资人关系官网 / SEC 8-K 交叉核对）",
+            "fiscal_year": 2026,
+            "facts": [
+                {"metric": "全年营收", "value": "2,159 亿美元", "yoy": "+65%"},
+                {"metric": "全年净利润(GAAP)", "value": "1,200.67 亿美元", "yoy": "+65%"},
+                {"metric": "全年毛利率(GAAP)", "value": "71.1%", "yoy": "同比 -3.9 个百分点（产品结构切换）"},
+                {"metric": "数据中心营收", "value": "1,937 亿美元", "yoy": "+68%（占全年约九成）"},
+                {"metric": "Q4 营收", "value": "681 亿美元", "yoy": "+73%"},
+                {"metric": "Q4 净利润(GAAP)", "value": "429.60 亿美元", "yoy": "+94%"},
+                {"metric": "Q4 数据中心营收", "value": "623 亿美元", "yoy": "+75%"},
+                {"metric": "网络业务营收", "value": "314 亿美元", "yoy": "+142%（NVLink/InfiniBand 高增）"},
+                {"metric": "游戏业务营收", "value": "160 亿美元", "yoy": "+41%"},
+                {"metric": "全年每股收益(GAAP)", "value": "4.90 美元", "yoy": "+67%"},
+                {"metric": "2027 财年 Q1 营收指引", "value": "780 亿美元", "yoy": "±2%（未计入对华数据中心收入）"},
+                {"metric": "全年股东回报(回购+分红)", "value": "411 亿美元", "yoy": "—"},
+                {"metric": "客户集中度", "value": "全球五大云服务商占数据中心营收 >50%", "yoy": "需求集中度偏高"},
+                {"metric": "对华收入", "value": "对华数据中心收入未计入展望", "yoy": "受美国出口管制约束"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "数据中心占全年营收约九成，商业模式已从单芯片销售升级为全栈机架系统(整机柜级)，定价权来自全栈生态绑定而非单组件。",
+                "rationale": "2026 财年数据中心营收 1,937 亿美元(+68%)占全年约 90%；将客户从单芯片引导至 200~300 万美元级机架系统，ASP 量级跃升，深度绑定四大云厂。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["1,937 亿美元", "约 90%", "+68%"],
+            },
+            {
+                "dimension": "supply_chain",
+                "claim": "网络业务高增使供应链协同从芯片扩展到互联(NVLink)与整机柜，客户切换成本被结构性抬高，生态护城河加深。",
+                "rationale": "网络业务营收 314 亿美元(+142%)，NVLink/Spectrum-X/InfiniBand 成为 CUDA 之外的第二杀手锏；整机柜架构使上游供应商与下游客户被深度锁定。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["314 亿美元", "+142%"],
+            },
+            {
+                "dimension": "compliance",
+                "claim": "美国出口管制使对华数据中心收入未计入展望，地缘合规直接决定其可服务市场的天花板。",
+                "rationale": "公司明确 2027Q1 指引未计入来自中国市场的数据中心计算板块收入；出口管制使其在中国市场的增量空间被政策而非需求决定。",
+                "assertion_type": "predictive",
+                "value_judgment": "high",
+                "key_figures": ["未计入对华收入"],
+            },
+            {
+                "dimension": "energy",
+                "claim": "AI 算力功耗进入亿瓦级（Blackwell 部署达 90 亿瓦满负荷），单位 token 能耗/成本成为客户核心采购变量，绿色算力叙事权重上升。",
+                "rationale": "财报电话会披露已部署 Blackwell 基础设施算力达 90 亿瓦且满负荷；推理 token 成本较上代降 1/10~1/35，能效即竞争力，对国内算力中心的能耗孪生有直接参照。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["90 亿瓦", "满负荷"],
+            },
+            {
+                "dimension": "cost",
+                "claim": "毛利率 71% 的极高水平依赖持续资本开支维持制程与封装领先，估值与资本强度深度挂钩，任何制程代差都会被毛利敏感放大。",
+                "rationale": "全年毛利率 71.1% 居科技业顶端；但需以数十亿美元级研发/资本投入维持领先，毛利率对制程与封装供给可得性高度敏感。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["71.1%"],
+            },
+            {
+                "dimension": "equipment",
+                "claim": "设计定义权与全球先进制程、2.5D/3D 先进封装强耦合，是国产设计链'天花板参照'——设计能力上限受上游制造/封装可得性约束。",
+                "rationale": "其 AI 芯片依赖全球先进制程与 2.5D/3D 先进封装产能；设计支柱的国内对照组在先进制程与先进封装可得性上与之存在代际差，该差即国内链的天花板。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["2.5D/3D 先进封装", "设计支柱"],
+            },
+        ],
+    },
+    {
+        # 🌍 全球化锚 ④：存储与 IDM 全球巨头（2026-08-03）
+        # 与国内存储链（兆易创新）构成「存储/IDM」国际/国内对照组。
+        "case_id": "case_semicon_memory_global_2026",
+        "subject_anon": "某某全球存储与IDM巨头（研究案例·公开披露·全球）",
+        "industry": "半导体 / 存储与 IDM（全球标杆）",
+        "industry_key": "semiconductor",  # 🔴 配额分组键（每行业 国际5+国内5）
+        "real_anchor": "三星电子 Samsung Electronics（005930.KS）",  # 🔴 内部锚定，仅 internal 视图
+        "scope": "global",
+        "value_chain_node": "存储与 IDM（AI 内存供给）",
+        "recommended_interfaces": [
+            "industry_research",
+            "executive_cockpit",
+            "supply_chain",
+            "cost_analysis",
+            "compliance_q",
+        ],
+        "teaching_notes_anon": (
+            "对外以匿名案例呈现，演示「研究案例范式」在全球存储与 IDM 标杆上的产业级推演："
+            "HBM/高带宽内存供给节奏是 AI 服务器产能的领先指标，其定价与产能直接约束国内存储链上行空间。"
+        ),
+        "teaching_notes_internal": (
+            "内部锚定三星电子(005930.KS)2025 年报，用于建立「存储支柱」国际基线；"
+            "其 HBM 产能与定价是国内存储链（兆易创新等）的关键外部解释变量。真名仅本视图出现。"
+        ),
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "某全球存储与IDM巨头 2025 年度财报及 Q4 业绩（2026-01 发布；公司官网 IR / 可持续发展 ESG 数据页交叉核对）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "全年营收", "value": "333.6 万亿韩元", "yoy": "+10.9%"},
+                {"metric": "全年营业利润", "value": "43.60 万亿韩元", "yoy": "+33.2%"},
+                {"metric": "全年净利润", "value": "45.21 万亿韩元", "yoy": "+31.2%"},
+                {"metric": "Q4 营收", "value": "93.8 万亿韩元", "yoy": "环比 +9%（创单季新高）"},
+                {"metric": "Q4 营业利润", "value": "20.1 万亿韩元", "yoy": "创单季新高"},
+                {"metric": "DS(半导体)部门 Q4 营收", "value": "44.0 万亿韩元", "yoy": "环比 +33%（存储创纪录）"},
+                {"metric": "DS 部门 Q4 营业利润", "value": "16.4 万亿韩元", "yoy": "存储量价齐升驱动"},
+                {"metric": "全年研发投入", "value": "37.7 万亿韩元", "yoy": "创全年纪录"},
+                {"metric": "存储业务亮点", "value": "HBM / 服务器 DDR5 / 企业级 SSD 高附加值产品扩张", "yoy": "价格上行+结构升级"},
+                {"metric": "HBM4 进度", "value": "本季起交付 11.7Gbps HBM4", "yoy": "目标重夺高端 HBM 领导地位"},
+                {"metric": "代工( Foundry )业务", "value": "已量产第一代 2nm、出货 4nm HBM base-die", "yoy": "先进节点推进"},
+                {"metric": "按区域营收", "value": "美洲 39% / 亚洲非洲 31% / 欧洲 17% / 韩国 13%", "yoy": "—"},
+                {"metric": "显示(SDC) Q4 营收", "value": "9.5 万亿韩元", "yoy": "营业利润 2.0 万亿韩元"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "存储业务在 HBM/服务器 DDR5/企业级 SSD 高附加值产品扩张下量价齐升，AI 内存供给能力已成为其战略重心与盈利引擎。",
+                "rationale": "DS 部门 Q4 营收 44.0 万亿韩元(+33%)、营业利润 16.4 万亿韩元创纪录；HBM 与高端 DRAM 价格上行驱动存储全面复苏，战略权重向 AI 内存倾斜。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["44.0 万亿韩元", "+33%", "16.4 万亿韩元"],
+            },
+            {
+                "dimension": "supply_chain",
+                "claim": "HBM 供给节奏是 AI 服务器产能的领先指标——其封装与产能分配直接约束下游 AI 服务器与 GPU 的有效供给。",
+                "rationale": "HBM4 本季起交付、目标重夺高端领导地位；AI 服务器对 HBM 需求激增使存储厂产能分配成为 GPU/服务器链瓶颈，先于任何整机厂公告反映真实供给。",
+                "assertion_type": "predictive",
+                "value_judgment": "high",
+                "key_figures": ["HBM4", "AI 内存供给"],
+            },
+            {
+                "dimension": "cost",
+                "claim": "全年营业利润 +33% 增幅显著高于营收 +10.9%，盈利杠杆主要来自存储价格回升与高附加值结构，成本端可控。",
+                "rationale": "营收 +10.9% 而营业利润 +33.2%、净利 +31.2%，反映存储价格修复与产品组合升级带来的毛利弹性，重资产模式下的利用率与定价权主导盈利。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["+33.2%", "+10.9%"],
+            },
+            {
+                "dimension": "compliance",
+                "claim": "先进节点(2nm/4nm HBM base-die)与 HBM 技术受出口管制与地缘政策双重约束，技术可得性成为地缘合规变量。",
+                "rationale": "代工业务已量产第一代 2nm 并出货 4nm HBM base-die；先进节点与 HBM 均为各国产业政策干预焦点，对国内存储/代工链构成外部约束。",
+                "assertion_type": "predictive",
+                "value_judgment": "high",
+                "key_figures": ["2nm", "HBM base-die"],
+            },
+            {
+                "dimension": "equipment",
+                "claim": "IDM+代工一体模式使其设备投资横跨存储与逻辑先进制程，资本开支强度是先进产能可得性的前置信号。",
+                "rationale": "全年研发 37.7 万亿韩元创纪录，同时推进 HBM4、2nm 代工与先进封装；其设备订单与产能爬坡节奏是半导体设备链（含国产设备）的需求风向标。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["37.7 万亿韩元", "IDM+代工"],
+            },
+            {
+                "dimension": "energy",
+                "claim": "HBM/先进封装产线能耗强度高，AI 内存产能扩张使单位晶圆能耗进入成本与碳披露敏感区间。",
+                "rationale": "HBM 堆叠与 TSV/先进封装工序能耗高于传统 DRAM；在产能扩张期，能耗与碳强度管理成为制造端可控降本与合规杠杆。",
+                "assertion_type": "predictive",
+                "value_judgment": "medium",
+                "key_figures": ["HBM 能耗", "碳披露"],
+            },
+        ],
+    },
+    {
+        # 🌍 全球化锚 ⑤：封装测试全球龙头（2026-08-03）
+        # 与国内封测链（长电科技）构成「封装测试」国际/国内对照组。
+        "case_id": "case_semicon_osat_global_2026",
+        "subject_anon": "某某全球封测龙头（研究案例·公开披露·全球）",
+        "industry": "半导体 / 封装测试（全球标杆）",
+        "industry_key": "semiconductor",  # 🔴 配额分组键（每行业 国际5+国内5）
+        "real_anchor": "日月光投控 ASE Technology（3711.TW / ASX.NYSE）",  # 🔴 内部锚定，仅 internal 视图
+        "scope": "global",
+        "value_chain_node": "封装测试（后摩尔时代性能杠杆）",
+        "recommended_interfaces": [
+            "industry_research",
+            "executive_cockpit",
+            "supply_chain",
+            "cost_analysis",
+            "compliance_q",
+            "bid_intel",
+        ],
+        "teaching_notes_anon": (
+            "对外以匿名案例呈现，演示「研究案例范式」在全球封测标杆上的产业级推演："
+            "先进封装(2.5D/3D 集成/FOPLP)收入翻倍式增长，是 AI 加速器产能的后段瓶颈与后摩尔时代性能主杠杆。"
+        ),
+        "teaching_notes_internal": (
+            "内部锚定日月光(ASE Technology)2025 年报(6-K)，用于建立「封测支柱」国际基线；"
+            "其先进封装收入翻倍是国内封测链（长电科技）的关键外部对标与需求牵引。真名仅本视图出现。"
+        ),
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "某全球封测龙头 2025 全年及 Q4 财报（2026-02-05 6-K；TWSE/NYSE 披露交叉核对）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "全年营收", "value": "6,453.88 亿新台币", "yoy": "+8.4%"},
+                {"metric": "全年归母净利润", "value": "406.58 亿新台币", "yoy": "+25%"},
+                {"metric": "全年毛利率", "value": "约 17.7%", "yoy": "Q4 升至 19.5%"},
+                {"metric": "Q4 营收", "value": "1,779.15 亿新台币", "yoy": "+9.6%（单季历史次高）"},
+                {"metric": "Q4 归母净利润", "value": "147.13 亿新台币", "yoy": "+58%"},
+                {"metric": "Q4 毛利率", "value": "19.5%", "yoy": "环比 +2.4 个百分点"},
+                {"metric": "先进封装营收", "value": "约 502 亿新台币", "yoy": "占封测业务 13%（翻倍）"},
+                {"metric": "全年封装测试材料(ATM)营收", "value": "3,892.3 亿新台币", "yoy": "+19.4%"},
+                {"metric": "EMS 业务营收占比", "value": "约 40%", "yoy": "封测+EMS 双轮"},
+                {"metric": "资本开支/研发", "value": "显著高于上年（15 个新厂址扩产）", "yoy": "面向 2029+ 需求"},
+                {"metric": "先进封装展望", "value": "2026 年先进封装测试营收目标翻倍", "yoy": "75% 封装 / 25% 测试"},
+                {"metric": "海外布局", "value": "马来西亚/韩国/菲律宾/美国加州与亚利桑那", "yoy": "地缘分散"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "先进封装营收翻倍式增长（占封测 13%）使后段从成本中心转为性能主杠杆，战略重心全面转向 LEAP 先进封装。",
+                "rationale": "2025 先进封装营收约 502 亿新台币、占比由 6% 翻倍至 13%；公司明确 2026 年先进封装测试营收再翻倍，后摩尔时代性能提升越来越依赖封装而非单芯片。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["502 亿新台币", "13%", "翻倍"],
+            },
+            {
+                "dimension": "supply_chain",
+                "claim": "AI 加速器先进封装产能是后段瓶颈，其产能分配与稼动率先于晶圆厂公告反映 AI 算力真实供给节奏。",
+                "rationale": "受先进制程 2.5D/3D 先进封装产能外溢需求拉动，封测生态全面受益；先进封装产线高稼动使 Q4 毛利率升至 19.5%，产能即话语权。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["19.5%", "先进封装外溢"],
+            },
+            {
+                "dimension": "cost",
+                "claim": "EMS 业务低毛利(约 9%)拖累合并毛利率至约 17.7%，先进封装占比提升是结构性改善毛利率的唯一主路径。",
+                "rationale": "EMS 占营收约 40% 但毛利率仅约 9%，ATM 封测毛利率 Q4 达 26.3%；提升高毛利的先进封装占比是毛利率向 20%+ 修复的关键。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["17.7%", "EMS 9%", "ATM 26.3%"],
+            },
+            {
+                "dimension": "equipment",
+                "claim": "FOPLP/面板级封装成为下一代主战场，设备与材料国产化窗口随产能扩张（15 个新厂址）同步打开。",
+                "rationale": "公司启动近年最大扩产（自身 6 厂+子公司 SPIL 7 厂+收购合计 15 个新址），面向 2029+；FOPLP 等新技术量产将带动封装设备/材料需求。",
+                "assertion_type": "predictive",
+                "value_judgment": "high",
+                "key_figures": ["15 个新厂址", "FOPLP"],
+            },
+            {
+                "dimension": "compliance",
+                "claim": "海外多基地（马来/韩/菲/美）布局是对地缘与贸易政策的主动对冲，合规成本被计入扩产决策。",
+                "rationale": "公司在马来西亚槟城、韩国、菲律宾、美国加州与亚利桑那多地部署，以分散单一区域风险；地缘合规成为产能选址的一阶变量。",
+                "assertion_type": "predictive",
+                "value_judgment": "medium",
+                "key_figures": ["多地部署", "地缘对冲"],
+            },
+            {
+                "dimension": "energy",
+                "claim": "先进封装产线高稼动与扩产使单位封装能耗进入成本敏感区，绿色制造与能耗管理成出海客户准入隐性门槛。",
+                "rationale": "AI 封装产线 24/7 高稼动；欧美客户对碳足迹与绿色制造要求趋严，能耗管理影响订单获取与合规。",
+                "assertion_type": "predictive",
+                "value_judgment": "medium",
+                "key_figures": ["高稼动", "绿色制造"],
+            },
+        ],
+    },
+    {
+        # 🇨🇳 国内锚 ①：半导体设备龙头（2026-08-03 杜总定调「每行业国际5+国内5」）
+        # 与全球设备卡点（阿斯麦）构成「设备支柱」国内/国际对照组。
+        "case_id": "case_semicon_equipment_cn_2026",
+        "subject_anon": "某某国内半导体设备公司（研究案例·公开披露）",
+        "industry": "半导体 / 半导体设备（国内标杆）",
+        "industry_key": "semiconductor",  # 🔴 配额分组键（每行业 国际5+国内5）
+        "real_anchor": "北方华创（002371.SZ）",  # 🔴 内部锚定，仅 internal 视图
+        "scope": "domestic",
+        "value_chain_node": "设备（国产替代主轴）",
+        "recommended_interfaces": [
+            "industry_research",
+            "pm_maintenance",
+            "energy_carbon",
+            "executive_cockpit",
+            "supply_chain",
+            "cost_analysis",
+            "compliance_q",
+        ],
+        "teaching_notes_anon": (
+            "对外以匿名案例呈现，演示「研究案例范式」在国内半导体设备标杆上的推演："
+            "国产替代加速下营收高增但'增收不增利'，研发投入前置与新产品验证成本是短期毛利压力源，设备健康/能耗孪生提效价值凸显。"
+        ),
+        "teaching_notes_internal": (
+            "内部锚定北方华创(002371.SZ)2025 年报，用于校准「设备支柱」国内推演；"
+            "其与阿斯麦构成国产替代主轴的国际/国内对照。真名仅本视图出现，对外一律匿名。"
+        ),
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "某某国内半导体设备公司 2025 年年度报告（2026-04-18 披露；巨潮资讯 / 中证讯交叉核对）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "营业总收入", "value": "393.53 亿元", "yoy": "+30.85%"},
+                {"metric": "归母净利润", "value": "55.22 亿元", "yoy": "-1.77%（增收不增利）"},
+                {"metric": "综合毛利率", "value": "40.10%", "yoy": "同比 -2.84 个百分点"},
+                {"metric": "电子工艺装备营收", "value": "367.31 亿元", "yoy": "+32.57%（占 93.34%）"},
+                {"metric": "集成电路设备营收", "value": "同比 +50%+", "yoy": "刻蚀/薄膜/炉管/湿法市占率提升"},
+                {"metric": "研发投入(总费用)", "value": "约 72.77 亿元", "yoy": "+46.96%（占营收 18.49%）"},
+                {"metric": "研发费用(当期损益)", "value": "54.35 亿元", "yoy": "+46.96%"},
+                {"metric": "全年新增人员", "value": "4,747 人", "yoy": "研发/市场/客服核心团队扩编"},
+                {"metric": "前五大客户销售占比", "value": "39.03%", "yoy": "153.6 亿元"},
+                {"metric": "净资产收益率 ROE", "value": "16.41%", "yoy": "同比 -4.22 个百分点"},
+                {"metric": "经营活动现金流净额", "value": "21.33 亿元", "yoy": "+37.48%"},
+                {"metric": "三年营收复合增速", "value": "38.89%", "yoy": "设备行业已披露 9 家排名第 1"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "国产替代加速驱动营收 +30.85%，但'增收不增利'——短期利润被研发投入前置与新产品验证成本压制，属战略卡位期特征。",
+                "rationale": "营收 393.53 亿(+30.85%)、归母 55.22 亿(-1.77%)；研发费用 54.35 亿(+46.96%)、新增 4,747 人，费用前置致净利率降至 13.74%。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["+30.85%", "-1.77%", "54.35 亿"],
+            },
+            {
+                "dimension": "equipment",
+                "claim": "电子工艺装备占营收 93.34%、集成电路设备 +50%+，设备健康预测维护与产能稼动优化是支撑高交付的直接杠杆。",
+                "rationale": "装备营收 367.31 亿(+32.57%)；多款设备市占率稳步提升但产能爬坡与新品验证并行，设备 uptime 直接决定交付能力。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["93.34%", "+50%+"],
+            },
+            {
+                "dimension": "cost",
+                "claim": "毛利率由 42.93% 降至 40.10%，主因新产品客户端验证期零部件迭代升级成本增加——降本应聚焦供应链国产与良率而非压价。",
+                "rationale": "毛利率 -2.84pct 源于新品验证零部件成本；研发费用占营收 18.49% 高企，短期成本压力属研发转化期结构现象。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["40.10%", "-2.84pct", "18.49%"],
+            },
+            {
+                "dimension": "supply_chain",
+                "claim": "前五大客户占比 39% 且集中于集成电路大厂，供应链协同与客户绑定深；国产设备导入加速带动上游零部件国产化机会。",
+                "rationale": "前五大客户销售 153.6 亿(39.03%)；国产替代使设备-晶圆厂协同加深，设备健康数据与备件前置采购价值上升。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["39.03%", "国产导入"],
+            },
+            {
+                "dimension": "compliance",
+                "claim": "先进制程设备受出口管制倒逼国产替代，合规主线从'规避限制'转为'自主可控供应链韧性'。",
+                "rationale": "外部设备供应不确定性使国产设备成必选项；合规重点在供应链自主权与关键技术自主可控，而非单纯贸易合规。",
+                "assertion_type": "predictive",
+                "value_judgment": "high",
+                "key_figures": ["自主可控", "国产替代"],
+            },
+            {
+                "dimension": "energy",
+                "claim": "设备制造与自有产线双高能耗，能耗孪生可同时服务'制造端降本'与'交付端绿色低碳叙事'。",
+                "rationale": "营收高增伴随产能扩张，制造与园区能耗上升；能耗孪生在毛利承压期提供可控降本与 ESG 合规双重价值。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["产能扩张", "能耗孪生"],
+            },
+        ],
+    },
+    {
+        # 🇨🇳 国内锚 ②：图像传感器龙头（2026-08-03）
+        # 注：2025 年由「韦尔股份」更名「豪威集团」；与全球设计链（英伟达）在 CIS 应用端构成广义对照。
+        "case_id": "case_semicon_cis_cn_2026",
+        "subject_anon": "某某国内图像传感器公司（研究案例·公开披露）",
+        "industry": "半导体 / 图像传感器 CIS（国内标杆）",
+        "industry_key": "semiconductor",  # 🔴 配额分组键（每行业 国际5+国内5）
+        "real_anchor": "豪威集团（原韦尔股份，603501.SH）",  # 🔴 内部锚定，仅 internal 视图
+        "scope": "domestic",
+        "value_chain_node": "设计（CIS 视觉感知）",
+        "recommended_interfaces": [
+            "industry_research",
+            "executive_cockpit",
+            "supply_chain",
+            "cost_analysis",
+            "compliance_q",
+        ],
+        "teaching_notes_anon": (
+            "对外以匿名案例呈现，演示「研究案例范式」在国内图像传感器标杆上的推演："
+            "汽车电子与新兴市场(CIS)成第二增长曲线，设计定义权向车载/端侧 AI 视觉迁移，国产设计链价值重估。"
+        ),
+        "teaching_notes_internal": (
+            "内部锚定豪威集团(603501.SH，原韦尔股份)2025 年报，用于校准「设计支柱-CIS」国内推演；"
+            "其与英伟达在车载视觉供应链存在间接对照。真名仅本视图出现，对外一律匿名。"
+        ),
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "某某国内图像传感器公司 2025 年年度报告（2026-03-30 披露；公司公告 / 上海证券报交叉核对）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "营业总收入", "value": "288.55 亿元", "yoy": "+12.14%"},
+                {"metric": "归母净利润", "value": "40.45 亿元", "yoy": "+21.73%"},
+                {"metric": "综合毛利率", "value": "30.63%", "yoy": "—"},
+                {"metric": "图像传感器营收", "value": "212.46 亿元", "yoy": "+10.71%（占 73.73%）"},
+                {"metric": "汽车 CIS 营收", "value": "74.71 亿元", "yoy": "+26.52%"},
+                {"metric": "新兴市场 CIS 营收", "value": "23.69 亿元", "yoy": "+211.85%（全景/运动相机/AI 眼镜）"},
+                {"metric": "智能手机 CIS 营收", "value": "82.72 亿元", "yoy": "-15.61%（周期切换）"},
+                {"metric": "半导体设计业务营收", "value": "238.00 亿元", "yoy": "+9.98%（占 82.60%）"},
+                {"metric": "研发投入", "value": "36.80 亿元", "yoy": "+13.38%"},
+                {"metric": "授权专利", "value": "4,993 项", "yoy": "研发团队 2,681 人 / 18 个研发中心"},
+                {"metric": "车载平台进展", "value": "OX08D20 获全球头部 AI 算力平台支持", "yoy": "纳入新一代平台"},
+                {"metric": "全年现金分红", "value": "6.08 亿元", "yoy": "同比 +20.62%"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "汽车电子与新兴市场(CIS)成第二增长曲线，增长结构从智能手机单核转向'车载 + 新兴视觉 + 手机'多核。",
+                "rationale": "汽车 CIS 74.71 亿(+26.52%)、新兴市场 CIS 23.69 亿(+211.85%)；图像传感器营收 212.46 亿(+10.71%)占主体，设计定义权向车载/端侧 AI 视觉迁移。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["+26.52%", "+211.85%", "212.46 亿"],
+            },
+            {
+                "dimension": "cost",
+                "claim": "毛利率 30.63% 处设计业中位，成本改善靠高附加值车载/新兴产品占比提升与研发转化，而非简单压制造本。",
+                "rationale": "智能手机 CIS 受周期切换收入 -15.61%，但车载与新兴高毛利拉动净利 +21.73%；产品结构升级是毛利主线。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["30.63%", "+21.73%"],
+            },
+            {
+                "dimension": "supply_chain",
+                "claim": "车载 CIS 进入全球头部 AI 算力平台供应链，使设计链与全球 AI 算力生态间接绑定，供应链地位抬升。",
+                "rationale": "OX08D20 获全球头部 AI 算力平台支持；车载视觉供应链与 AI 算力厂协同加深，订单可见性增强。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["全球头部 AI 算力平台", "车载供应链"],
+            },
+            {
+                "dimension": "compliance",
+                "claim": "车规级产品认证与功能安全合规是车载 CIS 的准入门槛，合规能力即订单门槛。",
+                "rationale": "汽车 CIS 需通过车规认证与功能安全；合规与质量体系是进入全球车厂/Tier1 供应链的前置条件，形成壁垒。",
+                "assertion_type": "predictive",
+                "value_judgment": "medium",
+                "key_figures": ["车规认证", "功能安全"],
+            },
+            {
+                "dimension": "equipment",
+                "claim": "CIS 为 Fabless 设计模式，制造依赖晶圆代工与封测外协，其产能天花板由上游代工/封测可得性决定。",
+                "rationale": "作为设计公司无自有晶圆厂，先进制程与 CIS 专用工艺产能受代工链约束；与国内制造/封测锚构成供应链协同关系。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["Fabless", "代工外协"],
+            },
+            {
+                "dimension": "energy",
+                "claim": "设计业能耗主要在研发与封测外协环节，自身能耗强度低，绿色叙事弱于制造链但受上游碳足迹传导。",
+                "rationale": "Fabless 模式制造能耗外移；其 ESG 表现更多取决于上游代工/封测的碳强度与绿色用电比例。",
+                "assertion_type": "descriptive",
+                "value_judgment": "low",
+                "key_figures": ["Fabless", "上游碳传导"],
+            },
+        ],
+    },
+    {
+        # 🇨🇳 国内锚 ③：存储与 MCU 公司（2026-08-03）
+        # 与全球存储巨头（三星）构成「存储支柱」国内/国际对照组。
+        "case_id": "case_semicon_memory_cn_2026",
+        "subject_anon": "某某国内存储与MCU公司（研究案例·公开披露）",
+        "industry": "半导体 / 存储与 MCU（国内标杆）",
+        "industry_key": "semiconductor",  # 🔴 配额分组键（每行业 国际5+国内5）
+        "real_anchor": "兆易创新（603986.SH）",  # 🔴 内部锚定，仅 internal 视图
+        "scope": "domestic",
+        "value_chain_node": "设计（利基存储 / MCU）",
+        "recommended_interfaces": [
+            "industry_research",
+            "executive_cockpit",
+            "supply_chain",
+            "cost_analysis",
+            "compliance_q",
+        ],
+        "teaching_notes_anon": (
+            "对外以匿名案例呈现，演示「研究案例范式」在国内存储与 MCU 标杆上的推演："
+            "存储行业周期向上 + 利基 DRAM/SLC NAND 量价齐升驱动净利高增，设计定义权在利基市场的国产替代价值。"
+        ),
+        "teaching_notes_internal": (
+            "内部锚定兆易创新(603986.SH)2025 年报，用于校准「存储支柱」国内推演；"
+            "其与三星构成利基存储国产替代的国际/国内对照。真名仅本视图出现，对外一律匿名。"
+        ),
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "某某国内存储与MCU公司 2025 年年度报告（2026-03-31 披露；巨潮资讯 / 上海证券报交叉核对）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "营业总收入", "value": "92.03 亿元", "yoy": "+25.12%"},
+                {"metric": "归母净利润", "value": "16.48 亿元", "yoy": "+49.47%"},
+                {"metric": "综合毛利率", "value": "40.22%", "yoy": "同比 +2.22 个百分点"},
+                {"metric": "存储芯片营收", "value": "65.66 亿元", "yoy": "+26.41%（占 71.34%）"},
+                {"metric": "微控制器(MCU)营收", "value": "19.10 亿元", "yoy": "+12.98%"},
+                {"metric": "利基型 DRAM", "value": "量价齐升", "yoy": "2025Q2 起供不应求"},
+                {"metric": "SLC NAND", "value": "量价齐升", "yoy": "受益于海外大厂退出"},
+                {"metric": "定制化存储(青耘科技)", "value": "部分项目进入送样/小批量", "yoy": "2026 有望量产"},
+                {"metric": "国际总部", "value": "新加坡成立 / H股 2026-01-13 港交所上市", "yoy": "A+H 双资本平台"},
+                {"metric": "前五大客户销售占比", "value": "30.67%", "yoy": "28.23 亿元"},
+                {"metric": "前五大供应商采购占比", "value": "69.49%", "yoy": "50.14 亿元（晶圆代工集中）"},
+                {"metric": "净资产收益率 ROE", "value": "9.30%", "yoy": "同比 +2.36 个百分点"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "存储周期上行 + 利基 DRAM/SLC NAND 量价齐升驱动净利 +49.47%，利基市场国产替代成第二增长曲线。",
+                "rationale": "营收 92.03 亿(+25.12%)、归母 16.48 亿(+49.47%)；利基型 DRAM 与 SLC NAND 受益于海外大厂退出，量价齐升拉动盈利弹性。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["+49.47%", "65.66 亿", "+26.41%"],
+            },
+            {
+                "dimension": "supply_chain",
+                "claim": "前五大供应商采购占比 69.49%（晶圆代工集中），供应链高度依赖代工外协，产能天花板由上游决定。",
+                "rationale": "Fabless 模式使晶圆代工采购高度集中；利基存储量价齐升时，代工产能分配直接决定其交付上限与成本。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["69.49%", "代工集中"],
+            },
+            {
+                "dimension": "cost",
+                "claim": "毛利率 40.22%(+2.22pct) 随产品结构与价格上行改善，但研发费用(期间费用 20.34 亿)持续高企，盈利质量取决于研发转化效率。",
+                "rationale": "毛利率同比改善源于利基存储价格回升；定制化存储(青耘科技)2026 量产有望打开高附加值增量，摊薄研发刚性。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["40.22%", "+2.22pct"],
+            },
+            {
+                "dimension": "compliance",
+                "claim": "A+H 双资本平台与新加坡国际总部落地，合规主线从国内披露扩展至跨境监管与国际化供应链协同。",
+                "rationale": "H股 2026-01-13 港交所上市、新加坡国际总部成立；跨境资本与供应链合规要求提升，倒逼治理与 ESG 体系升级。",
+                "assertion_type": "predictive",
+                "value_judgment": "medium",
+                "key_figures": ["A+H", "新加坡总部"],
+            },
+            {
+                "dimension": "equipment",
+                "claim": "Fabless 设计模式无自有产线，其产品制程升级依赖代工链先进节点可得性，是国产制造/封测链的需求侧牵引。",
+                "rationale": "作为设计公司，存储/MCU 的制程迭代受代工产能约束；与国内制造锚(代工/封测)形成'设计-制造'协同，是国产链闭环一环。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["Fabless", "设计-制造协同"],
+            },
+            {
+                "dimension": "energy",
+                "claim": "设计业自身能耗低，绿色表现取决于上游代工碳强度；ESG 披露中可再生能源使用比例与供应链绿色承诺权重上升。",
+                "rationale": "Fabless 制造能耗外移；其 ESG 表现（原材料 100% RoHS、可再生能源比例）受上游代工绿色用电比例传导。",
+                "assertion_type": "descriptive",
+                "value_judgment": "low",
+                "key_figures": ["Fabless", "上游碳传导"],
+            },
+        ],
+    },
+    {
+        # 🇨🇳 国内锚 ④：封测龙头（2026-08-03）
+        # 与全球封测龙头（日月光）构成「封测支柱」国内/国际对照组。
+        "case_id": "case_semicon_osat_cn_2026",
+        "subject_anon": "某某国内封测公司（研究案例·公开披露）",
+        "industry": "半导体 / 封装测试（国内标杆）",
+        "industry_key": "semiconductor",  # 🔴 配额分组键（每行业 国际5+国内5）
+        "real_anchor": "长电科技（600584.SH）",  # 🔴 内部锚定，仅 internal 视图
+        "scope": "domestic",
+        "value_chain_node": "封装测试（先进封装国产主力）",
+        "recommended_interfaces": [
+            "industry_research",
+            "pm_maintenance",
+            "energy_carbon",
+            "executive_cockpit",
+            "supply_chain",
+            "cost_analysis",
+            "compliance_q",
+            "bid_intel",
+        ],
+        "teaching_notes_anon": (
+            "对外以匿名案例呈现，演示「研究案例范式」在国内封测标杆上的推演："
+            "先进封装收入 270 亿创历史新高成主引擎，但前瞻性投入致短期'增收不增利'，设备健康与能耗孪生在高负荷产线 ROI 极高。"
+        ),
+        "teaching_notes_internal": (
+            "内部锚定长电科技(600584.SH)2025 年报，用于校准「封测支柱」国内推演；"
+            "其与日月光构成先进封装国产替代的国际/国内对照。真名仅本视图出现，对外一律匿名。"
+        ),
+        "status": "active",
+        "updated_at": "2026-08-03",
+        "disclosure_facts": {
+            "source": "某某国内封测公司 2025 年年度报告（2026-04-09 披露；公司公告 / 上海证券报交叉核对）",
+            "fiscal_year": 2025,
+            "facts": [
+                {"metric": "营业总收入", "value": "388.71 亿元", "yoy": "+8.09%（创历史新高）"},
+                {"metric": "归母净利润", "value": "15.65 亿元", "yoy": "-2.75%（增收不增利）"},
+                {"metric": "综合毛利率", "value": "14.15%", "yoy": "同比 +1.09 个百分点"},
+                {"metric": "先进封装收入", "value": "270 亿元", "yoy": "创历史新高（晶圆级封装高负荷）"},
+                {"metric": "Q4 营收", "value": "102.0 亿元", "yoy": "环比 +1.4%"},
+                {"metric": "Q4 归母净利润", "value": "6.1 亿元", "yoy": "环比 +26.6%"},
+                {"metric": "研发费用", "value": "20.9 亿元", "yoy": "+21.4%"},
+                {"metric": "运算电子营收", "value": "同比 +42.6%", "yoy": "高性能计算高增"},
+                {"metric": "工业及医疗电子营收", "value": "同比 +40.6%", "yoy": "—"},
+                {"metric": "汽车电子营收", "value": "同比 +31.7%", "yoy": "车规级产能通线"},
+                {"metric": "前五大客户销售占比", "value": "48.8%", "yoy": "189.69 亿元"},
+                {"metric": "产能利用率", "value": "维持高位", "yoy": "先进封装产能高负荷运行"},
+            ],
+        },
+        "derived_insights": [
+            {
+                "dimension": "strategy",
+                "claim": "先进封装收入 270 亿创历史新高成主引擎，增长重心从传统封装转向晶圆级/异构集成，国产先进封装价值重估。",
+                "rationale": "先进封装相关收入达 270 亿创纪录、产能高负荷；运算/工业/汽车电子营收分别 +42.6%/+40.6%/+31.7%，结构向高成长赛道迁移。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["270 亿", "+42.6%", "高负荷"],
+            },
+            {
+                "dimension": "equipment",
+                "claim": "先进封装产线高负荷运行，设备停机边际代价被显著放大——预测维护与产能稼动优化是该产能结构下 ROI 最直接的数字化场景。",
+                "rationale": "先进封装产能高负荷、利用率高位；封测设备数量庞大且停机直接影响交付，预测维护价值随利用率非线性上升。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["高负荷", "利用率高位"],
+            },
+            {
+                "dimension": "cost",
+                "claim": "毛利率 14.15% 处封测业低位，'增收不增利'主因前瞻性投入与原材料价格波动；降本靠高端产能利用率提升与良率改善。",
+                "rationale": "归母 15.65 亿(-2.75%)、毛利率仅 14.15%；研发费用 20.9 亿(+21.4%)，成本端阶段性承压但盈利年内逐季改善。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["14.15%", "-2.75%", "20.9 亿"],
+            },
+            {
+                "dimension": "supply_chain",
+                "claim": "前五大客户占比 48.8% 偏高，先进封装产能分配与客户绑定深；上游原材料价格波动是主要成本风险面。",
+                "rationale": "前五大客户销售 189.69 亿(48.8%)；先进封装产能稀缺使客户协同紧密，原材料价格波动直接传导至毛利。",
+                "assertion_type": "descriptive",
+                "value_judgment": "medium",
+                "key_figures": ["48.8%", "原材料波动"],
+            },
+            {
+                "dimension": "energy",
+                "claim": "先进封装(2.5D/3D 集成/CPO/玻璃基板)产线高能耗，能耗孪生在 270 亿级先进封装产能上单位 kWh 优化直接进入毛利敏感区间。",
+                "rationale": "先进封装收入 270 亿且产能高负荷；晶圆级封装与光电合封(CPO)能耗强度高，能耗孪生提供可控降本杠杆。",
+                "assertion_type": "descriptive",
+                "value_judgment": "high",
+                "key_figures": ["270 亿", "CPO", "能耗孪生"],
+            },
+            {
+                "dimension": "compliance",
+                "claim": "车规级封测产能通线与临港 78 亿高端厂投建，合规主线叠加车规认证与地缘分散布局。",
+                "rationale": "汽车电子(上海)公司通线、临港拟 78 亿建高端先进封测厂；车规认证与供应链地缘分散成产能布局一阶变量。",
+                "assertion_type": "predictive",
+                "value_judgment": "medium",
+                "key_figures": ["车规通线", "临港 78 亿"],
+            },
+        ],
+    },
+    {
         "case_id": "case_3c_2026",
         "subject_anon": "某某精密制造公司（研究案例·公开披露）",
         "industry": "消费电子 / 3C 精密制造",
+        "industry_key": "consumer_electronics",  # 🔴 配额分组键（每行业 国际5+国内5）
         "real_anchor": "立讯精密（002475.SZ）",  # 🔴 内部锚定真实上市公司，仅 internal 视图
         "recommended_interfaces": [
             "industry_research",
@@ -558,6 +1311,7 @@ DEFAULT_CASES = [
         "case_id": "case_newenergy_2026",
         "subject_anon": "某某新能源公司（研究案例·公开披露）",
         "industry": "新能源 / 动力电池与储能",
+        "industry_key": "new_energy",  # 🔴 配额分组键（每行业 国际5+国内5）
         "real_anchor": "宁德时代（300750.SZ）",  # 🔴 内部锚定真实上市公司，仅 internal 视图
         "recommended_interfaces": [
             "industry_research",

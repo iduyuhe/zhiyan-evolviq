@@ -329,6 +329,11 @@ export default function CaseLibraryPanel() {
                       🌍 全球{c.value_chain_node ? ` · ${c.value_chain_node.split('（')[0]}` : ''}
                     </span>
                   )}
+                  {c.scope === 'domestic' && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      🏠 国内{c.value_chain_node ? ` · ${c.value_chain_node.split('（')[0]}` : ''}
+                    </span>
+                  )}
                   {fc > 0 && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100">
                       📊 事实 {fc}

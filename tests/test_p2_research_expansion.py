@@ -5,12 +5,15 @@
   - DEFAULT_CASES 含 case_3c_2026 / case_newenergy_2026
   - ANON_SCRUB_MAP 含立讯精密/002475/宁德时代/300750 擦洗项
   - 对外视图（详情/列表/教学）零真名泄漏
+  - 2026-08-03 杜总校正口径：每行业 国际(global)≤5 + 国内(domestic)≤5，合计≤10
+    （非全局封顶 6）。半导体首批即拉满 10 强（国际5：台积电/阿斯麦/英伟达/三星/日月光；
+    国内5：中芯国际/北方华创/豪威/兆易/长电）。
 - P2-B 设备预设：设备库从半导体 6 类扩至 3 行业 12 类
   - EQUIPMENT_CATEGORIES 含 3C(SMT/CNC/注塑) + 新能源(涂布/卷绕/化成分容)
   - PROFILES 含 smt_1/cnc_1/injection_1/coating_1/winding_1/formation_1
   - presets.get_preset_summary() equipment_types 覆盖新行业设备类型
 
-🔴 匿名铁律：LEAK_TOKENS 对一切外发结果断言零真名。
+🔴 匿名铁律：LEAK_TOKENS 对一切外发结果断言零真名（与 compliance_reviewer 完全一致）。
 """
 
 import json
@@ -26,11 +29,20 @@ from src.agents.pm_maintenance import equipment_profiles
 from src.presets import get_preset_summary
 
 # 所有真实锚定片段（含历史 + 新增），外发结果一律不得出现
+# 与 compliance_reviewer.agent.LEAK_TOKENS 保持完全一致
 LEAK_TOKENS = [
     "中兴", "000063", "ZTE", "zte",
     "中芯", "688981", "00981", "SMIC", "smic",
     "立讯", "002475", "Luxshare", "luxshare",
     "宁德", "300750", "CATL", "catl",
+    # 2026-08-03 第二批（每行业 国际5+国内5）：半导体 7 家新锚
+    "英伟达", "輝達", "NVIDIA", "nvidia", "NVDA", "黄仁勋", "黃仁勳", "Jensen Huang",
+    "三星电子", "三星電子", "三星", "Samsung", "samsung", "005930",
+    "日月光投控", "日月光", "ASE Technology", "ASEH", "3711",   # ⚠️ 绝无裸 ASE
+    "北方华创", "002371", "NAURA", "naura", "芯源微",
+    "豪威集团", "韦尔股份", "豪威", "韦尔", "603501", "OmniVision", "omnivision",
+    "兆易创新", "兆易", "603986", "GigaDevice", "gigadevice",
+    "长电科技", "长电微电子", "长电微", "长电", "600584", "JCET", "jcet", "晟碟",
 ]
 
 
@@ -43,15 +55,46 @@ def _assert_no_leak(result, where: str):
 def test_p2a_case_count_four_industries():
     ids = {c["case_id"] for c in DEFAULT_CASES}
     assert "case_telecom_2026" in ids
-    assert "case_semicon_2026" in ids
+    assert "case_semicon_2026" in ids          # 国内晶圆代工（中芯国际）
     assert "case_3c_2026" in ids
     assert "case_newenergy_2026" in ids
-    # 2026-08-03 杜总定调：第一批全球化锚（晶圆代工 + 光刻设备）
-    assert "case_semicon_foundry_global_2026" in ids
-    assert "case_semicon_litho_global_2026" in ids
-    # 🔴 范围纪律铁律：研究案例锚定企业总数封顶 6，不得再扩（2026-08-03 杜总定调）
-    assert len(DEFAULT_CASES) == 6, f"预期 6 案例（封顶），实际 {len(DEFAULT_CASES)}"
-    assert len(DEFAULT_CASES) <= 6, "❌ 违反范围纪律：锚定企业总数不得超过 6"
+    # 2026-08-03 杜总定调：每行业 国际5 + 国内5 = 10 强（半导体首批拉满）
+    # 国际 5 强
+    for cid in ("case_semicon_foundry_global_2026",   # 台积电
+                "case_semicon_litho_global_2026",     # 阿斯麦
+                "case_semicon_design_global_2026",    # 英伟达
+                "case_semicon_memory_global_2026",    # 三星电子
+                "case_semicon_osat_global_2026"):     # 日月光
+        assert cid in ids, f"缺国际锚 {cid}"
+    # 国内 5 强（含中芯国际 + 4 家 2026-08-03 第二批）
+    for cid in ("case_semicon_equipment_cn_2026",     # 北方华创
+                "case_semicon_cis_cn_2026",           # 豪威集团
+                "case_semicon_memory_cn_2026",        # 兆易创新
+                "case_semicon_osat_cn_2026"):         # 长电科技
+        assert cid in ids, f"缺国内锚 {cid}"
+
+    # 🔴 每行业配额铁律（2026-08-03 杜总校正口径，非全局封顶）：
+    # 每行业 国际(global)≤5 且 国内(domestic)≤5，合计≤10。分组键 = industry_key。
+    by_key: dict = {}
+    for c in DEFAULT_CASES:
+        bucket = by_key.setdefault(c["industry_key"], {"global": 0, "domestic": 0, "other": 0})
+        sc = c.get("scope")
+        if sc == "global":
+            bucket["global"] += 1
+        elif sc == "domestic":
+            bucket["domestic"] += 1
+        else:
+            bucket["other"] += 1
+    for key, cnt in by_key.items():
+        assert cnt["global"] <= 5, f"❌ {key} 国际锚超 5：{cnt['global']}"
+        assert cnt["domestic"] <= 5, f"❌ {key} 国内锚超 5：{cnt['domestic']}"
+        assert cnt["global"] + cnt["domestic"] <= 10, f"❌ {key} 合计超 10"
+
+    # 半导体首批应已拉满 10（国际5 + 国内5）
+    semi = by_key["semiconductor"]
+    assert semi["global"] == 5, f"半导体国际锚应=5，实={semi['global']}"
+    assert semi["domestic"] == 5, f"半导体国内锚应=5（含中芯国际），实={semi['domestic']}"
+    assert semi["global"] + semi["domestic"] == 10, f"半导体合计应=10，实={semi['global'] + semi['domestic']}"
 
 
 def test_p2a_global_anchors_scope_and_fields():
@@ -77,6 +120,23 @@ def test_p2a_global_anchor_scrub_tokens():
     for tok in ["台积电", "TSMC", "2330", "阿斯麦", "ASML"]:
         assert tok in flat, f"ANON_SCRUB_MAP 缺擦洗项 {tok}"
     assert toks.index("TSMC") < toks.index("TSM"), "TSMC 必须排在 TSM 之前，否则子串错洗"
+    # 第二批 7 家新锚：长 token 在前（防子串错洗）
+    for tok in ["英伟达", "NVIDIA", "NVDA",
+                "三星电子", "Samsung", "005930",
+                "日月光投控", "日月光", "ASE Technology",
+                "北方华创", "NAURA",
+                "豪威集团", "韦尔股份", "OmniVision",
+                "兆易创新", "GigaDevice",
+                "长电科技", "JCET"]:
+        assert tok in flat, f"ANON_SCRUB_MAP 缺第二批擦洗项 {tok}"
+    # 长 token 排序纪律：长在前，短在后
+    assert toks.index("三星电子") < toks.index("三星"), "三星电子 须排在 三星 之前"
+    assert toks.index("日月光投控") < toks.index("日月光"), "日月光投控 须排在 日月光 之前"
+    assert toks.index("豪威集团") < toks.index("豪威"), "豪威集团 须排在 豪威 之前"
+    assert toks.index("韦尔股份") < toks.index("韦尔"), "韦尔股份 须排在 韦尔 之前"
+    assert toks.index("兆易创新") < toks.index("兆易"), "兆易创新 须排在 兆易 之前"
+    assert toks.index("长电科技") < toks.index("长电微电子") < toks.index("长电微") < toks.index("长电"), \
+        "长电科技 > 长电微电子 > 长电微 > 长电 顺序错乱"
 
 
 def test_p2a_new_cases_have_required_fields():
@@ -96,6 +156,16 @@ def test_p2a_anon_scrub_map_has_new_anchors():
     flat = " ".join(a for a, _ in ANON_SCRUB_MAP)
     for tok in ["立讯精密", "002475", "宁德时代", "300750"]:
         assert tok in flat, f"ANON_SCRUB_MAP 缺擦洗项 {tok}"
+
+
+def test_p2a_semicon_anchors_have_scope_and_node():
+    """半导体 10 强：每个锚必须含 scope(国际/国内) + value_chain_node + real_anchor。"""
+    semi = [c for c in DEFAULT_CASES if c["industry_key"] == "semiconductor"]
+    assert len(semi) == 10, f"半导体锚应=10，实={len(semi)}"
+    for c in semi:
+        assert c.get("scope") in ("global", "domestic"), f"{c['case_id']} 缺合法 scope"
+        assert c.get("value_chain_node"), f"{c['case_id']} 缺 value_chain_node"
+        assert c.get("real_anchor"), f"{c['case_id']} 缺 real_anchor（内部锚定）"
 
 
 @pytest.mark.asyncio
