@@ -79,4 +79,6 @@
 - 基线文档：✅ 已建（本文）。
 - 刀1 迭代1：✅ 完成（taxonomy 常量 + builder 最小抽取 + 4 单测全绿；半导体 5 价值链节点归一化后生成对标边；对外零真名；**未部署，纯后端结构化，符合基线延迟部署纪律**）。
 - 刀1 迭代2：✅ 完成（taxonomy 加 `VALUE_CHAIN_TOPOLOGY` 半导体 5 节点上下游拓扑常量；builder 据拓扑生成 `SUPPLIES` 供应边，连接上下游企业锚；新增 `test_kg_supplies_topology` 断言拓扑方向/零真名/不臆造未授权行业；共 5 测全绿；纯后端未部署）。
-- 刀1 迭代3、刀2/3/4：⚪ 未开始（按串行纪律，完成迭代2 验证后再开迭代3）。
+- 刀1 迭代3：✅ 完成（新 `src/knowledge_graph/retrieval.py`：`get_graph()` 懒加载工厂 + `get_enterprises_by_node/get_competitors/get_upstream/get_downstream` 匿名检索视图 + `resolve_binding_target` 绑定钩子骨架；KGGraph 加 enterprises_by_node/competitors_of/upstream_of/downstream_of 方法；`tests/test_kg_iter3.py` 7 测全绿；对外零真名；纯后端未部署）。
+- **刀1 知识图谱升级：✅ 全刀完成（迭代1/2/3 单测全绿 + 全量 618 测试 0 回归，符合串行纪律）**。
+- 刀2/3/4：⚪ 未开始（按串行纪律，刀1 验证通过后开刀2）。

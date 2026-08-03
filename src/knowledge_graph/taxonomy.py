@@ -40,6 +40,6 @@ VALUE_CHAIN_TOPOLOGY: Dict[str, List[str]] = {
     "semiconductor|设计": ["semiconductor|代工"],
     "semiconductor|设备": ["semiconductor|代工", "semiconductor|封测"],
     "semiconductor|代工": ["semiconductor|封测"],
-    "semiconductor|存储": [],            # 存储与 IDM 多为垂直整合，对外不臆造下游
+    "semiconductor|存储": ["semiconductor|封测"],  # 存储与 IDM 行业层面仍向封测供货（封测为产业链出口）
     "semiconductor|封测": [],
 }

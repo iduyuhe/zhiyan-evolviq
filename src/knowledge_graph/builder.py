@@ -91,6 +91,44 @@ class KGGraph:
             return len(self.edges)
         return sum(1 for e in self.edges if e.relation == relation)
 
+    # ---- 刀1 迭代3：检索接口（按行业 / 节点 / 对标查询）----
+    def enterprises_by_node(self, industry_key: str, node_category: str) -> List["KGNode"]:
+        """同一 (行业, 价值链节点类别) 下的企业锚（对标载体）。"""
+        return [
+            n for n in self.nodes
+            if n.level == "enterprise"
+            and n.props.get("industry_key") == industry_key
+            and n.props.get("node_category") == node_category
+        ]
+
+    def competitors_of(self, enterprise_id: str) -> List["KGNode"]:
+        """与给定企业锚同节点对标的企业（COMPETES_WITH 双向）。"""
+        ids = {
+            e.target for e in self.edges
+            if e.relation == "COMPETES_WITH" and e.source == enterprise_id
+        }
+        ids |= {
+            e.source for e in self.edges
+            if e.relation == "COMPETES_WITH" and e.target == enterprise_id
+        }
+        return [n for n in self.nodes if n.id in ids]
+
+    def upstream_of(self, enterprise_id: str) -> List["KGNode"]:
+        """给定企业锚的上游供应商（SUPPLIES 中 target==该企业锚）。"""
+        ids = {
+            e.source for e in self.edges
+            if e.relation == "SUPPLIES" and e.target == enterprise_id
+        }
+        return [n for n in self.nodes if n.id in ids]
+
+    def downstream_of(self, enterprise_id: str) -> List["KGNode"]:
+        """给定企业锚的下游客户（SUPPLIES 中 source==该企业锚）。"""
+        ids = {
+            e.target for e in self.edges
+            if e.relation == "SUPPLIES" and e.source == enterprise_id
+        }
+        return [n for n in self.nodes if n.id in ids]
+
 
 def build_from_cases(cases: List[Dict[str, Any]]) -> KGGraph:
     """从研究案例抽取最小知识图谱。
