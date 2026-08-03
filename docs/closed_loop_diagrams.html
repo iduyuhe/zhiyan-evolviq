@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>物理AI闭环 · 三图</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#fff;color:#2C2C2A;margin:0;padding:32px;}
+  h1{font-size:20px;font-weight:600;color:#0C447C;margin:0 0 4px;}
+  .sub{font-size:13px;color:#5F5E5A;margin:0 0 28px;}
+  .card{border:1px solid #D3D1C7;border-radius:12px;padding:20px;margin:0 0 28px;background:#fff;}
+  .card h2{font-size:15px;font-weight:600;margin:0 0 4px;color:#042C53;}
+  .card p{font-size:13px;line-height:1.7;color:#444441;margin:8px 0 0;}
+  svg{display:block;margin:0 auto;max-width:100%;height:auto;}
+</style>
+</head>
+<body>
+<h1>物理AI完整闭环 · 三张图</h1>
+<p class="sub">感知 · 认知 · 决策 · 执行 · 自我进化 —— 一脊 · 一体 · 四体系 · 一底座 · 五环节闭环</p>
+
+<div class="card">
+  <h2>图一 · 五环节闭环总览</h2>
+  <p>物理AI的运转流：感知（接入物理信号）→ 认知（记忆+知识图谱+技能推理）→ <b>决策</b>（认知与执行之间的枢纽）→ 执行（手脚+人机协同闸门）→ <b>自我进化</b>（评估信号回灌资产层）。闭环由四体系支撑，智能孪生为体，治理底座横切。决策与进化是本次补齐的两环。</p>
+  <svg viewBox="0 0 680 410" role="img" xmlns="http://www.w3.org/2000/svg">
+    <title>五环节闭环</title>
+    <defs>
+      <marker id="arw" markerWidth="10" markerHeight="10" refX="7.5" refY="5" orient="auto">
+        <path d="M0,0 L9,5 L0,10 z" fill="#185FA5"/>
+      </marker>
+    </defs>
+    <line x1="384" y1="112" x2="410" y2="131" stroke="#85B7EB" stroke-width="2.5" marker-end="url(#arw)"/>
+    <line x1="437" y1="215" x2="427" y2="245" stroke="#85B7EB" stroke-width="2.5" marker-end="url(#arw)"/>
+    <line x1="355" y1="297" x2="325" y2="297" stroke="#85B7EB" stroke-width="2.5" marker-end="url(#arw)"/>
+    <line x1="253" y1="245" x2="243" y2="215" stroke="#85B7EB" stroke-width="2.5" marker-end="url(#arw)"/>
+    <line x1="270" y1="131" x2="296" y2="112" stroke="#85B7EB" stroke-width="2.5" marker-end="url(#arw)"/>
+    <circle cx="340" cy="200" r="52" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="2"/>
+    <text x="340" y="194" text-anchor="middle" font-size="13" font-weight="500" fill="#2C2C2A">智能孪生</text>
+    <text x="340" y="212" text-anchor="middle" font-size="12" font-weight="400" fill="#5F5E5A">为体 · 治理横切</text>
+    <rect x="292" y="57" width="96" height="46" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="2"/>
+    <text x="340" y="78" text-anchor="middle" font-size="13" font-weight="500" fill="#0C447C">感知 Sense</text>
+    <text x="340" y="95" text-anchor="middle" font-size="11" font-weight="400" fill="#5F5E5A">网关·OPC-UA·UNS·⑥路</text>
+    <rect x="406" y="140" width="96" height="46" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="2"/>
+    <text x="454" y="161" text-anchor="middle" font-size="13" font-weight="500" fill="#0C447C">认知 Cognize</text>
+    <text x="454" y="178" text-anchor="middle" font-size="11" font-weight="400" fill="#5F5E5A">记忆+图谱+技能推理</text>
+    <rect x="362" y="274" width="96" height="46" rx="10" fill="#FAEEDA" stroke="#BA7517" stroke-width="2.5"/>
+    <text x="410" y="295" text-anchor="middle" font-size="13" font-weight="500" fill="#633806">决策 Decide</text>
+    <text x="410" y="312" text-anchor="middle" font-size="11" font-weight="400" fill="#854F0B">多目标权衡·约束</text>
+    <rect x="222" y="274" width="96" height="46" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="2"/>
+    <text x="270" y="295" text-anchor="middle" font-size="13" font-weight="500" fill="#0C447C">执行 Act</text>
+    <text x="270" y="312" text-anchor="middle" font-size="11" font-weight="400" fill="#5F5E5A">手/脚·人机闸门</text>
+    <rect x="178" y="140" width="96" height="46" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="2"/>
+    <text x="226" y="161" text-anchor="middle" font-size="13" font-weight="500" fill="#0C447C">进化 Evolve</text>
+    <text x="226" y="178" text-anchor="middle" font-size="11" font-weight="400" fill="#5F5E5A">评估信号回灌资产</text>
+    <text x="340" y="392" text-anchor="middle" font-size="11" font-weight="400" fill="#888780">闭环由四体系支撑；决策是认知到执行的枢纽，进化是回灌引擎</text>
+  </svg>
+</div>
+
+<div class="card">
+  <h2>图二 · 决策体系本体</h2>
+  <p>决策不是新模块，而是认知与行动之间的<b>枢纽层</b>：输入 = 感知信号流 + 记忆（历史）+ 知识图谱/技能（关系与能力）；处理 = 情景推演 / 多目标权衡 / 约束校验（治理前置）/ 候选动作生成，且每个决策证据可追溯（事实锚点铁律）；输出 = 决策建议（给人）+ 可执行动作（交执行层）。按脊分四级：行业级情报、产业级对标、企业级运营、岗位级动作。北极星 = <b>决策实时化率</b>（MVP ≥ 40%，稳态 ≥ 85%）。</p>
+  <svg viewBox="0 0 680 390" role="img" xmlns="http://www.w3.org/2000/svg">
+    <title>决策体系本体</title>
+    <defs>
+      <marker id="a2" markerWidth="10" markerHeight="10" refX="7.5" refY="5" orient="auto">
+        <path d="M0,0 L9,5 L0,10 z" fill="#185FA5"/>
+      </marker>
+    </defs>
+    <rect x="20" y="18" width="640" height="34" rx="8" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.5"/>
+    <text x="340" y="40" text-anchor="middle" font-size="13" font-weight="500" fill="#633806">北极星 · 决策实时化率：MVP ≥ 40% → 稳态 ≥ 85%</text>
+    <rect x="20" y="70" width="150" height="60" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.5"/>
+    <text x="95" y="95" text-anchor="middle" font-size="12.5" font-weight="500" fill="#0C447C">感知信号流</text>
+    <text x="95" y="114" text-anchor="middle" font-size="11" font-weight="400" fill="#5F5E5A">实时 · 多源</text>
+    <rect x="20" y="150" width="150" height="60" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.5"/>
+    <text x="95" y="175" text-anchor="middle" font-size="12.5" font-weight="500" fill="#0C447C">记忆 · 历史</text>
+    <text x="95" y="194" text-anchor="middle" font-size="11" font-weight="400" fill="#5F5E5A">行业/产业/企业/角色</text>
+    <rect x="20" y="230" width="150" height="60" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.5"/>
+    <text x="95" y="255" text-anchor="middle" font-size="12.5" font-weight="500" fill="#0C447C">知识图谱 · 技能</text>
+    <text x="95" y="274" text-anchor="middle" font-size="11" font-weight="400" fill="#5F5E5A">关系 / 能力</text>
+    <rect x="210" y="80" width="210" height="210" rx="12" fill="#FAEEDA" stroke="#BA7517" stroke-width="2.5"/>
+    <text x="315" y="108" text-anchor="middle" font-size="14" font-weight="500" fill="#633806">决策引擎</text>
+    <line x1="230" y1="120" x2="400" y2="120" stroke="#EF9F27" stroke-width="1"/>
+    <text x="315" y="146" text-anchor="middle" font-size="12" font-weight="400" fill="#412402">情景推演</text>
+    <text x="315" y="172" text-anchor="middle" font-size="12" font-weight="400" fill="#412402">多目标权衡</text>
+    <text x="315" y="198" text-anchor="middle" font-size="12" font-weight="400" fill="#412402">约束校验（治理前置）</text>
+    <text x="315" y="224" text-anchor="middle" font-size="12" font-weight="400" fill="#412402">候选动作生成</text>
+    <text x="315" y="262" text-anchor="middle" font-size="10.5" font-weight="400" fill="#854F0B">证据可追溯（事实锚点铁律）</text>
+    <line x1="170" y1="100" x2="205" y2="140" stroke="#85B7EB" stroke-width="2" marker-end="url(#a2)"/>
+    <line x1="170" y1="180" x2="205" y2="180" stroke="#85B7EB" stroke-width="2" marker-end="url(#a2)"/>
+    <line x1="170" y1="260" x2="205" y2="220" stroke="#85B7EB" stroke-width="2" marker-end="url(#a2)"/>
+    <rect x="450" y="120" width="170" height="130" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.5"/>
+    <text x="535" y="146" text-anchor="middle" font-size="12.5" font-weight="500" fill="#0C447C">决策输出</text>
+    <text x="535" y="172" text-anchor="middle" font-size="11.5" font-weight="400" fill="#0C447C">· 决策建议（给人）</text>
+    <text x="535" y="196" text-anchor="middle" font-size="11.5" font-weight="400" fill="#0C447C">· 可执行动作</text>
+    <text x="535" y="220" text-anchor="middle" font-size="11" font-weight="400" fill="#5F5E5A">交执行层（行动体系）</text>
+    <line x1="420" y1="185" x2="448" y2="185" stroke="#85B7EB" stroke-width="2" marker-end="url(#a2)"/>
+    <rect x="20" y="320" width="640" height="46" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1.2"/>
+    <text x="95" y="348" text-anchor="middle" font-size="11.5" font-weight="500" fill="#2C2C2A">行业级情报决策</text>
+    <text x="270" y="348" text-anchor="middle" font-size="11.5" font-weight="500" fill="#2C2C2A">产业级对标决策</text>
+    <text x="445" y="348" text-anchor="middle" font-size="11.5" font-weight="500" fill="#2C2C2A">企业级运营决策</text>
+    <text x="615" y="348" text-anchor="middle" font-size="11.5" font-weight="500" fill="#2C2C2A">岗位级动作决策</text>
+  </svg>
+</div>
+
+<div class="card">
+  <h2>图三 · 自我进化引擎（进化在资产层，不在参数层）</h2>
+  <p>自我进化的燃料是<b>评估信号</b>：① 执行结果（反馈/成效）→ ② 评估（决策质量 / 行动效果 / 记忆准确度）→ ③ 更新四类资产（记忆 / 知识图谱 / 技能 / 策略阈值）→ ④ 回灌认知（下一轮更准）。关键判断：进化发生在 <b>Harness 资产层</b>（宝库、案例、预设、阈值），<b>而非模型参数层</b>——这正对应我们"进化单位=资产，非模型"的定位，也是工业 AGI 与通用 AGI 的根本分野。L0→L3 阶梯：静态种子 → 运行时事件积累 → 评估信号驱动更新 → 跨企业复利。</p>
+  <svg viewBox="0 0 680 370" role="img" xmlns="http://www.w3.org/2000/svg">
+    <title>自我进化引擎</title>
+    <defs>
+      <marker id="a3" markerWidth="10" markerHeight="10" refX="7.5" refY="5" orient="auto">
+        <path d="M0,0 L9,5 L0,10 z" fill="#0F6E56"/>
+      </marker>
+    </defs>
+    <rect x="20" y="40" width="140" height="70" rx="10" fill="#EAF3DE" stroke="#3B6D11" stroke-width="1.5"/>
+    <text x="90" y="68" text-anchor="middle" font-size="12.5" font-weight="500" fill="#173404">① 执行结果</text>
+    <text x="90" y="88" text-anchor="middle" font-size="11" font-weight="400" fill="#27500A">反馈 / 成效</text>
+    <rect x="185" y="40" width="150" height="70" rx="10" fill="#EAF3DE" stroke="#3B6D11" stroke-width="1.5"/>
+    <text x="260" y="62" text-anchor="middle" font-size="12.5" font-weight="500" fill="#173404">② 评估信号</text>
+    <text x="260" y="80" text-anchor="middle" font-size="10.5" font-weight="400" fill="#27500A">决策质量/行动效果/记忆准度</text>
+    <rect x="360" y="40" width="150" height="70" rx="10" fill="#EAF3DE" stroke="#3B6D11" stroke-width="1.5"/>
+    <text x="435" y="62" text-anchor="middle" font-size="12.5" font-weight="500" fill="#173404">③ 更新资产</text>
+    <text x="435" y="80" text-anchor="middle" font-size="10.5" font-weight="400" fill="#27500A">记忆/KG/技能/策略阈值</text>
+    <rect x="535" y="40" width="125" height="70" rx="10" fill="#EAF3DE" stroke="#3B6D11" stroke-width="1.5"/>
+    <text x="597" y="68" text-anchor="middle" font-size="12.5" font-weight="500" fill="#173404">④ 回灌认知</text>
+    <text x="597" y="88" text-anchor="middle" font-size="11" font-weight="400" fill="#27500A">下一轮更准</text>
+    <line x1="160" y1="75" x2="183" y2="75" stroke="#639922" stroke-width="2" marker-end="url(#a3)"/>
+    <line x1="335" y1="75" x2="358" y2="75" stroke="#639922" stroke-width="2" marker-end="url(#a3)"/>
+    <line x1="510" y1="75" x2="533" y2="75" stroke="#639922" stroke-width="2" marker-end="url(#a3)"/>
+    <path d="M597,110 C597,200 90,200 90,110" fill="none" stroke="#639922" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#a3)"/>
+    <text x="340" y="195" text-anchor="middle" font-size="11" font-weight="400" fill="#3B6D11">闭环自我进化：每轮执行都成为下一轮认知的资产</text>
+    <text x="20" y="250" font-size="12.5" font-weight="500" fill="#173404">进化单位 = 资产（Harness 层），而非模型参数（Model 层）</text>
+    <rect x="20" y="262" width="150" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1.2"/>
+    <text x="95" y="286" text-anchor="middle" font-size="12" font-weight="500" fill="#2C2C2A">L0 静态种子</text>
+    <text x="95" y="304" text-anchor="middle" font-size="10.5" font-weight="400" fill="#444441">预设/案例/信号</text>
+    <rect x="185" y="262" width="150" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1.2"/>
+    <text x="260" y="286" text-anchor="middle" font-size="12" font-weight="500" fill="#2C2C2A">L1 事件积累</text>
+    <text x="260" y="304" text-anchor="middle" font-size="10.5" font-weight="400" fill="#444441">运行时 UNS 沉淀</text>
+    <rect x="350" y="262" width="150" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1.2"/>
+    <text x="425" y="286" text-anchor="middle" font-size="12" font-weight="500" fill="#2C2C2A">L2 评估驱动</text>
+    <text x="425" y="304" text-anchor="middle" font-size="10.5" font-weight="400" fill="#444441">信号闭环改写资产</text>
+    <rect x="515" y="262" width="145" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1.2"/>
+    <text x="587" y="286" text-anchor="middle" font-size="12" font-weight="500" fill="#2C2C2A">L3 跨企业复利</text>
+    <text x="587" y="304" text-anchor="middle" font-size="10.5" font-weight="400" fill="#444441">宝库随租户增长</text>
+  </svg>
+</div>
+</body>
+</html>
