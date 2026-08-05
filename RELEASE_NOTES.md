@@ -1,13 +1,24 @@
 # EvolvIQ (智衍) · Release Notes
 
-> Latest stable: **v20.4 — Self-Evolution (P2)** · 2026-07-25
+> Latest stable: **v20.5 — Public Open-Source Launch** · 2026-08-05
 > License: Apache-2.0 · Repo: `iduyuhe/zhiyan-evolviq`
 
 EvolvIQ is the world's first open-source, AI-native industrial agent platform —
-**20 pre-built agents** (L2 shop-floor protocols → L4 enterprise decision intelligence)
+**25 pre-built agents** (L2 shop-floor protocols → L4 enterprise decision intelligence)
 with a closed loop of **Memory (P0) → Self-Learning (P1) → Self-Evolution (P2)**.
 
 ---
+
+## v20.5 — Public Open-Source Launch · 2026-08-05
+
+This is the build published to GitHub as the world's first open-source, AI-native industrial agent platform.
+
+- **25 pre-built industrial Agents** (was 20) — added the Platform & Governance layer (`industry_research`, `case_curator`, `enterprise_onboarding`, `compliance_reviewer`, `bid_intel`).
+- **Production Data Layer (P1)** + **Live Knowledge Graph & Multi-Tenant Data (P2)** closed loop — agents auto-switch seed→live, every connector degrades gracefully.
+- **Public online Demo** (demo tenant) + open Apache-2.0 launch.
+- Continues the Memory (P0) → Self-Learning (P1) → Self-Evolution (P2) loop from v20.4.
+
+See the [GitHub Release v20.5](https://github.com/iduyuhe/zhiyan-evolviq/releases/tag/v20.5) for the full feature list.
 
 ## v20.4 — Self-Evolution (P2) · 2026-07-25
 

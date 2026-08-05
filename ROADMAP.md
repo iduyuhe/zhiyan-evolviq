@@ -15,6 +15,7 @@
 - Cross-enterprise federated learning + supply-chain agent federation + industrial ontology self-growth
 - Production-ready: enterprise auth / one-click deploy / industry knowledge base / ERP-MES writeback audit bridge / monitoring & alerting
 - **207 passed, zero regression**; live at demo host; Apache-2.0 fully open source
+- Public open-source release **v20.5** published on GitHub (Apache-2.0) — world's first open-source AI-native industrial agent platform
 
 ## 🔜 Near-term (the real gaps — ecosystem & first customer)
 

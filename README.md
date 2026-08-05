@@ -10,7 +10,7 @@
 [![Version](https://img.shields.io/badge/version-v20.5-blue)](https://github.com/iduyuhe/zhiyan-evolviq)
 [![Latest Release](https://img.shields.io/badge/release-v20.5%20Data%20Layer-green)](RELEASE_NOTES.md)
 
-> 🏷 **Latest release: [v20.5 — Production Data Layer (P1) + Multi-Tenant & Live Graph (P2)](RELEASE_NOTES.md)** (2026-07-25) · 25 Agents · Memory (P0) + Self-Learning (P1) + Self-Evolution (P2) + Production Data Layer closed loop
+> 🏷 **Latest release: [v20.5 — Production Data Layer (P1) + Multi-Tenant & Live Graph (P2)](RELEASE_NOTES.md)** (2026-08-05) · 25 Agents · Memory (P0) + Self-Learning (P1) + Self-Evolution (P2) + Production Data Layer closed loop
 >
 > 📖 **User Guide**: [docs/GUIDE.md](docs/GUIDE.md) · [中文指南](docs/GUIDE.zh.md)
 
@@ -156,6 +156,18 @@ docker compose up -d
 
 ---
 
+## 🙏 致谢 / Contributors
+
+EvolvIQ 由社区共建，特别感谢早期朋友让这个项目有了第一批观众与更稳的代码：
+
+- ⭐ 首批 Star：**@elysium3927 @madhanio @Yangj2003** —— 你们是这个项目最早的一批观众，非常感谢。
+- 🐛 **@xingswxingsw** —— 提交了一系列高质量 bug 报告（#44–#50：网关前缀、子路径部署、认证解包、监控告警、顶栏布局……），每一个都精准命中真实问题，平台因此更稳。欢迎继续提 issue！
+- 🤝 每一位提 Issue、PR 与建议的朋友 —— 这个项目是活的，我们会持续维护。
+
+> 想被写进致谢？提一个被合并的 PR，或报告一个被修复的 bug，我们就会把你加进来。
+
+---
+
 ## 🏗 Architecture
 
 ![EvolvIQ Architecture](architecture.svg)
@@ -190,6 +202,15 @@ docker compose up -d
 - 🌐 Custom Domain Setup Guide: [docs/DOMAIN_GUIDE.md](docs/DOMAIN_GUIDE.md)
 - 🖼 Social preview image: `og_image.png` (upload in repo **Settings → Social preview**)
 - 🎬 Demo & explainer videos: see release assets / contact maintainers
+
+## 🏛 治理 / Governance
+
+EvolvIQ 是社区驱动的开源项目，治理原则公开透明：
+
+- **方向讨论** → GitHub [Discussions](https://github.com/iduyuhe/zhiyan-evolviq/discussions) 与 [Issues](https://github.com/iduyuhe/zhiyan-evolviq/issues)。重大变更先提 RFC（在 Discussions 开帖），再动手。
+- **人在回路**：任何自动进化（提示词 / 策略 / 知识图谱更新）都只进入 `proposed`，必须经人审批（`approve → apply`）才会生效——平台不会自己改业务数字。
+- **决策透明**：Roadmap 公开、Release Notes 公开、贡献入口公开。
+- **许可证**：Apache-2.0，永久全开源，无厂商锁定。
 
 ## 🛡 License
 
