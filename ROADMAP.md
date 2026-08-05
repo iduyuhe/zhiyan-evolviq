@@ -4,11 +4,11 @@
 
 ## ✅ Done (v29.8)
 
-- 20 industrial Agents (R&D → Manufacturing → Enterprise) + 65 MCP federation tools
+- 25 industrial Agents (R&D → Manufacturing → Enterprise) + 65 MCP federation tools
 - 4 protocol gateways (OPC-UA / MQTT / Modbus / IPC-CFX) with graceful degradation
 - Cross-Agent knowledge graph (Neo4j + in-memory fallback) + multi-tenant isolation + global JWT gate
 - Multi-Agent Orchestration (8 templates + 3-tier decomposition + DAG parallel)
-- Five-channel perception + lightweight UNS (gateway / system / human / social / meeting / collab)
+- Six-channel perception + lightweight UNS (gateway / system / human / social / meeting / environment)
 - Tacit capture (human / social / meeting / collab → experience store + KG draft, extract-and-anchor)
 - Blue-arc closed loop (execution consequences flow back to cognition layer)
 - Self-evolution P2 + holon governance panel + five-channel full self-evolution

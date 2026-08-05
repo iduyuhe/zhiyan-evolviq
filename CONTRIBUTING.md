@@ -9,6 +9,16 @@ Thanks for your interest in contributing! We welcome contributions from the comm
 3. **Commit** your changes with clear messages
 4. **Push** to your fork and open a **Pull Request**
 
+## Claiming an Issue (认领任务)
+
+New here? Start with a [`good first issue`](https://github.com/iduyuhe/zhiyan-evolviq/labels/good%20first%20issue):
+
+1. Browse the pool and pick one that interests you.
+2. Comment **"I'll take this"** (或中文「我来」) on the issue — a maintainer will assign it to you so others know it's taken.
+3. Follow the Development Setup below, open a PR, and we'll review promptly.
+
+**No coding required to help:** documentation, translations, industry demo-data, and bug reports are all welcome — just open an Issue or a Discussion. Every contribution, big or small, gets credited in our release notes.
+
 ## Development Setup
 
 ```bash

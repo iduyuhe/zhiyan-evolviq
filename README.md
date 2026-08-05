@@ -152,6 +152,7 @@ docker compose up -d
 - 💡 **提需求** → [Discussions](https://github.com/iduyuhe/zhiyan-evolviq/discussions)
 - 🛠 **写代码** → 认领 [Good First Issue](https://github.com/iduyuhe/zhiyan-evolviq/labels/good%20first%20issue)
 - ⭐ **用得好** → 点个 [Star](https://github.com/iduyuhe/zhiyan-evolviq)
+- 💬 **中文社区 / 教程案例** → 微信搜索公众号「工业5点0产业生态联盟」，获取上手教程、行业案例与活动
 
 ---
 
