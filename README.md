@@ -134,6 +134,17 @@ docker compose up -d
 
 ---
 
+## 👋 如何参与
+
+来了先别迷路 —— 四件事，任选你能做的：
+
+- 🐛 **提 Bug** → [Issues](https://github.com/iduyuhe/zhiyan-evolviq/issues)
+- 💡 **提需求** → [Discussions](https://github.com/iduyuhe/zhiyan-evolviq/discussions)
+- 🛠 **写代码** → 认领 [Good First Issue](https://github.com/iduyuhe/zhiyan-evolviq/labels/good%20first%20issue)
+- ⭐ **用得好** → 点个 [Star](https://github.com/iduyuhe/zhiyan-evolviq)
+
+---
+
 ## 🏗 Architecture
 
 ![EvolvIQ Architecture](architecture.svg)
