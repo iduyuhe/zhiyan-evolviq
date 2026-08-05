@@ -354,7 +354,6 @@ app.include_router(authn_api.router)  # 公开：登录/后端发现/OAuth 回�
 app.include_router(connectors_api.admin_router)            # 社交连接器管理（需 JWT）
 app.include_router(connectors_api.callback_router)         # 企微/钉钉回调（免 JWT，靠签名鉴权）
 app.include_router(wecom_api.router, dependencies=_AUTH_DEPS)  # 企微自建应用 H5（移动端第②阶；JWT 保护）
-app.include_router(wecom_api.public_router)                 # 企微扫码即联确认页（公开，OAuth 回跳）
 app.include_router(connectivity_api.router, dependencies=_AUTH_DEPS)  # 配置 UI 连通性验证（§4.4）
 app.include_router(env_perception_api.router)  # 环境感知第⑥路（v30.0 α）— 路由自带 Depends(require_auth)
 app.include_router(bom_api.router)  # BOM 上传+毛利影响（S2-5 #311）— 路由自带 Depends(require_auth)
