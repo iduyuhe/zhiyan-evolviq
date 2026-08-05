@@ -1,16 +1,16 @@
 # EvolvIQ (智衍) · AI-Native Industrial Agent Platform
 
-> **The world's first open-source, AI-native industrial agent platform** — 20 pre-built agents spanning L2 (shop-floor protocols) to L4 (enterprise decision intelligence), designed for electronics manufacturing and semiconductors.
+> **The world's first open-source, AI-native industrial agent platform** — 25 pre-built agents spanning L2 (shop-floor protocols) to L4 (enterprise decision intelligence), designed for electronics manufacturing and semiconductors.
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.13%2B-blue)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688)](https://fastapi.tiangolo.com/)
 [![CI](https://github.com/iduyuhe/zhiyan-evolviq/actions/workflows/ci.yml/badge.svg)](https://github.com/iduyuhe/zhiyan-evolviq/actions/workflows/ci.yml)
-[![Agents](https://img.shields.io/badge/Agents-20-blue)](https://github.com/iduyuhe/zhiyan-evolviq)
+[![Agents](https://img.shields.io/badge/Agents-25-blue)](https://github.com/iduyuhe/zhiyan-evolviq)
 [![Version](https://img.shields.io/badge/version-v20.5-blue)](https://github.com/iduyuhe/zhiyan-evolviq)
 [![Latest Release](https://img.shields.io/badge/release-v20.5%20Data%20Layer-green)](RELEASE_NOTES.md)
 
-> 🏷 **Latest release: [v20.5 — Production Data Layer (P1) + Multi-Tenant & Live Graph (P2)](RELEASE_NOTES.md)** (2026-07-25) · 20 Agents · Memory (P0) + Self-Learning (P1) + Self-Evolution (P2) + Production Data Layer closed loop
+> 🏷 **Latest release: [v20.5 — Production Data Layer (P1) + Multi-Tenant & Live Graph (P2)](RELEASE_NOTES.md)** (2026-07-25) · 25 Agents · Memory (P0) + Self-Learning (P1) + Self-Evolution (P2) + Production Data Layer closed loop
 >
 > 📖 **User Guide**: [docs/GUIDE.md](docs/GUIDE.md) · [中文指南](docs/GUIDE.zh.md)
 
@@ -18,7 +18,7 @@
 
 ## ✨ Features
 
-- **20 Industrial Agents**: Pre-built autonomous agents for supply chain, R&D, manufacturing, quality, and enterprise decision-making
+- **25 Industrial Agents**: Pre-built autonomous agents for supply chain, R&D, manufacturing, quality, and enterprise decision-making — spanning shop-floor protocols to enterprise decision intelligence
 - **65 MCP Tools**: Standardized tool federation via the Model Context Protocol (HTTP + stdio dual transport)
 - **4 Industrial Protocol Gateways**: Modbus, MQTT, OPC-UA, IPC-CFX — real or simulated mode
 - **Multi-Agent Orchestration**: 8 preset collaboration templates (NPI / OEE / Quality / Energy / ECO ...) — automatic goal decomposition, parallel agent execution, and cross-agent insight aggregation
@@ -37,7 +37,7 @@
 
 ---
 
-## 🧩 Agent Lineup (20 Agents)
+## 🧩 Agent Lineup (25 Agents)
 
 ### Shop-Floor Operations (11 Agents)
 
@@ -69,11 +69,21 @@
 | `rd_npi` | R&D NPI | NPI project lifecycle, milestone tracking, risk identification |
 | `procurement_manage` | Procurement | Supplier scorecard (delivery/quality/cost/compliance), contract management |
 
+### Platform & Governance (5 Agents)
+
+| Agent | Domain | Core Capability |
+|-------|--------|----------------|
+| `industry_research` | Industry Insight | Industry benchmarking & gap analysis — surfaces sector-level opportunities |
+| `case_curator` | Case Library | Builds & governs the research case library with strict anonymization (zero real names) |
+| `enterprise_onboarding` | Onboarding | "Register-to-onboard": auto-recommends avatars & permissions per enterprise |
+| `compliance_reviewer` | Compliance Review | Reviews external-facing materials, guarding red lines (e.g. zero real names) |
+| `bid_intel` | Bid Intelligence | Consumes public signals (voice / benchmark / market) to surface business opportunities |
+
 ---
 
 ## 🎼 Multi-Agent Orchestration (V1.5)
 
-> **The leap from "20 isolated tools" to "one collaborative team"**: a single goal like *"improve OEE"* automatically triggers 5 agents (OEE + changeover + maintenance + yield + energy) to work in parallel, then aggregates cross-domain insights into one report.
+> **The leap from "25 isolated agents" to "one collaborative team"**: a single goal like *"improve OEE"* automatically triggers 5 agents (OEE + changeover + maintenance + yield + energy) to work in parallel, then aggregates cross-domain insights into one report.
 
 **8 preset collaboration templates** out of the box — just describe your goal, the platform picks the right team:
 
