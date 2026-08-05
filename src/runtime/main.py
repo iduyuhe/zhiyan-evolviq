@@ -146,6 +146,16 @@ async def lifespan(app: FastAPI):
     except Exception as e:  # noqa: BLE001
         logger.warning(f"⚠️ 研究案例租户开通失败（不阻断启动）：{e}")
 
+    # 2026-08-05：公开演示账号（对外公布的 Demo 登录凭证，登录页展示；viewer 角色，安全）。
+    # 解决"只给网址、别人进不去"——任何人打开网址即可用 demo 账号登入体验演示数据。
+    try:
+        from src.runtime.seed_demo import seed_demo_account
+
+        demo_summary = await seed_demo_account()
+        logger.info(f"🔓 公开演示账号就绪：{demo_summary}")
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"⚠️ 公开演示账号开通失败（不阻断启动）：{e}")
+
     # 行业知识库模板：按 ZHIYAN_INDUSTRY 注入对应种子（船舶/铁路/电子…）
     industry = os.environ.get("ZHIYAN_INDUSTRY", "").strip()
     if industry:
@@ -344,6 +354,7 @@ app.include_router(authn_api.router)  # 公开：登录/后端发现/OAuth 回�
 app.include_router(connectors_api.admin_router)            # 社交连接器管理（需 JWT）
 app.include_router(connectors_api.callback_router)         # 企微/钉钉回调（免 JWT，靠签名鉴权）
 app.include_router(wecom_api.router, dependencies=_AUTH_DEPS)  # 企微自建应用 H5（移动端第②阶；JWT 保护）
+app.include_router(wecom_api.public_router)                 # 企微扫码即联确认页（公开，OAuth 回跳）
 app.include_router(connectivity_api.router, dependencies=_AUTH_DEPS)  # 配置 UI 连通性验证（§4.4）
 app.include_router(env_perception_api.router)  # 环境感知第⑥路（v30.0 α）— 路由自带 Depends(require_auth)
 app.include_router(bom_api.router)  # BOM 上传+毛利影响（S2-5 #311）— 路由自带 Depends(require_auth)

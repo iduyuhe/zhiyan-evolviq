@@ -87,6 +87,16 @@ export default function Login({ onLogin, defaultUsername = 'admin' }: Props) {
             未配置企业目录时，使用本地账号登录。<br />
             默认超级管理员：<span className="font-mono text-gray-500">admin</span>
           </p>
+
+          <div className="mt-3 rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-center">
+            <p className="text-[11px] text-gray-500 leading-relaxed">
+              公开体验账号（任何人可登录体验演示数据）：
+            </p>
+            <p className="text-xs text-gray-800 mt-1">
+              用户名 <span className="font-mono font-semibold">demo</span>
+              &nbsp;·&nbsp; 密码 <span className="font-mono font-semibold">EvolvIQ2026</span>
+            </p>
+          </div>
         </form>
 
         <p className="text-center text-[11px] text-gray-400 mt-6">
