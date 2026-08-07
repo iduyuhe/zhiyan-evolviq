@@ -73,3 +73,13 @@ _sync.bundle
 *.bundle
 tests/_tmp_*.py
 studio/tsconfig.tsbuildinfo
+
+# ===================== 本地垃圾 / 构建QA / 备份目录（绝不入库） =====================
+.trash_local/
+.pptxqa/
+.tmp_mobile_shots/
+docs/_qa/
+studio/dist_old_bak_*/
+studio/dist_verify/
+studio/.trash_local/
+gh_maintain_run.py

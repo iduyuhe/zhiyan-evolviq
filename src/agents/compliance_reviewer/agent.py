@@ -15,31 +15,10 @@ import json
 import logging
 
 from src.agents.base import BaseAgent
+# 🔴 零真名令牌单一真相源（2026-08-03 抽出到 src/common/leak.py，避免 im_bridge 牵动重型 agent import）
+from src.common.leak import LEAK_TOKENS
 
 logger = logging.getLogger(__name__)
-
-# 🔴 真实锚定名片段（与测试 / 各 agent 匿名铁律完全一致）
-# 2026-07-29 腿 B 首客 P3 扩展：第 2 案例（半导体·case_semicon_2026）真名片段一并封禁
-LEAK_TOKENS = ["中兴", "000063", "ZTE", "zte",
-               "中芯", "688981", "00981", "SMIC", "smic",
-               # 2026-08-03 第一批全球化锚：晶圆代工 + 光刻设备
-               "台积电", "台積電", "TSMC", "tsmc", "2330",
-               "阿斯麦", "阿斯麥", "ASML", "asml",
-               # 2026-08-03 第二批（每行业 国际5+国内5）：半导体 7 家新锚
-               # 全球 AI 算力芯片龙头
-               "英伟达", "輝達", "NVIDIA", "nvidia", "NVDA", "黄仁勋", "黃仁勳", "Jensen Huang",
-               # 全球存储与 IDM 巨头
-               "三星电子", "三星電子", "三星", "Samsung", "samsung", "005930",
-               # 全球封测龙头（⚠️ 绝无裸 "ASE"）
-               "日月光投控", "日月光", "ASE Technology", "ASEH", "3711",
-               # 国内半导体设备龙头
-               "北方华创", "002371", "NAURA", "naura", "芯源微",
-               # 国内图像传感器龙头（韦尔股份已更名豪威集团，新旧名皆封）
-               "豪威集团", "韦尔股份", "豪威", "韦尔", "603501", "OmniVision", "omnivision",
-               # 国内存储与 MCU 公司
-               "兆易创新", "兆易", "603986", "GigaDevice", "gigadevice",
-               # 国内封测龙头（长 token 在前：长电科技 > 长电微电子 > 长电微 > 长电）
-               "长电科技", "长电微电子", "长电微", "长电", "600584", "JCET", "jcet", "晟碟"]
 
 
 class ComplianceReviewerAgent(BaseAgent):
