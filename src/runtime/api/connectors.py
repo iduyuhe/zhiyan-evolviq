@@ -71,13 +71,27 @@ async def wecom_message(request: Request, msg_signature: str = "", timestamp: st
     parsed = c.verify_message(msg_signature, timestamp, nonce, body)
     if parsed is None:
         raise HTTPException(status_code=403, detail="签名/解密校验失败")
-    evt_id = c.publish(
-        text=parsed["content"],
-        entities=[f"wecom:{parsed['from_user']}"],
-        source=f"wecom://app",
-        confidence=1.0,
-    )
-    return {"status": "captured", "event_id": evt_id, "from": parsed["from_user"]}
+    # 🆕 IM 桥接路由（审批按钮 / 文本查询）——同步 await 以便即时回执；
+    # 生产若 LLM 规划延迟偏高，可改为 asyncio.create_task 异步派发（需保证企微 5s 回执）。
+    from src.runtime.wecom.im_bridge import handle_inbound
+
+    route = None
+    if parsed.get("event_key") or parsed.get("content"):
+        try:
+            route = await handle_inbound(parsed, corp_id=c.corp_id)
+        except Exception as e:  # noqa: BLE001
+            logger.warning(f"⚠️ [connectors] im_bridge 路由异常（不破管）：{e}")
+            route = {"ok": False, "reason": "im_bridge_error", "detail": str(e)}
+    # 文本消息仍摄入 UNS（隐性信号捕获）；按钮事件无 content 不摄入
+    if parsed.get("content"):
+        evt_id = c.publish(
+            text=parsed["content"],
+            entities=[f"wecom:{parsed['from_user']}"],
+            source=f"wecom://app",
+            confidence=1.0,
+        )
+        return {"status": "captured", "event_id": evt_id, "from": parsed["from_user"], "im_route": route}
+    return {"status": "im_routed", "from": parsed["from_user"], "im_route": route}
 
 
 # ============ 钉钉回调（免 JWT，靠加签鉴权）============

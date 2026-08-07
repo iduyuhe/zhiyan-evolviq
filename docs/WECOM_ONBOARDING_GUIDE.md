@@ -62,8 +62,35 @@ ZHIYAN_WECOM_AGENTID=1000002
 1. **凭证不落代码**：Secret/AgentId 只进服务器 `.env`；任何响应/日志不含 secret（`status()` 已做明文脱敏）。
 2. **推送内容限制**：缺料预警等**生产运营信息**可推；**客户真名/商业机密**不进推送内容（匿名铁律延伸）。
 3. **权限收敛**：`/wecom/push` 受 JWT 门禁；上线前建议加业务角色校验（如仅 supply_chain/厂长可触发），需要时告诉我加。
-4. **回调安全**：若后续接企微事件回调（免登 code 换取、消息回调），需配 Token/AESKey 并在后端验签——本骨架未含回调验签，属第二阶段。
+4. **回调安全**：企微事件/消息回调（免登 code 换取、审批按钮回调）**已实现**——`src/runtime/connectors/wecom_ingest.py` 含 Token/AESKey 验签 + AES-256-CBC 解密，`src/runtime/api/connectors.py` 的 `POST /connectors/wecom/callback` 为免 JWT 公开端点（靠签名鉴权）。详见「五、企微对话范式」。
 
 ## 四、缺料推送接入点（待配凭证后接线）
 
 推送触发点在 `supply_chain` Agent 缺料检测逻辑（`analyze_goal` 内 detect 缺料分支）。配好凭证后，我可以在检测到缺料风险 > 阈值时调用 `wecom_service.send_app_message(责任人, 缺料内容)`——这属于代码接线，凭证到位即可动工。
+
+## 五、企微对话范式：扫码即联 + 移动端审批/查询（2026-08-03 落地）
+
+> 在「免登 + 单向推送」骨架上，新增「对话 + 审批」半边：像 WorkBuddy 那样**扫码即联**，移动端**点卡片即终审**、**发消息即问分身**。
+> 代码：`src/runtime/wecom/binding.py`（绑定）+ `service.py`（卡片）+ `src/runtime/wecom/im_bridge.py`（桥接）+ `connectors.py` 回调路由 + `api/wecom.py` 端点。测试：`tests/test_wecom_im.py`（19 测全绿）。
+
+### 5.1 扫码即联（绑定）
+- 后端：`POST /api/wecom/bind`（JWT，对当前租户建一次性令牌）→ 返回 `confirm_url`（二维码文本，5 分钟有效）。
+- 用户：企微内扫码 → 打开确认页（走企微 OAuth `snsapi_base` 拿 userid）→ `GET /api/wecom/bind/confirm?token=&code=` → 落库 `corp ↔ tenant ↔ userid` 映射。
+- 模块：`src/runtime/wecom/binding.py`（进程级单例 `binding_store`，内存态；🔴 fail-closed：corp→tenant 解析失败一律 None）。
+- 演示态无 OAuth：confirm 支持 `userid` 兜底参数（仅联调用，生产走 code）。
+
+### 5.2 移动端审批（人留终审 · 最高 ROI）
+- 触发：后端待审会话建好后调 `POST /api/wecom/push-approval` → 推 `template_card`（「通过/驳回」按钮，EventKey=`APPROVE/REJECT:<session_id>`）。
+- 动作：用户点按钮 → 企微回调 `POST /api/connectors/wecom/callback`（验签/解密已有）→ `im_bridge.process_approval` → 复用现有 `engine.execute/reject` + 权限第③层复检 + 审计。
+- 🔴 **租户 fail-closed**：审批前校验 `session.tenant_id == 绑定解析 tenant`，跨租户一律拒绝（绝不执行）。
+- 价值：凌晨收到缺料/中标风险，手机点一下即终审，直接服务红线「分身不代签、人留终审」。
+
+### 5.3 移动端查询（只读 L0–L2）
+- 入站文本 → `im_bridge.handle_text_query` → **只 `plan` 不 `execute`**（零副作用，锁定 L0–L2）→ 回 `text_notice` 卡片（规划预览 + 路由分身）。
+- 🔴 出站文本一律 `sanitize_im_text` 零真名脱敏（复用 `src/common/leak.py`）。
+- 战略契合：IM 可作**外圈免费入口**——产业/行业级洞察免费问，企业级深度集成仍回 H5/付费。
+
+### 5.4 铁律（与既有一致）
+- 🔴 凭证仅进 `.env`（`ZHIYAN_WECOM_*`）；响应零密钥泄露；未配置优雅降级。
+- 🔴 所有出站文本经零真名过滤（单一真相源 `src/common/leak.py`，2026-08-03 从 `compliance_reviewer` 抽出，避免 im_bridge 牵动重型 agent import）。
+- IM ≠ 完整前端：IM = 通知 + 审批 + 快问；富决策驾驶舱仍在 H5/App。

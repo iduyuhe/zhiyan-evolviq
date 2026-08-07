@@ -205,6 +205,121 @@ class WeComService:
         except Exception:
             return ""
 
+    # ---------- OAuth：扫码即联拿 userid ----------
+
+    async def get_userid_by_oauth_code(self, code: str) -> str | None:
+        """企微网页授权（snsapi_base）code → userid。
+
+        用于「扫码即联」确认环节：用户在企微内打开确认页，企微带 code 回跳，
+        后端用 code 换成员 userid（不暴露手机号/姓名）。失败返回 None（优雅降级）。
+        """
+        if not self.configured or not code:
+            return None
+        token = await self.get_access_token()
+        if not token:
+            return None
+        try:
+            import httpx
+
+            async with httpx.AsyncClient(timeout=8.0) as client:
+                resp = await client.get(
+                    f"{_WECOM_API}/auth/getuserinfo",
+                    params={"access_token": token, "code": code},
+                )
+                data = resp.json()
+            if data.get("errcode") not in (0, None):
+                logger.warning(f"⚠️ [wecom] getuserinfo errcode={data.get('errcode')}")
+                return None
+            return data.get("userid") or None
+        except Exception as e:
+            logger.warning(f"⚠️ [wecom] get_userid_by_oauth_code 失败（不破管）：{e}")
+            return None
+
+    # ---------- 审批卡片（人留终审 · 移动端按钮回调） ----------
+
+    def build_approval_card(self, session_id: str, title: str, summary: str, tenant: str) -> dict:
+        """构造「按钮交互」模板卡片（template_card.button_interaction）。
+
+        卡片含「通过 / 驳回」两个按钮，事件键 EventKey 编码 session_id，
+        用户在企微内点击 → 回调带来 EventKey → im_bridge 路由到 engine.execute/reject。
+
+        🔴 卡片内容须经 im_bridge.sanitize_im_text 脱敏后再传入（此处不负责脱敏，
+        由调用方保证）；本方法只负责结构。
+        """
+        return {
+            "msgtype": "template_card",
+            "template_card": {
+                "card_type": "button_interaction",
+                "main_title": {
+                    "title": (title or "待审批决策")[:40],
+                    "desc": (tenant or "")[:40],
+                },
+                "sub_title_text": (summary or "")[:120],
+                "task_id": session_id,  # 用于回调关联
+                "button_list": [
+                    {
+                        "text": "通过",
+                        "style": 1,  # 绿色
+                        "key": f"APPROVE:{session_id}",
+                    },
+                    {
+                        "text": "驳回",
+                        "style": 2,  # 红色
+                        "key": f"REJECT:{session_id}",
+                    },
+                ],
+            },
+        }
+
+    def build_result_card(self, title: str, content: str) -> dict:
+        """构造「文本通知」模板卡片（template_card.text_notice），用于审批结果回执。"""
+        return {
+            "msgtype": "template_card",
+            "template_card": {
+                "card_type": "text_notice",
+                "main_title": {"title": (title or "执行结果")[:40]},
+                "sub_title_text": (content or "")[:512],
+                "card_action": {
+                    "type": 1,
+                    "url": "https://zhiyan.weomnitech.com.cn/",
+                },
+            },
+        }
+
+    async def send_template_card(self, userids: list[str], card: dict) -> dict:
+        """推送模板卡片（审批卡片 / 结果回执）。凭证缺失返回降级 dict。
+
+        与 send_app_message 一致：touser 竖线拼接（上限 1000），失败优雅降级不破管。
+        """
+        if not self.configured or not userids or not card:
+            return {"ok": False, "reason": "unconfigured_or_empty"}
+        token = await self.get_access_token()
+        if not token:
+            return {"ok": False, "reason": "token_failed"}
+        try:
+            import httpx
+
+            body = {
+                "touser": "|".join(userids[:1000]),
+                "msgtype": "template_card",
+                "agentid": int(self._agentid()),
+                "template_card": card["template_card"],
+            }
+            async with httpx.AsyncClient(timeout=8.0) as client:
+                resp = await client.post(
+                    f"{_WECOM_API}/message/send",
+                    params={"access_token": token},
+                    json=body,
+                )
+                data = resp.json()
+            if data.get("errcode") not in (0, None):
+                logger.warning(f"⚠️ [wecom] template_card send errcode={data.get('errcode')}")
+                return {"ok": False, "reason": f"wecom_error:{data.get('errcode')}", "detail": data.get("errmsg")}
+            return {"ok": True, "msgid": data.get("msgid")}
+        except Exception as e:
+            logger.warning(f"⚠️ [wecom] send_template_card 失败（不破管）：{e}")
+            return {"ok": False, "reason": "exception", "detail": str(e)}
+
 
 # 进程级单例
 wecom_service = WeComService()

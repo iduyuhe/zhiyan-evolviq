@@ -68,9 +68,12 @@ class WeComConnector(SocialConnectorBase):
         return echostr
 
     def verify_message(self, signature: str, timestamp: str, nonce: str, body: bytes) -> dict | None:
-        """消息推送校验 + 解密 → 返回 {content, from_user, msg_type}。
+        """消息推送校验 + 解密 → 返回 {content, from_user, msg_type, event, event_key, task_id}。
 
-        演示态（无 aes_key 或解密库不可用）：尝试把 body 当 JSON（含 content 字段）解析。
+        普通文本消息：content 有值、event 为 None。
+        模板卡片按钮回调（审批按钮）：MsgType=event、Event=template_card_event、
+        EventKey=APPROVE:<session_id> / REJECT:<session_id>、TaskId=session_id。
+        演示态（无 aes_key 或解密库不可用）：尝试把 body 当 JSON 解析（兼容 event/event_key 字段）。
         """
         if not verify_wecom_signature(self.token, timestamp, nonce, signature):
             self._last_error = "message signature mismatch"
@@ -82,7 +85,8 @@ class WeComConnector(SocialConnectorBase):
                 return _parse_wecom_xml(xml_text)
             except Exception as e:
                 logger.warning(f"⚠️ 企微消息解密失败，尝试 JSON 演示体：{e}")
-        # 演示态：body 为 JSON {"content": "...", "from": "...", "type": "..."}
+        # 演示态：body 为 JSON {"content": "...", "from": "...", "type": "...",
+        #                         "event": ..., "event_key": ..., "task_id": ...}
         try:
             import json
             d = json.loads(body.decode("utf-8"))
@@ -90,6 +94,9 @@ class WeComConnector(SocialConnectorBase):
                 "content": d.get("content", ""),
                 "from_user": d.get("from", "unknown"),
                 "msg_type": d.get("type", "text"),
+                "event": d.get("event"),
+                "event_key": d.get("event_key"),
+                "task_id": d.get("task_id"),
             }
         except Exception:
             return None
@@ -157,7 +164,32 @@ def _parse_wecom_xml(xml_text: str) -> dict:
     content = root.findtext("Content", "") or ""
     from_user = root.findtext("FromUserName", "") or ""
     msg_type = root.findtext("MsgType", "text") or "text"
-    return {"content": content, "from_user": from_user, "msg_type": msg_type}
+    # 🆕 审批按钮回调（模板卡片）：Event / EventKey / TaskId
+    event = root.findtext("Event")
+    event_key = root.findtext("EventKey")
+    task_id = root.findtext("TaskId")
+    return {
+        "content": content,
+        "from_user": from_user,
+        "msg_type": msg_type,
+        "event": event,
+        "event_key": event_key,
+        "task_id": task_id,
+    }
+
+
+def parse_approval_event_key(event_key: str | None) -> dict | None:
+    """解析审批按钮 EventKey → {action, session_id}。
+
+    格式：APPROVE:<session_id> / REJECT:<session_id>（由 service.build_approval_card 生成）。
+    非法格式返回 None（交由调用方忽略，绝不误执行）。
+    """
+    if not event_key or ":" not in event_key:
+        return None
+    action, _, session_id = event_key.partition(":")
+    if action not in ("APPROVE", "REJECT") or not session_id:
+        return None
+    return {"action": action.lower(), "session_id": session_id}
 
 
 if __name__ == "__main__":
