@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>智衍 EvolvIQ × 企业数字生态 · 关系全景图 & Palantir 对标</title>
+<style>
+  :root{
+    --blue:#2563eb; --blue-soft:#eff6ff; --ink:#0f172a; --slate:#475569;
+    --sky:#e0f2fe; --indigo:#eef2ff; --amber:#fef9c3; --slateg:#f1f5f9;
+    --line:#94a3b8; --green:#10b981;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",Helvetica,Arial,sans-serif;
+       color:var(--ink);background:#f8fafc;line-height:1.6}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 24px 64px}
+  h1{font-size:26px;margin:0 0 6px;letter-spacing:.3px}
+  h2{font-size:20px;margin:38px 0 12px;border-left:5px solid var(--blue);padding-left:12px}
+  .lead{color:var(--slate);font-size:15px;margin:0 0 8px}
+  .q{background:var(--blue-soft);border:1px solid #bfdbfe;border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14.5px}
+  .q b{color:var(--blue)}
+  svg{width:100%;height:auto;display:block;background:#fff;border:1px solid #e2e8f0;border-radius:14px;margin:10px 0}
+  table{border-collapse:collapse;width:100%;font-size:14px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin:10px 0}
+  th,td{border:1px solid #e2e8f0;padding:10px 12px;text-align:left;vertical-align:top}
+  th{background:#f1f5f9;font-weight:700}
+  td.dim{background:#fff7ed;font-weight:600;color:#9a3412}
+  .tag{display:inline-block;background:var(--slateg);border:1px solid #cbd5e1;border-radius:6px;padding:1px 8px;font-size:12px;margin:1px}
+  .foot{color:var(--slate);font-size:12.5px;margin-top:8px}
+  .verdict{display:flex;gap:14px;flex-wrap:wrap;margin:16px 0}
+  .card{flex:1;min-width:280px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 18px}
+  .card.same{border-top:4px solid var(--green)}
+  .card.diff{border-top:4px solid #f59e0b}
+  .card h3{margin:0 0 8px;font-size:16px}
+  ul{margin:6px 0 6px 18px;padding:0}
+  li{margin:4px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>智衍 EvolvIQ × 企业数字生态 · 关系全景图</h1>
+  <p class="lead">一张图看清本平台与企业「其他系统」（ERP/MES/PLM/WMS、OT 网关、人/社交/会议、开放环境）的关系；并回答：这和 Palantir 的架构到底一样不一样。</p>
+
+  <div class="q">
+    <b>杜总两个问题：</b><br/>
+    ① 咱们是否有一张图，完整呈现本系统与企业其他系统的关系？ —— <b>此前没有专门的，这张就是。</b>（原 <code>architecture.svg</code> 只画了我们自己的内部分层；<code>INTEGRATION.md</code> 有文字没配图。）<br/>
+    ② 这种关系和 Palantir 的架构一样吗？ —— <b>骨架（关系模型）相同，灵魂（真相源性质 + 传感广度）不同。</b>详见图二与对标表。
+  </div>
+
+  <!-- ============ 图一：关系全景 ============ -->
+  <h2>图一 · 系统 × 企业其他系统 · 关系全景</h2>
+  <p class="foot">核心定位 = 「原生赋能者」：<b>不推倒</b>企业既有 ERP/MES，在其之上<b>叠加</b>「实时决策脑 + 全息真相源」；ERP/MES 退居「执行回写 + 审计」通道。所有外部系统经统一事件总线（轻量 UNS）归一进平台。</p>
+
+  <svg viewBox="0 0 1000 720" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Roboto,PingFang SC,Microsoft YaHei,sans-serif">
+    <defs>
+      <marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#64748b"/></marker>
+      <marker id="arB" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#2563eb"/></marker>
+    </defs>
+
+    <!-- 第⑥路 开放环境感知 banner -->
+    <rect x="40" y="18" width="920" height="74" rx="12" fill="#fef9c3" stroke="#eab308"/>
+    <text x="60" y="42" font-size="15" font-weight="800" fill="#854d0e">第⑥路 · 开放环境感知（企业围墙之外 · 开放系统）</text>
+    <text x="60" y="62" font-size="11.5" fill="#713f12" font-style="italic">政策/法规 · 行业行情 · 竞品动态 · 供应链波动 · 客户声音/舆情</text>
+
+    <!-- 企业IT系统 row -->
+    <text x="60" y="120" font-size="14" font-weight="800" fill="#0c4a6e">企业围墙内 · IT 系统（既有投资，不推倒）</text>
+    <g font-size="13" fill="#0c4a6e">
+      <rect x="60"  y="130" width="168" height="56" rx="10" fill="#e0f2fe" stroke="#38bdf8"/>
+      <text x="144" y="158" text-anchor="middle" font-weight="700">ERP</text><text x="144" y="176" text-anchor="middle" font-size="11" fill="#075985">企业资源</text>
+      <rect x="244" y="130" width="168" height="56" rx="10" fill="#e0f2fe" stroke="#38bdf8"/>
+      <text x="328" y="158" text-anchor="middle" font-weight="700">MES</text><text x="328" y="176" text-anchor="middle" font-size="11" fill="#075985">制造执行</text>
+      <rect x="428" y="130" width="168" height="56" rx="10" fill="#e0f2fe" stroke="#38bdf8"/>
+      <text x="512" y="158" text-anchor="middle" font-weight="700">PLM</text><text x="512" y="176" text-anchor="middle" font-size="11" fill="#075985">产品生命周期</text>
+      <rect x="612" y="130" width="168" height="56" rx="10" fill="#e0f2fe" stroke="#38bdf8"/>
+      <text x="696" y="158" text-anchor="middle" font-weight="700">WMS</text><text x="696" y="176" text-anchor="middle" font-size="11" fill="#075985">仓储管理</text>
+      <rect x="796" y="130" width="164" height="56" rx="10" fill="#e0f2fe" stroke="#38bdf8"/>
+      <text x="878" y="158" text-anchor="middle" font-weight="700">数据湖/湖仓</text><text x="878" y="176" text-anchor="middle" font-size="11" fill="#075985">历史与分析</text>
+    </g>
+
+    <!-- 中央平台 -->
+    <rect x="320" y="226" width="360" height="220" rx="18" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/>
+    <text x="500" y="252" text-anchor="middle" font-size="17" font-weight="800" fill="#1e40af">智衍 EvolvIQ 平台</text>
+    <text x="500" y="270" text-anchor="middle" font-size="11.5" fill="#3b82f6">实时决策脑 + 全息真相源（原生赋能者）</text>
+    <g font-size="12.5" fill="#1e3a8a" text-anchor="middle">
+      <rect x="344" y="282" width="312" height="28" rx="7" fill="#dbeafe" stroke="#93c5fd"/>
+      <text x="500" y="300">统一事件总线 UNS（归一所有路信号）</text>
+      <rect x="344" y="318" width="312" height="32" rx="7" fill="#bfdbfe" stroke="#60a5fa"/>
+      <text x="500" y="338" font-weight="700">全息真相源 · 图谱 / 数字孪生（第一真相源）</text>
+      <rect x="344" y="358" width="312" height="30" rx="7" fill="#dbeafe" stroke="#93c5fd"/>
+      <text x="500" y="377">24 智能体 · 实时推理与决策建议</text>
+      <rect x="344" y="394" width="312" height="28" rx="7" fill="#dbeafe" stroke="#93c5fd"/>
+      <text x="500" y="412">蓝弧闭环 · 自进化（长真相，非仅存真相）</text>
+    </g>
+
+    <!-- OT 网关 区域 -->
+    <rect x="40" y="486" width="430" height="80" rx="12" fill="#eef2ff" stroke="#818cf8"/>
+    <text x="60" y="508" font-size="13.5" font-weight="800" fill="#3730a3">OT 网关 · 工厂实时流（制造原生）</text>
+    <text x="60" y="530" font-size="11.5" fill="#4338ca">OPC-UA · Modbus · MQTT · SECS-GEM · IPC-CFX（设备/产线毫秒级）</text>
+    <text x="60" y="550" font-size="11" fill="#6366f1" font-style="italic">→ 直接吃 PLC / 传感器原始流，ERP 仅见状态字</text>
+
+    <!-- 人/社交/会议 区域 -->
+    <rect x="530" y="486" width="430" height="80" rx="12" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="550" y="508" font-size="13.5" font-weight="800" fill="#334155">人 · 社交 · 会议（③④⑤ 隐性信号）</text>
+    <text x="550" y="530" font-size="11.5" fill="#475569">企微/钉钉 · 邮件/工单 · 内外部会议（谈判/复盘/拜访）</text>
+    <text x="550" y="550" font-size="11" fill="#64748b" font-style="italic">→ 一线隐性判断、运营脉搏、决策 rationale（传统系统零覆盖）</text>
+
+    <!-- 数据流箭头：IT → 平台 -->
+    <g stroke="#64748b" stroke-width="1.6" fill="none" marker-end="url(#ar)">
+      <line x1="144" y1="186" x2="430" y2="226"/>
+      <line x1="328" y1="186" x2="470" y2="226"/>
+      <line x1="512" y1="186" x2="520" y2="226"/>
+      <line x1="696" y1="186" x2="540" y2="226"/>
+      <line x1="878" y1="186" x2="600" y2="226"/>
+    </g>
+    <!-- 第⑥路 → 平台 -->
+    <line x1="500" y1="92" x2="500" y2="226" stroke="#64748b" stroke-width="1.6" fill="none" marker-end="url(#ar)"/>
+    <!-- OT → 平台 -->
+    <line x1="300" y1="486" x2="400" y2="446" stroke="#64748b" stroke-width="1.6" fill="none" marker-end="url(#ar)"/>
+    <!-- 人/社交 → 平台 -->
+    <line x1="700" y1="486" x2="600" y2="446" stroke="#64748b" stroke-width="1.6" fill="none" marker-end="url(#ar)"/>
+
+    <!-- 回写执行桥（平台 → ERP/MES，蓝色虚线） -->
+    <line x1="470" y1="300" x2="328" y2="190" stroke="#2563eb" stroke-width="2.2" stroke-dasharray="7 5" fill="none" marker-end="url(#arB)"/>
+    <text x="386" y="244" font-size="11" font-weight="700" fill="#1d4ed8" transform="rotate(-18 386 244)">回写执行桥</text>
+    <!-- 审计溯源 -->
+    <g>
+      <rect x="700" y="300" width="116" height="26" rx="6" fill="#fff" stroke="#10b981"/>
+      <text x="758" y="317" text-anchor="middle" font-size="11.5" font-weight="700" fill="#047857">审计溯源 · 不可篡改</text>
+    </g>
+
+    <!-- G 模式三圈解锁 callout -->
+    <rect x="40" y="600" width="920" height="104" rx="12" fill="#fff" stroke="#cbd5e1"/>
+    <text x="60" y="624" font-size="13.5" font-weight="800" fill="#0f172a">G 模式「无感转型」三圈解锁（价值驱动 · 不推销）</text>
+    <g font-size="11.5">
+      <rect x="60"  y="636" width="280" height="52" rx="8" fill="#fef9c3" stroke="#eab308"/>
+      <text x="200" y="658" text-anchor="middle" font-weight="700" fill="#854d0e">外圈（免费）</text>
+      <text x="200" y="676" text-anchor="middle" fill="#713f12">纯第⑥路环境信号</text>
+      <text x="200" y="690" text-anchor="middle" font-size="10" fill="#713f12">先让客户尝到甜头</text>
+      <rect x="360" y="636" width="280" height="52" rx="8" fill="#e0f2fe" stroke="#38bdf8"/>
+      <text x="500" y="658" text-anchor="middle" font-weight="700" fill="#0c4a6e">中圈（付费）</text>
+      <text x="500" y="676" text-anchor="middle" fill="#075985">接第一条内部数据源</text>
+      <text x="500" y="690" text-anchor="middle" font-size="10" fill="#075985">关系模型开始打通</text>
+      <rect x="660" y="636" width="280" height="52" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+      <text x="800" y="658" text-anchor="middle" font-weight="700" fill="#1e40af">内圈（私有化）</text>
+      <text x="800" y="676" text-anchor="middle" fill="#1e40af">全量接入 + 本地部署</text>
+      <text x="800" y="690" text-anchor="middle" font-size="10" fill="#1e40af">决策实时化率起跳</text>
+    </g>
+  </svg>
+  <p class="foot">读方向 = 各路信号经 UNS 归一进「全息真相源」→ 24 智能体推理出决策建议；写方向 = 建议经人工审批后<b>回写</b> ERP/MES 执行，全程<b>审计溯源</b>。任一外部系统不可达 → 平台自动降级（seed/内存态），绝不宕机。</p>
+
+  <!-- ============ 图二：Palantir 对标 ============ -->
+  <h2>图二 · 与 Palantir 架构：同 vs 异</h2>
+  <p class="foot">官方口径见 <code>docs/HOLOGRAPHIC_INFO_SOURCE_ARCHITECTURE.md</code> §8 / §14.5。一句话：<b>关系骨架同构（都「叠加在既有系统之上 + 统一真相源 + 读后回写 + 人在环」）；差异在真相源「死/活」与传感「广度」。</b></p>
+
+  <div class="verdict">
+    <div class="card same">
+      <h3>✅ 骨架相同（验证了我们的方向）</h3>
+      <ul>
+        <li><b>不推倒</b>：都叠加在客户既有 ERP/MES 之上，而非替换。</li>
+        <li><b>统一真相源</b>：Palantir = Ontology（Objects+Links+Actions）；我们 = 全息真相源（图谱/孪生）。二者同构，都是「第一真相源」。</li>
+        <li><b>连接器接入</b>：都通过各类 connector 读企业系统数据。</li>
+        <li><b>读 + 回写</b>：Actions 真实写回源系统；我们 = 回写执行桥 + 审计。</li>
+        <li><b>人在环治理</b>：细粒度权限 + 审批门 + 审计溯源（我们 P2 审批门同构）。</li>
+      </ul>
+    </div>
+    <div class="card diff">
+      <h3>🔥 灵魂不同（我们的硬差异化）</h3>
+      <ul>
+        <li><b>真相源「死 vs 活」</b>：Palantir Ontology = 静态人工定义、需 FDE 驻场、每次变更重建模（技术债）；我们 = <b>自进化</b>（P2 反思→长真相，不只存真相）。</li>
+        <li><b>传感广度</b>：我们独有<b>六路感知</b>——尤其 ③④⑤ 人/社交/会议隐性信号 + <b>第⑥路开放环境</b>（政策/行情/竞品/供应链/客户声音）。Palantir 以企业<b>内部 IT 数据</b>为主，外环弱。</li>
+        <li><b>制造 OT 原生</b>：我们直接吃 OPC-UA/Modbus/SECS-GEM 工厂实时流（UNS）；Palantir 多坐于 IT 层之上，OT 直连弱。</li>
+        <li><b>G 模式三圈</b>：免费环境信号钩子获客，是独有 Go-to-Market 架构耦合。</li>
+        <li><b>哲学隐喻</b>：我们 = 「活的、全息的、人机综合集成的<b>孪生社会</b>」（钱学森开放复杂巨系统）；Palantir = 「静态符号孪生（死）」。</li>
+      </ul>
+    </div>
+  </div>
+
+  <svg viewBox="0 0 1000 280" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Roboto,PingFang SC,Microsoft YaHei,sans-serif">
+    <defs>
+      <marker id="a2" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#64748b"/></marker>
+    </defs>
+    <text x="250" y="26" text-anchor="middle" font-size="15" font-weight="800" fill="#0c4a6e">Palantir</text>
+    <text x="750" y="26" text-anchor="middle" font-size="15" font-weight="800" fill="#1e40af">智衍 EvolvIQ</text>
+
+    <!-- Palantir column -->
+    <g font-size="12" text-anchor="middle" fill="#0c4a6e">
+      <rect x="120" y="40" width="260" height="34" rx="8" fill="#e0f2fe" stroke="#38bdf8"/><text x="250" y="61">企业源系统（ERP/CRM/库）</text>
+      <rect x="120" y="94" width="260" height="34" rx="8" fill="#bfdbfe" stroke="#60a5fa"/><text x="250" y="115" font-weight="700">Ontology（静态本体·需FDE建模）</text>
+      <rect x="120" y="148" width="260" height="34" rx="8" fill="#e0f2fe" stroke="#38bdf8"/><text x="250" y="169">AIP Agents（建在本体上）</text>
+      <rect x="120" y="202" width="260" height="34" rx="8" fill="#e0f2fe" stroke="#38bdf8"/><text x="250" y="223">Actions 回写源系统</text>
+    </g>
+    <g stroke="#64748b" stroke-width="1.4" fill="none" marker-end="url(#a2)">
+      <line x1="250" y1="74" x2="250" y2="92"/><line x1="250" y1="128" x2="250" y2="146"/><line x1="250" y1="182" x2="250" y2="200"/>
+    </g>
+    <text x="400" y="112" font-size="11" fill="#9a3412" font-weight="700" transform="rotate(90 400 112)">真相源=死</text>
+
+    <!-- 智衍 column -->
+    <g font-size="12" text-anchor="middle" fill="#1e40af">
+      <rect x="620" y="40" width="260" height="34" rx="8" fill="#e0f2fe" stroke="#38bdf8"/><text x="750" y="61">企业源系统 + 六路感知(含⑥开放环境)</text>
+      <rect x="620" y="94" width="260" height="34" rx="8" fill="#bfdbfe" stroke="#60a5fa"/><text x="750" y="115" font-weight="700">全息真相源（自进化·长真相）</text>
+      <rect x="620" y="148" width="260" height="34" rx="8" fill="#e0f2fe" stroke="#38bdf8"/><text x="750" y="169">24 智能体（隐性信号③④⑤）</text>
+      <rect x="620" y="202" width="260" height="34" rx="8" fill="#e0f2fe" stroke="#38bdf8"/><text x="750" y="223">回写执行桥 + 审计溯源</text>
+    </g>
+    <g stroke="#64748b" stroke-width="1.4" fill="none" marker-end="url(#a2)">
+      <line x1="750" y1="74" x2="750" y2="92"/><line x1="750" y1="128" x2="750" y2="146"/><line x1="750" y1="182" x2="750" y2="200"/>
+    </g>
+    <text x="600" y="112" font-size="11" fill="#047857" font-weight="700" transform="rotate(-90 600 112)">真相源=活</text>
+
+    <!-- 中间差异注释 -->
+    <line x1="390" y1="111" x2="610" y2="111" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="500" y="150" text-anchor="middle" font-size="11" fill="#64748b">同构骨架：源系统→真相层→Agents→回写</text>
+    <text x="500" y="170" text-anchor="middle" font-size="11" fill="#64748b">差异：右侧真相层「自进化」+ 传感多出③④⑤⑥</text>
+  </svg>
+
+  <h2>对标明细表（引用官方备忘录 §8）</h2>
+  <table>
+    <thead><tr><th>比对维度</th><th>Palantir</th><th>智衍 EvolvIQ</th></tr></thead>
+    <tbody>
+      <tr><td>与既有 ERP/MES 关系</td><td>叠加（不替换）</td><td>叠加（不替换）✓ 同</td></tr>
+      <tr><td>统一真相源</td><td>Ontology（Objects+Links+Actions）</td><td>全息真相源（图谱/孪生）✓ 同构</td></tr>
+      <tr><td>真相源性质</td><td class="dim">静态人工定义、需 FDE 驻场、变更重建模（技术债）</td><td class="dim">自进化（P2 反思→长真相，非仅存真相）</td></tr>
+      <tr><td>传感广度</td><td class="dim">以企业内部 IT 数据为主，外环弱</td><td class="dim">六路感知，含 ③④⑤ 隐性信号 + 第⑥路开放环境</td></tr>
+      <tr><td>制造 OT 直连</td><td class="dim">多坐于 IT 层之上，OT 直连弱</td><td class="dim">OPC-UA/Modbus/SECS-GEM 工厂实时流（UNS）</td></tr>
+      <tr><td>读 + 回写</td><td>Actions 真实写回源系统</td><td>回写执行桥 + 审计溯源 ✓ 同</td></tr>
+      <tr><td>人在环治理</td><td>细粒度权限 + 审批 + 审计</td><td>P2 审批门 + 执行回写 + grounding ✓ 同（“治理壳”应保留）</td></tr>
+      <tr><td>Go-to-Market 耦合</td><td class="dim">企业/政府 SaaS 或 VPC</td><td class="dim">G 模式三圈（免费环境信号钩子）独有</td></tr>
+      <tr><td>哲学隐喻</td><td class="dim">静态符号孪生（死）</td><td class="dim">活的、全息的、人机综合集成的孪生社会（钱学森）</td></tr>
+    </tbody>
+  </table>
+  <p class="foot">官方结论原话：「借 Palantir 的治理壳（ontology 词汇 + 人在环），装自进化的核（P2 + 隐性信号 ③④⑤ + 轻量 SME 可负担）。」反 Palantir 只反「静态建模方式」，不反「治理哲学」。</p>
+
+  <h2>一句话回答杜总</h2>
+  <p class="lead"><b>图：有，就是上面这张「关系全景图」——平台居中，外圈是企业其他系统（ERP/MES/PLM/WMS、OT 网关、人/社交/会议、第⑥路开放环境），双向箭头 = 读取 + 回写执行桥 + 审计。</b><br/>
+  <b>和 Palantir：骨架一样（叠加式 + 统一真相源 + 读后回写 + 人在环），但灵魂不一样——我们的真相源是「自进化、长真相」的活孪生社会，且传感多出人/社交/会议隐性信号与开放环境第⑥路，制造 OT 直连更深。这正是相对 Palantir 的硬差异化。</b></p>
+
+</div>
+</body>
+</html>
