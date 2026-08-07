@@ -163,7 +163,7 @@ DEFAULT_CASES = [
         "subject_anon": "某某通讯公司（研究案例·公开披露）",
         "industry": "通讯设备 / 信息通信",
         "industry_key": "telecom",  # 🔴 配额分组键（每行业 国际5+国内5）
-        "real_anchor": "中兴通讯（000063.SZ）",  # 🔴 内部锚定真实上市公司，仅 internal 视图
+        "real_anchor": "__VAULTED__",  # 🔴 内部锚定真实上市公司，仅 internal 视图
         "scope": "domestic",  # 2026-08-03 对外可见：显式标注国内范围，构成国际/国内对照
         "recommended_interfaces": [
             "industry_research",
@@ -177,8 +177,7 @@ DEFAULT_CASES = [
             "战略 / 供应链 / 合规 / 成本四维，并对外匿名、对内真名双版教学。"
         ),
         "teaching_notes_internal": (
-            "内部锚定中兴通讯(000063.SZ)公开披露，用于校准行业研究推演；"
-            "真实公司名仅在本视图出现，对外一律匿名。"
+            "__VAULTED_INTERNAL__"
         ),
         "status": "active",
         "updated_at": "2026-07-29",
@@ -263,7 +262,7 @@ DEFAULT_CASES = [
         "industry_key": "semiconductor",  # 🔴 配额分组键（每行业 国际5+国内5）
         "scope": "domestic",
         "value_chain_node": "晶圆代工（国内制程追赶主轴）",
-        "real_anchor": "中芯国际（688981.SH / 00981.HK）",  # 🔴 内部锚定，仅 internal 视图
+        "real_anchor": "__VAULTED__",  # 🔴 内部锚定，仅 internal 视图
         "pilot_scenario": {
             "scenario": "A",
             "label": "设备健康 / 能耗孪生",
@@ -285,8 +284,7 @@ DEFAULT_CASES = [
             "设备健康 / 能耗孪生（P3 首客试点场景 A），并叠加战略 / 供应链 / 合规 / 成本四维。"
         ),
         "teaching_notes_internal": (
-            "内部锚定中芯国际(688981.SH)公开披露，用于校准设备健康/能耗孪生试点推演；"
-            "真实公司名仅在本视图出现，对外一律匿名。"
+            "__VAULTED_INTERNAL__"
         ),
         "status": "active",
         "updated_at": "2026-07-29",
@@ -371,7 +369,7 @@ DEFAULT_CASES = [
         "subject_anon": "某某全球晶圆代工龙头（研究案例·公开披露·全球）",
         "industry": "半导体 / 晶圆代工（全球标杆）",
         "industry_key": "semiconductor",  # 🔴 配额分组键（每行业 国际5+国内5）
-        "real_anchor": "台积电 TSMC（2330.TW / TSM.NYSE）",  # 🔴 内部锚定，仅 internal 视图
+        "real_anchor": "__VAULTED__",  # 🔴 内部锚定，仅 internal 视图
         "scope": "global",
         "value_chain_node": "制造（先进制程产能咽喉）",
         "recommended_interfaces": [
@@ -386,8 +384,7 @@ DEFAULT_CASES = [
             "先进制程结构 → 定价权 → 毛利率传导链，为国内同支柱企业提供标杆差距对照基线。"
         ),
         "teaching_notes_internal": (
-            "内部锚定台积电(2330.TW)公开年报，用于建立「制造支柱」国际标杆基线，"
-            "与中芯国际案例形成国际/国内同支柱对照；真名仅本视图出现，对外一律匿名。"
+            "__VAULTED_INTERNAL__"
         ),
         "status": "active",
         "updated_at": "2026-08-03",
@@ -471,7 +468,7 @@ DEFAULT_CASES = [
         "subject_anon": "某某全球光刻设备公司（研究案例·公开披露·全球）",
         "industry": "半导体 / 光刻设备（全球卡点）",
         "industry_key": "semiconductor",  # 🔴 配额分组键（每行业 国际5+国内5）
-        "real_anchor": "阿斯麦 ASML（ASML.AS / ASML.NASDAQ）",  # 🔴 内部锚定，仅 internal 视图
+        "real_anchor": "__VAULTED__",  # 🔴 内部锚定，仅 internal 视图
         "scope": "global",
         "value_chain_node": "设备（先进制程准入卡点）",
         "recommended_interfaces": [
@@ -486,8 +483,7 @@ DEFAULT_CASES = [
             "其订单结构与区域收入结构，是判断全球晶圆产能扩张节奏与设备可得性的领先指标。"
         ),
         "teaching_notes_internal": (
-            "内部锚定阿斯麦(ASML.AS)公开年报，用于建立「设备支柱」国际基线；"
-            "该锚是国内制造锚（中芯国际）先进制程天花板的上游解释变量。真名仅本视图出现。"
+            "__VAULTED_INTERNAL__"
         ),
         "status": "active",
         "updated_at": "2026-08-03",
@@ -572,7 +568,7 @@ DEFAULT_CASES = [
         "subject_anon": "某某全球AI算力芯片公司（研究案例·公开披露·全球）",
         "industry": "半导体 / AI 算力芯片设计（全球标杆）",
         "industry_key": "semiconductor",  # 🔴 配额分组键（每行业 国际5+国内5）
-        "real_anchor": "英伟达 NVIDIA（NVDA.NASDAQ）",  # 🔴 内部锚定，仅 internal 视图
+        "real_anchor": "__VAULTED__",  # 🔴 内部锚定，仅 internal 视图
         "scope": "global",
         "value_chain_node": "设计（AI 算力定义权）",
         "recommended_interfaces": [
@@ -588,8 +584,7 @@ DEFAULT_CASES = [
             "从单芯片销售向全栈机架系统（GB200 NVL72）的商业模式跃迁，及其对国内设计链的'天花板参照'意义。"
         ),
         "teaching_notes_internal": (
-            "内部锚定英伟达(NVDA)2026 财年公开年报，用于建立「设计支柱」国际基线；"
-            "其全栈生态绑定与对华出口受限，是国内设计/制造链的关键外部解释变量。真名仅本视图出现。"
+            "__VAULTED_INTERNAL__"
         ),
         "status": "active",
         "updated_at": "2026-08-03",
@@ -671,7 +666,7 @@ DEFAULT_CASES = [
         "subject_anon": "某某全球存储与IDM巨头（研究案例·公开披露·全球）",
         "industry": "半导体 / 存储与 IDM（全球标杆）",
         "industry_key": "semiconductor",  # 🔴 配额分组键（每行业 国际5+国内5）
-        "real_anchor": "三星电子 Samsung Electronics（005930.KS）",  # 🔴 内部锚定，仅 internal 视图
+        "real_anchor": "__VAULTED__",  # 🔴 内部锚定，仅 internal 视图
         "scope": "global",
         "value_chain_node": "存储与 IDM（AI 内存供给）",
         "recommended_interfaces": [
@@ -686,8 +681,7 @@ DEFAULT_CASES = [
             "HBM/高带宽内存供给节奏是 AI 服务器产能的领先指标，其定价与产能直接约束国内存储链上行空间。"
         ),
         "teaching_notes_internal": (
-            "内部锚定三星电子(005930.KS)2025 年报，用于建立「存储支柱」国际基线；"
-            "其 HBM 产能与定价是国内存储链（兆易创新等）的关键外部解释变量。真名仅本视图出现。"
+            "__VAULTED_INTERNAL__"
         ),
         "status": "active",
         "updated_at": "2026-08-03",
@@ -768,7 +762,7 @@ DEFAULT_CASES = [
         "subject_anon": "某某全球封测龙头（研究案例·公开披露·全球）",
         "industry": "半导体 / 封装测试（全球标杆）",
         "industry_key": "semiconductor",  # 🔴 配额分组键（每行业 国际5+国内5）
-        "real_anchor": "日月光投控 ASE Technology（3711.TW / ASX.NYSE）",  # 🔴 内部锚定，仅 internal 视图
+        "real_anchor": "__VAULTED__",  # 🔴 内部锚定，仅 internal 视图
         "scope": "global",
         "value_chain_node": "封装测试（后摩尔时代性能杠杆）",
         "recommended_interfaces": [
@@ -784,8 +778,7 @@ DEFAULT_CASES = [
             "先进封装(2.5D/3D 集成/FOPLP)收入翻倍式增长，是 AI 加速器产能的后段瓶颈与后摩尔时代性能主杠杆。"
         ),
         "teaching_notes_internal": (
-            "内部锚定日月光(ASE Technology)2025 年报(6-K)，用于建立「封测支柱」国际基线；"
-            "其先进封装收入翻倍是国内封测链（长电科技）的关键外部对标与需求牵引。真名仅本视图出现。"
+            "__VAULTED_INTERNAL__"
         ),
         "status": "active",
         "updated_at": "2026-08-03",
@@ -865,7 +858,7 @@ DEFAULT_CASES = [
         "subject_anon": "某某国内半导体设备公司（研究案例·公开披露）",
         "industry": "半导体 / 半导体设备（国内标杆）",
         "industry_key": "semiconductor",  # 🔴 配额分组键（每行业 国际5+国内5）
-        "real_anchor": "北方华创（002371.SZ）",  # 🔴 内部锚定，仅 internal 视图
+        "real_anchor": "__VAULTED__",  # 🔴 内部锚定，仅 internal 视图
         "scope": "domestic",
         "value_chain_node": "设备（国产替代主轴）",
         "recommended_interfaces": [
@@ -882,8 +875,7 @@ DEFAULT_CASES = [
             "国产替代加速下营收高增但'增收不增利'，研发投入前置与新产品验证成本是短期毛利压力源，设备健康/能耗孪生提效价值凸显。"
         ),
         "teaching_notes_internal": (
-            "内部锚定北方华创(002371.SZ)2025 年报，用于校准「设备支柱」国内推演；"
-            "其与阿斯麦构成国产替代主轴的国际/国内对照。真名仅本视图出现，对外一律匿名。"
+            "__VAULTED_INTERNAL__"
         ),
         "status": "active",
         "updated_at": "2026-08-03",
@@ -963,7 +955,7 @@ DEFAULT_CASES = [
         "subject_anon": "某某国内图像传感器公司（研究案例·公开披露）",
         "industry": "半导体 / 图像传感器 CIS（国内标杆）",
         "industry_key": "semiconductor",  # 🔴 配额分组键（每行业 国际5+国内5）
-        "real_anchor": "豪威集团（原韦尔股份，603501.SH）",  # 🔴 内部锚定，仅 internal 视图
+        "real_anchor": "__VAULTED__",  # 🔴 内部锚定，仅 internal 视图
         "scope": "domestic",
         "value_chain_node": "设计（CIS 视觉感知）",
         "recommended_interfaces": [
@@ -978,8 +970,7 @@ DEFAULT_CASES = [
             "汽车电子与新兴市场(CIS)成第二增长曲线，设计定义权向车载/端侧 AI 视觉迁移，国产设计链价值重估。"
         ),
         "teaching_notes_internal": (
-            "内部锚定豪威集团(603501.SH，原韦尔股份)2025 年报，用于校准「设计支柱-CIS」国内推演；"
-            "其与英伟达在车载视觉供应链存在间接对照。真名仅本视图出现，对外一律匿名。"
+            "__VAULTED_INTERNAL__"
         ),
         "status": "active",
         "updated_at": "2026-08-03",
@@ -1059,7 +1050,7 @@ DEFAULT_CASES = [
         "subject_anon": "某某国内存储与MCU公司（研究案例·公开披露）",
         "industry": "半导体 / 存储与 MCU（国内标杆）",
         "industry_key": "semiconductor",  # 🔴 配额分组键（每行业 国际5+国内5）
-        "real_anchor": "兆易创新（603986.SH）",  # 🔴 内部锚定，仅 internal 视图
+        "real_anchor": "__VAULTED__",  # 🔴 内部锚定，仅 internal 视图
         "scope": "domestic",
         "value_chain_node": "设计（利基存储 / MCU）",
         "recommended_interfaces": [
@@ -1074,8 +1065,7 @@ DEFAULT_CASES = [
             "存储行业周期向上 + 利基 DRAM/SLC NAND 量价齐升驱动净利高增，设计定义权在利基市场的国产替代价值。"
         ),
         "teaching_notes_internal": (
-            "内部锚定兆易创新(603986.SH)2025 年报，用于校准「存储支柱」国内推演；"
-            "其与三星构成利基存储国产替代的国际/国内对照。真名仅本视图出现，对外一律匿名。"
+            "__VAULTED_INTERNAL__"
         ),
         "status": "active",
         "updated_at": "2026-08-03",
@@ -1155,7 +1145,7 @@ DEFAULT_CASES = [
         "subject_anon": "某某国内封测公司（研究案例·公开披露）",
         "industry": "半导体 / 封装测试（国内标杆）",
         "industry_key": "semiconductor",  # 🔴 配额分组键（每行业 国际5+国内5）
-        "real_anchor": "长电科技（600584.SH）",  # 🔴 内部锚定，仅 internal 视图
+        "real_anchor": "__VAULTED__",  # 🔴 内部锚定，仅 internal 视图
         "scope": "domestic",
         "value_chain_node": "封装测试（先进封装国产主力）",
         "recommended_interfaces": [
@@ -1173,8 +1163,7 @@ DEFAULT_CASES = [
             "先进封装收入 270 亿创历史新高成主引擎，但前瞻性投入致短期'增收不增利'，设备健康与能耗孪生在高负荷产线 ROI 极高。"
         ),
         "teaching_notes_internal": (
-            "内部锚定长电科技(600584.SH)2025 年报，用于校准「封测支柱」国内推演；"
-            "其与日月光构成先进封装国产替代的国际/国内对照。真名仅本视图出现，对外一律匿名。"
+            "__VAULTED_INTERNAL__"
         ),
         "status": "active",
         "updated_at": "2026-08-03",
@@ -1252,7 +1241,7 @@ DEFAULT_CASES = [
         "subject_anon": "某某精密制造公司（研究案例·公开披露）",
         "industry": "消费电子 / 3C 精密制造",
         "industry_key": "consumer_electronics",  # 🔴 配额分组键（每行业 国际5+国内5）
-        "real_anchor": "立讯精密（002475.SZ）",  # 🔴 内部锚定真实上市公司，仅 internal 视图
+        "real_anchor": "__VAULTED__",  # 🔴 内部锚定真实上市公司，仅 internal 视图
         "scope": "domestic",  # 2026-08-03 对外可见：显式标注国内范围
         "recommended_interfaces": [
             "industry_research",
@@ -1269,8 +1258,7 @@ DEFAULT_CASES = [
             "并叠加设备健康 / 能耗孪生视角。"
         ),
         "teaching_notes_internal": (
-            "内部锚定立讯精密(002475.SZ)公开披露，用于校准 3C 精密制造行业研究推演；"
-            "真实公司名仅在本视图出现，对外一律匿名。"
+            "__VAULTED_INTERNAL__"
         ),
         "status": "active",
         "updated_at": "2026-07-31",
@@ -1341,7 +1329,7 @@ DEFAULT_CASES = [
         "subject_anon": "某某新能源公司（研究案例·公开披露）",
         "industry": "新能源 / 动力电池与储能",
         "industry_key": "new_energy",  # 🔴 配额分组键（每行业 国际5+国内5）
-        "real_anchor": "宁德时代（300750.SZ）",  # 🔴 内部锚定真实上市公司，仅 internal 视图
+        "real_anchor": "__VAULTED__",  # 🔴 内部锚定真实上市公司，仅 internal 视图
         "scope": "domestic",  # 2026-08-03 对外可见：显式标注国内范围
         "recommended_interfaces": [
             "industry_research",
@@ -1358,8 +1346,7 @@ DEFAULT_CASES = [
             "并叠加电芯产线设备健康 / 能耗孪生视角。"
         ),
         "teaching_notes_internal": (
-            "内部锚定宁德时代(300750.SZ)公开披露，用于校准新能源动力电池行业研究推演；"
-            "真实公司名仅在本视图出现，对外一律匿名。"
+            "__VAULTED_INTERNAL__"
         ),
         "status": "active",
         "updated_at": "2026-07-31",
@@ -1437,12 +1424,12 @@ DEFAULT_CASES = [
         "subject_anon": "某某全球通讯设备龙头（研究案例·公开披露·全球）",
         "industry": "通讯设备 / 信息通信",
         "industry_key": "telecom",
-        "real_anchor": "爱立信 Ericsson（ERIC B.ST / ERIC NASDAQ）",
+        "real_anchor": "__VAULTED__",
         "scope": "global",
         "value_chain_node": "网络设备（全球交付）",
         "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "compliance_q"],
         "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在通讯设备标杆上的产业级推演，与同行业国际/国内标杆构成对照。",
-        "teaching_notes_internal": "内部锚定爱立信(ERIC B.ST)公开年报，用于建立「通讯设备」国际基线；真名仅本视图出现，对外一律匿名。",
+        "teaching_notes_internal": "__VAULTED_INTERNAL__",
         "status": "active",
         "updated_at": "2026-08-03",
         "disclosure_facts": {
@@ -1468,12 +1455,12 @@ DEFAULT_CASES = [
         "subject_anon": "某某全球通讯设备龙头（研究案例·公开披露·全球）",
         "industry": "通讯设备 / 信息通信",
         "industry_key": "telecom",
-        "real_anchor": "诺基亚 Nokia（NOKIA.HE / NOK NYSE）",
+        "real_anchor": "__VAULTED__",
         "scope": "global",
         "value_chain_node": "网络设备（全球交付）",
         "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "compliance_q"],
         "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在通讯设备标杆上的产业级推演，与同行业国际/国内标杆构成对照。",
-        "teaching_notes_internal": "内部锚定诺基亚(NOKIA.HE)公开年报，用于建立「通讯设备」国际基线；真名仅本视图出现，对外一律匿名。",
+        "teaching_notes_internal": "__VAULTED_INTERNAL__",
         "status": "active",
         "updated_at": "2026-08-03",
         "disclosure_facts": {
@@ -1499,12 +1486,12 @@ DEFAULT_CASES = [
         "subject_anon": "某某全球企业网络龙头（研究案例·公开披露·全球）",
         "industry": "通讯设备 / 信息通信",
         "industry_key": "telecom",
-        "real_anchor": "思科 Cisco（CSCO NASDAQ）",
+        "real_anchor": "__VAULTED__",
         "scope": "global",
         "value_chain_node": "企业网络（路由交换）",
         "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "compliance_q"],
         "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在企业网络标杆上的产业级推演，与同行业国内标杆在政企网络侧构成对照。",
-        "teaching_notes_internal": "内部锚定思科(CSCO NASDAQ)公开年报，用于建立「企业网络」国际基线；真名仅本视图出现，对外一律匿名。",
+        "teaching_notes_internal": "__VAULTED_INTERNAL__",
         "status": "active",
         "updated_at": "2026-08-03",
         "disclosure_facts": {
@@ -1530,12 +1517,12 @@ DEFAULT_CASES = [
         "subject_anon": "某某国内光通信企业（研究案例·公开披露·国内）",
         "industry": "通讯设备 / 信息通信",
         "industry_key": "telecom",
-        "real_anchor": "烽火通信（600498.SH）",
+        "real_anchor": "__VAULTED__",
         "scope": "domestic",
         "value_chain_node": "光通信（光纤光缆/系统）",
         "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "compliance_q"],
         "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在国内光通信标杆上的推演，与同行业全球标杆在光网络细分互补。",
-        "teaching_notes_internal": "内部锚定烽火通信(600498.SH)公开年报，用于建立「光通信」国内基线；真名仅本视图出现，对外一律匿名。",
+        "teaching_notes_internal": "__VAULTED_INTERNAL__",
         "status": "active",
         "updated_at": "2026-08-03",
         "disclosure_facts": {
@@ -1561,12 +1548,12 @@ DEFAULT_CASES = [
         "subject_anon": "某某全球消费电子龙头（研究案例·公开披露·全球）",
         "industry": "消费电子 / 智能终端",
         "industry_key": "consumer_electronics",
-        "real_anchor": "苹果 Apple（AAPL NASDAQ）",
+        "real_anchor": "__VAULTED__",
         "scope": "global",
         "value_chain_node": "整机品牌（全球）",
         "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "cost_analysis"],
         "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在消费电子品牌标杆上的推演，与同行业国内代工标杆构成品牌—制造对照。",
-        "teaching_notes_internal": "内部锚定苹果(AAPL NASDAQ)公开年报，用于建立「消费电子」国际基线；真名仅本视图出现，对外一律匿名。",
+        "teaching_notes_internal": "__VAULTED_INTERNAL__",
         "status": "active",
         "updated_at": "2026-08-03",
         "disclosure_facts": {
@@ -1592,12 +1579,12 @@ DEFAULT_CASES = [
         "subject_anon": "某某全球电子垂直整合龙头（研究案例·公开披露·全球）",
         "industry": "消费电子 / 智能终端",
         "industry_key": "consumer_electronics",
-        "real_anchor": "三星电子 Samsung Electronics（005930.KS）",
+        "real_anchor": "__VAULTED__",
         "scope": "global",
         "value_chain_node": "整机+零部件（垂直整合）",
         "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "cost_analysis"],
         "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在电子垂直整合标杆上的推演，与同行业国内代工标杆构成对照。",
-        "teaching_notes_internal": "内部锚定三星电子(005930.KS)公开年报，用于建立「消费电子」国际基线；真名仅本视图出现，对外一律匿名。",
+        "teaching_notes_internal": "__VAULTED_INTERNAL__",
         "status": "active",
         "updated_at": "2026-08-03",
         "disclosure_facts": {
@@ -1623,12 +1610,12 @@ DEFAULT_CASES = [
         "subject_anon": "某某全球电子代工龙头（研究案例·公开披露·全球）",
         "industry": "消费电子 / 智能终端",
         "industry_key": "consumer_electronics",
-        "real_anchor": "鸿海精密 Foxconn（2317.TW）",
+        "real_anchor": "__VAULTED__",
         "scope": "global",
         "value_chain_node": "整机组装（代工）",
         "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "cost_analysis"],
         "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在电子代工标杆上的推演，与同行业国内代工标杆构成规模对照。",
-        "teaching_notes_internal": "内部锚定鸿海精密(2317.TW)公开年报，用于建立「电子代工」国际基线；真名仅本视图出现，对外一律匿名。",
+        "teaching_notes_internal": "__VAULTED_INTERNAL__",
         "status": "active",
         "updated_at": "2026-08-03",
         "disclosure_facts": {
@@ -1654,12 +1641,12 @@ DEFAULT_CASES = [
         "subject_anon": "某某国内声学组件企业（研究案例·公开披露·国内）",
         "industry": "消费电子 / 智能终端",
         "industry_key": "consumer_electronics",
-        "real_anchor": "歌尔股份（002241.SZ）",
+        "real_anchor": "__VAULTED__",
         "scope": "domestic",
         "value_chain_node": "声学/精密组件",
         "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "cost_analysis"],
         "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在国内声学组件标杆上的推演，与同行业全球代工标杆构成细分对照。",
-        "teaching_notes_internal": "内部锚定歌尔股份(002241.SZ)公开年报，用于建立「声学组件」国内基线；真名仅本视图出现，对外一律匿名。",
+        "teaching_notes_internal": "__VAULTED_INTERNAL__",
         "status": "active",
         "updated_at": "2026-08-03",
         "disclosure_facts": {
@@ -1685,12 +1672,12 @@ DEFAULT_CASES = [
         "subject_anon": "某某全球动力电池龙头（研究案例·公开披露·全球）",
         "industry": "新能源 / 动力电池",
         "industry_key": "new_energy",
-        "real_anchor": "LG新能源 LG Energy Solution（373220.KS）",
+        "real_anchor": "__VAULTED__",
         "scope": "global",
         "value_chain_node": "动力电池（全球供给）",
         "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "cost_analysis"],
         "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在动力电池标杆上的推演，与同行业国内标杆构成国际/国内对标。",
-        "teaching_notes_internal": "内部锚定LG新能源(373220.KS)公开年报，用于建立「动力电池」国际基线；真名仅本视图出现，对外一律匿名。",
+        "teaching_notes_internal": "__VAULTED_INTERNAL__",
         "status": "active",
         "updated_at": "2026-08-03",
         "disclosure_facts": {
@@ -1716,12 +1703,12 @@ DEFAULT_CASES = [
         "subject_anon": "某某全球电池与储能龙头（研究案例·公开披露·全球）",
         "industry": "新能源 / 动力电池",
         "industry_key": "new_energy",
-        "real_anchor": "松下 Panasonic（6752.T）",
+        "real_anchor": "__VAULTED__",
         "scope": "global",
         "value_chain_node": "动力电池/储能",
         "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "cost_analysis"],
         "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在电池与储能标杆上的推演，与同行业国内标杆在储能与车用电池侧构成对照。",
-        "teaching_notes_internal": "内部锚定松下(6752.T)公开年报，用于建立「电池与储能」国际基线；真名仅本视图出现，对外一律匿名。",
+        "teaching_notes_internal": "__VAULTED_INTERNAL__",
         "status": "active",
         "updated_at": "2026-08-03",
         "disclosure_facts": {
@@ -1747,12 +1734,12 @@ DEFAULT_CASES = [
         "subject_anon": "某某全球高端动力电池龙头（研究案例·公开披露·全球）",
         "industry": "新能源 / 动力电池",
         "industry_key": "new_energy",
-        "real_anchor": "三星SDI Samsung SDI（006400.KS）",
+        "real_anchor": "__VAULTED__",
         "scope": "global",
         "value_chain_node": "动力电池（高端）",
         "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "cost_analysis"],
         "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在高端动力电池标杆上的推演，与同行业国内标杆在高端路线侧构成对照。",
-        "teaching_notes_internal": "内部锚定三星SDI(006400.KS)公开年报，用于建立「高端动力电池」国际基线；真名仅本视图出现，对外一律匿名。",
+        "teaching_notes_internal": "__VAULTED_INTERNAL__",
         "status": "active",
         "updated_at": "2026-08-03",
         "disclosure_facts": {
@@ -1778,12 +1765,12 @@ DEFAULT_CASES = [
         "subject_anon": "某某国内动力电池与整车龙头（研究案例·公开披露·国内）",
         "industry": "新能源 / 动力电池",
         "industry_key": "new_energy",
-        "real_anchor": "比亚迪（002594.SZ / 1211.HK）",
+        "real_anchor": "__VAULTED__",
         "scope": "domestic",
         "value_chain_node": "动力电池+整车（垂直整合）",
         "recommended_interfaces": ["industry_research", "executive_cockpit", "supply_chain", "cost_analysis"],
         "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在动力电池与整车垂直整合标杆上的推演，与同行业全球标杆构成对照。",
-        "teaching_notes_internal": "内部锚定比亚迪(002594.SZ)公开年报，用于建立「动力电池+整车」国内基线；真名仅本视图出现，对外一律匿名。",
+        "teaching_notes_internal": "__VAULTED_INTERNAL__",
         "status": "active",
         "updated_at": "2026-08-03",
         "disclosure_facts": {
