@@ -156,6 +156,47 @@ docker compose up -d
 
 ---
 
+## 📋 Issue 导航（17 个可认领任务）
+
+> 当前仓库共有 **17 个开放 Issue** 等待社区共建 —— 按方向分四组。带 🟢 `good first issue` 的零经验也能上手；带 🟡 `help wanted` 的欢迎有相关经验的伙伴认领；带 💡 `from-customer` 的是真实客户需求。点标题直达。
+
+### 📘 文档与教程（6）
+| # | 标题 | 标签 |
+|---|------|------|
+| [#1](https://github.com/iduyuhe/zhiyan-evolviq/issues/1) | 为 25 个 Agent 各写一个端到端运行示例 | 🟢 good first issue · documentation |
+| [#2](https://github.com/iduyuhe/zhiyan-evolviq/issues/2) | 补全 Studio 英文界面文案（i18n） | 🟢 good first issue · documentation |
+| [#8](https://github.com/iduyuhe/zhiyan-evolviq/issues/8) | 基于 supply_chain 模板写「如何新增一个 Agent」教程 | 🟢 good first issue · documentation |
+| [#10](https://github.com/iduyuhe/zhiyan-evolviq/issues/10) | 前端英文 i18n（统一英文字符串） | 🟢 good first issue |
+| [#11](https://github.com/iduyuhe/zhiyan-evolviq/issues/11) | demo 走查视频脚本 + GIF | 🟢 good first issue · documentation |
+| [#52](https://github.com/iduyuhe/zhiyan-evolviq/issues/52) | 翻译 / 补全英文文档（README 与 docs） | 🟢 good first issue · documentation |
+
+### 🔌 连接器与集成（6）
+| # | 标题 | 标签 |
+|---|------|------|
+| [#3](https://github.com/iduyuhe/zhiyan-evolviq/issues/3) | 新增 MES/ERP 实时数据适配器骨架（AI 辅助生成方向） | 🟢 good first issue · enhancement |
+| [#4](https://github.com/iduyuhe/zhiyan-evolviq/issues/4) | 数据源配置 UI 连通性验证（先测试后保存闸门） | 🟢 good first issue |
+| [#5](https://github.com/iduyuhe/zhiyan-evolviq/issues/5) | 企微 / 钉钉 隐性信号接入连接器 | 🟢 good first issue |
+| [#6](https://github.com/iduyuhe/zhiyan-evolviq/issues/6) | 邮件渠道隐性捕获连接器 | 🟢 good first issue |
+| [#7](https://github.com/iduyuhe/zhiyan-evolviq/issues/7) | 监控指标 Prometheus exporter | 🟢 good first issue |
+| [#9](https://github.com/iduyuhe/zhiyan-evolviq/issues/9) | 路由精度增强：消解近义目标 | 🟢 good first issue |
+
+### 🛠 贡献脚手架 & 本体（2）
+| # | 标题 | 标签 |
+|---|------|------|
+| [#12](https://github.com/iduyuhe/zhiyan-evolviq/issues/12) | 「贡献你的 Agent」脚手架 | 🟡 help wanted |
+| [#13](https://github.com/iduyuhe/zhiyan-evolviq/issues/13) | 本体扩展提议工作流文档 | 🟡 help wanted · documentation |
+
+### 💡 来自客户 / 社区的方向（3）
+| # | 标题 | 标签 |
+|---|------|------|
+| [#51](https://github.com/iduyuhe/zhiyan-evolviq/issues/51) | 建议增加替代料推荐（来自真实客户） | 💡 from-customer · enhancement |
+| [#53](https://github.com/iduyuhe/zhiyan-evolviq/issues/53) | 扩充研究案例库（3C / 新能源 / 通讯 等行业锚定） | 🟢 good first issue · documentation |
+| [#54](https://github.com/iduyuhe/zhiyan-evolviq/issues/54) | 制作对外物料：一页纸介绍 / 竞品对比卡 / Demo 视频 | 🟡 help wanted · documentation |
+
+> 小提示：Issue 不带 `track:future-ideas` 标签的，都是「可立即认领、可落地」的任务；带该标签的是规划/方向类，欢迎讨论但不急着认领。
+
+---
+
 ## 🙏 致谢 / Contributors
 
 EvolvIQ 由社区共建，特别感谢早期朋友让这个项目有了第一批观众与更稳的代码：
