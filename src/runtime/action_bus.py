@@ -247,3 +247,57 @@ class ActionBus:
 
     def get_receipt(self, receipt_id: str) -> Receipt:
         return self._gate.get_receipt(receipt_id)
+
+
+# ---------------------------------------------------------------------------
+# MCP-native 互操作 + Skill 边界（HubPort 启发 · 挖存量，纯附加）
+# ---------------------------------------------------------------------------
+# 设计纪律（docs/EXTERNAL_NARRATIVE §16 一致）：
+# - 运行时确定性：ActionSpec 的契约（name/agent/params/channel/gate）一经注册固定，
+#   不随 AI 生成漂移；MCP 暴露层只做「协议映射」，不改写动作语义。
+# - Skill 边界：Agent ≠ 技能。对外讲"分身能做什么技能"，本映射层把 ActionSpec
+#   归并到「角色分身 × 技能」视图，权限是技能的副产品（L0–L3）。
+# - 绝不引入运行时 MCP 传输依赖到 Agent 内部（与 federation.py 一致，零韧性风险）。
+
+def to_mcp_tool_spec(spec: "ActionSpec") -> Dict[str, Any]:
+    """把内部 ActionSpec 映射为 MCP-native tool 描述（外部暴露层用）。
+
+    字段对齐 MCP tool 对象：name / description / inputSchema / annotations。
+    不含任何案例真名（零真名铁律）。
+    """
+    return {
+        "name": spec.name,
+        "description": spec.description,
+        "inputSchema": {
+            "type": "object",
+            "properties": spec.params or {},
+            "additionalProperties": False,
+        },
+        "annotations": {
+            "channel": spec.channel,
+            "require_gate": spec.require_gate,
+            "read_only_hint": not spec.require_gate,
+            "destructive_hint": spec.require_gate,
+        },
+    }
+
+
+def to_skill_view(specs: List["ActionSpec"]) -> Dict[str, Any]:
+    """把动作归并到「角色分身 × 技能」视图（Skill 边界映射层）。
+
+    返回：
+        {
+          "roles": { agent: { "display": ..., "skills": [skill_name...] } },
+          "gated_skills": [...],   # 需人工授权的技能（不可逆）
+        }
+    说明：agent 内部名 → 对外「分身」展示名在 EXTERNAL_NARRATIVE §2 四层框架定义，
+    此处只做聚合，不擅自命名。
+    """
+    roles: Dict[str, Dict[str, Any]] = {}
+    gated: List[str] = []
+    for s in specs:
+        entry = roles.setdefault(s.agent, {"agent": s.agent, "skills": []})
+        entry["skills"].append(s.name)
+        if s.require_gate:
+            gated.append(s.name)
+    return {"roles": roles, "gated_skills": gated}

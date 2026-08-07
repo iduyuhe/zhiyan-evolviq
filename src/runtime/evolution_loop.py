@@ -24,7 +24,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
-from src.agents.compliance_reviewer.agent import LEAK_TOKENS
+from src.common.leak import LEAK_TOKENS
 from src.runtime.feedback_store import desensitize
 
 # 资产目标（迭代2 回灌通道的路由键；本迭代仅作标记）
@@ -387,6 +387,20 @@ class EvolutionLoop:
             except Exception:  # noqa: BLE001
                 pass
 
+        def _skill_updater(sig: EvaluationSignal) -> None:
+            """SKILL 通道：把信号落库为技能候选（v0.1 真实技能资产），并产一条审批意图。"""
+            try:
+                from src.runtime.evolution.skill_assets import skill_asset_store
+
+                sk = skill_asset_store.ingest_from_signal(sig)
+                if sk is not None:
+                    self._make_intent(
+                        ASSET_SKILL, sig,
+                        f"技能候选已落库 {sk.skill_id}（{sk.name}）；待人工审批 approve",
+                    )
+            except Exception:  # noqa: BLE001  静默降级，不破管
+                pass
+
         added = 0
         for sig in self._signals:
             if sig.signal_id in self._applied:
@@ -400,7 +414,9 @@ class EvolutionLoop:
                 self._make_intent(ch, sig, f"记忆强化：{sig.payload.get('feedback_type','?')} 反馈沉淀")
             elif ch == ASSET_THRESHOLD:
                 _threshold_updater(sig)
-            else:  # skill / kg：仅产出提议草稿（人工审批门后才会真正落账）
+            elif ch == ASSET_SKILL:
+                _skill_updater(sig)
+            else:  # kg：仅产出提议草稿（人工审批门后才会真正落账）
                 self._make_intent(ch, sig, f"{ch} 资产更新候选（基于 {sig.signal_kind} 信号，待审批）")
             # 未被 updater 显式产意图的通道，确保至少一条意图被记录
             if not any(i.signal_id == sig.signal_id for i in self._intents):
@@ -413,6 +429,37 @@ class EvolutionLoop:
         if channel:
             out = [i for i in out if i.channel == channel]
         return sorted(out, key=lambda i: i.created_at, reverse=True)[:limit]
+
+    def lifecycle_gc(self, ttl_days: int = 30) -> Dict[str, int]:
+        """记忆生命周期收敛：归档超过 TTL 的 proposed 意图 + 技能草稿。
+
+        短期会话记忆 / 草稿若长期无人审批，自动归档（expired / archived），
+        避免资产库无限堆积；已 approved 资产不受影响。
+        返回各通道归档条数。
+        """
+        cutoff = time.time() - ttl_days * 86400
+        intents_archived = 0
+        for i in self._intents:
+            if i.status == "proposed" and i.created_at < cutoff:
+                i.status = "expired"
+                intents_archived += 1
+                if self._db_enabled:
+                    try:
+                        with sqlite3.connect(self._db_path) as conn:
+                            conn.execute(
+                                "UPDATE asset_updates SET status='expired' WHERE intent_id=?",
+                                (i.intent_id,),
+                            )
+                    except Exception:  # noqa: BLE001
+                        pass
+        skills_archived = 0
+        try:
+            from src.runtime.evolution.skill_assets import skill_asset_store
+
+            skills_archived = skill_asset_store.lifecycle_gc(ttl_days)
+        except Exception:  # noqa: BLE001
+            pass
+        return {"intents_archived": intents_archived, "skills_archived": skills_archived}
 
     def evolution_ladder(self) -> Dict[str, Any]:
         """L0→L3 进化阶梯可观测（按资产通道度量，平台侧复利视角）。
