@@ -2637,5 +2637,662 @@
         ]
       }
     ]
+  },
+  {
+    "case_id": "case_telecom_fenghuo_2026",
+    "subject_anon": "某通讯设备企业（研究案例·公开披露）",
+    "industry": "通讯设备 / 信息通信",
+    "industry_key": "telecom",
+    "real_anchor": "__VAULTED__",
+    "scope": "domestic",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」如何在通讯设备标杆企业推演 战略 / 供应链 / 合规 / 成本四维，并对外匿名、对内真名双版教学。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-08-04",
+    "disclosure_facts": {
+      "source": "2024 年年度报告（2025 年 4 月披露；公司公告 / 上交所 / 证券媒体交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "营业总收入",
+          "value": "285.49 亿元",
+          "yoy": "—"
+        },
+        {
+          "metric": "归母净利润",
+          "value": "7.03 亿元",
+          "yoy": "+39.05%"
+        },
+        {
+          "metric": "研发投入",
+          "value": "35.78 亿元",
+          "yoy": "占营收 12.53%"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "case_telecom_hengtong_2026",
+    "subject_anon": "某通讯设备企业（研究案例·公开披露）",
+    "industry": "通讯设备 / 信息通信",
+    "industry_key": "telecom",
+    "real_anchor": "__VAULTED__",
+    "scope": "domestic",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」如何在通讯设备标杆企业推演 战略 / 供应链 / 合规 / 成本四维，并对外匿名、对内真名双版教学。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-08-04",
+    "disclosure_facts": {
+      "source": "2024 年年度报告（2025 年 4 月披露；公司公告 / 上交所 / 证券媒体交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "营业总收入",
+          "value": "599.84 亿元",
+          "yoy": "+25.96%"
+        },
+        {
+          "metric": "归母净利润",
+          "value": "27.69 亿元",
+          "yoy": "+28.57%"
+        },
+        {
+          "metric": "研发投入",
+          "value": "18.95 亿元",
+          "yoy": "占营收 3.16%"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "case_telecom_zhongtian_2026",
+    "subject_anon": "某通讯设备企业（研究案例·公开披露）",
+    "industry": "通讯设备 / 信息通信",
+    "industry_key": "telecom",
+    "real_anchor": "__VAULTED__",
+    "scope": "domestic",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」如何在通讯设备标杆企业推演 战略 / 供应链 / 合规 / 成本四维，并对外匿名、对内真名双版教学。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-08-04",
+    "disclosure_facts": {
+      "source": "2024 年年度报告（2025 年 4 月披露；公司公告 / 上交所 / 证券媒体交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "营业总收入",
+          "value": "480.55 亿元",
+          "yoy": "+6.63%"
+        },
+        {
+          "metric": "归母净利润",
+          "value": "28.38 亿元",
+          "yoy": "-8.94%"
+        },
+        {
+          "metric": "研发投入",
+          "value": "19.44 亿元",
+          "yoy": "占营收 4.04%"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "case_telecom_ericsson_2026",
+    "subject_anon": "某通讯设备企业（研究案例·公开披露）",
+    "industry": "通讯设备 / 信息通信",
+    "industry_key": "telecom",
+    "real_anchor": "__VAULTED__",
+    "scope": "global",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」如何在通讯设备标杆企业推演 战略 / 供应链 / 合规 / 成本四维，并对外匿名、对内真名双版教学。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-08-04",
+    "disclosure_facts": {
+      "source": "Ericsson Annual Report 2024 / Q4 & Full-year report 2024（2025-01-24 披露；公司官网 / SEC 20-F 交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "净销售额",
+          "value": "2479 亿瑞典克朗",
+          "yoy": "-6%"
+        },
+        {
+          "metric": "净利润",
+          "value": "3.7 亿瑞典克朗",
+          "yoy": "扭亏（2023 年为 -261 亿亏损）"
+        },
+        {
+          "metric": "研发投入",
+          "value": "535 亿瑞典克朗",
+          "yoy": "占营收约 21.6%"
+        },
+        {
+          "metric": "毛利率",
+          "value": "44.1%",
+          "yoy": "+5.5pct"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "case_telecom_nokia_2026",
+    "subject_anon": "某通讯设备企业（研究案例·公开披露）",
+    "industry": "通讯设备 / 信息通信",
+    "industry_key": "telecom",
+    "real_anchor": "__VAULTED__",
+    "scope": "global",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」如何在通讯设备标杆企业推演 战略 / 供应链 / 合规 / 成本四维，并对外匿名、对内真名双版教学。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-08-04",
+    "disclosure_facts": {
+      "source": "Nokia 2024 Financial Report（2025-01-30 披露；公司官网 / SEC 6-K 交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "净销售额",
+          "value": "192.2 亿欧元",
+          "yoy": "-9%"
+        },
+        {
+          "metric": "营业利润",
+          "value": "20.0 亿欧元",
+          "yoy": "+20%（报告口径）"
+        },
+        {
+          "metric": "净利润（本期）",
+          "value": "12.8 亿欧元",
+          "yoy": "+89%"
+        },
+        {
+          "metric": "研发投入",
+          "value": "45.1 亿欧元",
+          "yoy": "+5%"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "case_consumer_electronics_goertek_2026",
+    "subject_anon": "某消费电子企业（研究案例·公开披露）",
+    "industry": "消费电子 / 智能终端",
+    "industry_key": "consumer_electronics",
+    "real_anchor": "__VAULTED__",
+    "scope": "domestic",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」如何在消费电子标杆企业推演 战略 / 供应链 / 合规 / 成本四维，并对外匿名、对内真名双版教学。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-08-04",
+    "disclosure_facts": {
+      "source": "2024 年年度报告（2025 年 4 月披露；公司公告 / 深交所 / 证券媒体交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "营业总收入",
+          "value": "1009.54 亿元",
+          "yoy": "—"
+        },
+        {
+          "metric": "归母净利润",
+          "value": "26.65 亿元",
+          "yoy": "+144.93%"
+        },
+        {
+          "metric": "研发投入",
+          "value": "45.69 亿元",
+          "yoy": "占营收 4.53%"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "case_consumer_electronics_lens_2026",
+    "subject_anon": "某消费电子企业（研究案例·公开披露）",
+    "industry": "消费电子 / 智能终端",
+    "industry_key": "consumer_electronics",
+    "real_anchor": "__VAULTED__",
+    "scope": "domestic",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」如何在消费电子标杆企业推演 战略 / 供应链 / 合规 / 成本四维，并对外匿名、对内真名双版教学。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-08-04",
+    "disclosure_facts": {
+      "source": "2024 年年度报告（2025 年 4 月披露；公司公告 / 深交所 / 证券媒体交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "营业总收入",
+          "value": "698.97 亿元",
+          "yoy": "+28.27%"
+        },
+        {
+          "metric": "归母净利润",
+          "value": "36.24 亿元",
+          "yoy": "+19.94%"
+        },
+        {
+          "metric": "研发投入",
+          "value": "27.85 亿元",
+          "yoy": "—"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "case_consumer_electronics_transsion_2026",
+    "subject_anon": "某消费电子企业（研究案例·公开披露）",
+    "industry": "消费电子 / 智能终端",
+    "industry_key": "consumer_electronics",
+    "real_anchor": "__VAULTED__",
+    "scope": "domestic",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」如何在消费电子标杆企业推演 战略 / 供应链 / 合规 / 成本四维，并对外匿名、对内真名双版教学。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-08-04",
+    "disclosure_facts": {
+      "source": "2024 年年度报告（2025 年 4 月披露；公司公告 / 上交所 / 证券媒体交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "营业总收入",
+          "value": "687.15 亿元",
+          "yoy": "+10.31%"
+        },
+        {
+          "metric": "归母净利润",
+          "value": "55.49 亿元",
+          "yoy": "+0.22%"
+        },
+        {
+          "metric": "研发投入",
+          "value": "25.17 亿元",
+          "yoy": "占营收 3.66%"
+        },
+        {
+          "metric": "手机出货量",
+          "value": "2.01 亿部",
+          "yoy": "—",
+          "note": "新兴市场智能机龙头"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "case_consumer_electronics_apple_2026",
+    "subject_anon": "某消费电子企业（研究案例·公开披露）",
+    "industry": "消费电子 / 智能终端",
+    "industry_key": "consumer_electronics",
+    "real_anchor": "__VAULTED__",
+    "scope": "global",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」如何在消费电子标杆企业推演 战略 / 供应链 / 合规 / 成本四维，并对外匿名、对内真名双版教学。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-08-04",
+    "disclosure_facts": {
+      "source": "Apple FY2024 Form 10-K（财年截至 2024-09-28；2024-11 披露；SEC / 公司 10-K 交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "净销售额",
+          "value": "3910.4 亿美元",
+          "yoy": "+2%"
+        },
+        {
+          "metric": "净利润",
+          "value": "937.4 亿美元",
+          "yoy": "—"
+        },
+        {
+          "metric": "研发投入",
+          "value": "314.0 亿美元",
+          "yoy": "+4.9%"
+        },
+        {
+          "metric": "服务业务营收",
+          "value": "961.7 亿美元",
+          "yoy": "+12.9%",
+          "note": "高毛利服务引擎"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "case_consumer_electronics_samsung_electronics_2026",
+    "subject_anon": "某消费电子企业（研究案例·公开披露）",
+    "industry": "消费电子 / 智能终端",
+    "industry_key": "consumer_electronics",
+    "real_anchor": "__VAULTED__",
+    "scope": "global",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」如何在消费电子标杆企业推演 战略 / 供应链 / 合规 / 成本四维，并对外匿名、对内真名双版教学。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-08-04",
+    "disclosure_facts": {
+      "source": "Samsung Electronics 2024 Annual Report（2025 年披露；公司官网 / 财报新闻稿交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "营收",
+          "value": "300.9 万亿韩元",
+          "yoy": "—"
+        },
+        {
+          "metric": "营业利润",
+          "value": "32.7 万亿韩元",
+          "yoy": "—"
+        },
+        {
+          "metric": "净利润",
+          "value": "34.5 万亿韩元",
+          "yoy": "—"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "case_new_energy_byd_2026",
+    "subject_anon": "某新能源企业（研究案例·公开披露）",
+    "industry": "新能源 / 动力电池与储能",
+    "industry_key": "new_energy",
+    "real_anchor": "__VAULTED__",
+    "scope": "domestic",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis",
+      "energy_carbon"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」如何在新能源标杆企业推演 战略 / 供应链 / 合规 / 成本四维，并对外匿名、对内真名双版教学。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-08-04",
+    "disclosure_facts": {
+      "source": "2024 年年度报告（2025 年 4 月披露；公司公告 / 深交所 / 证券媒体交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "营业总收入",
+          "value": "7771 亿元",
+          "yoy": "+29%"
+        },
+        {
+          "metric": "归母净利润",
+          "value": "402.5 亿元",
+          "yoy": "+34%"
+        },
+        {
+          "metric": "研发投入",
+          "value": "542 亿元",
+          "yoy": "—"
+        },
+        {
+          "metric": "新能源汽车销量 / 市占率",
+          "value": "427 万辆 / 33.2%",
+          "yoy": "—",
+          "note": "国内新能源乘用车销量第一"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "case_new_energy_eve_2026",
+    "subject_anon": "某新能源企业（研究案例·公开披露）",
+    "industry": "新能源 / 动力电池与储能",
+    "industry_key": "new_energy",
+    "real_anchor": "__VAULTED__",
+    "scope": "domestic",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis",
+      "energy_carbon"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」如何在新能源标杆企业推演 战略 / 供应链 / 合规 / 成本四维，并对外匿名、对内真名双版教学。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-08-04",
+    "disclosure_facts": {
+      "source": "2024 年年度报告（2025 年 4 月披露；公司公告 / 深交所 / 证券媒体交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "营业总收入",
+          "value": "486.15 亿元",
+          "yoy": "-0.3%"
+        },
+        {
+          "metric": "归母净利润",
+          "value": "40.76 亿元",
+          "yoy": "+0.63%"
+        },
+        {
+          "metric": "研发投入",
+          "value": "30.6 亿元",
+          "yoy": "占营收 6.29%"
+        },
+        {
+          "metric": "储能电池出货量",
+          "value": "50.45 GWh",
+          "yoy": "—",
+          "note": "储能为增长主力"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "case_new_energy_sungrow_2026",
+    "subject_anon": "某新能源企业（研究案例·公开披露）",
+    "industry": "新能源 / 动力电池与储能",
+    "industry_key": "new_energy",
+    "real_anchor": "__VAULTED__",
+    "scope": "domestic",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis",
+      "energy_carbon"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」如何在新能源标杆企业推演 战略 / 供应链 / 合规 / 成本四维，并对外匿名、对内真名双版教学。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-08-04",
+    "disclosure_facts": {
+      "source": "2024 年年度报告（2025 年 4 月披露；公司公告 / 深交所 / 证券媒体交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "营业总收入",
+          "value": "778.57 亿元",
+          "yoy": "+7.8%"
+        },
+        {
+          "metric": "归母净利润",
+          "value": "110.36 亿元",
+          "yoy": "+16.92%"
+        },
+        {
+          "metric": "研发投入",
+          "value": "31.64 亿元",
+          "yoy": "占营收 4.06%"
+        },
+        {
+          "metric": "储能系统发货 / 光伏逆变器发货",
+          "value": "28 GWh / 147 GW",
+          "yoy": "—",
+          "note": "储能 + 逆变器双龙头"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "case_new_energy_lg_energy_2026",
+    "subject_anon": "某新能源企业（研究案例·公开披露）",
+    "industry": "新能源 / 动力电池与储能",
+    "industry_key": "new_energy",
+    "real_anchor": "__VAULTED__",
+    "scope": "global",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis",
+      "energy_carbon"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」如何在新能源标杆企业推演 战略 / 供应链 / 合规 / 成本四维，并对外匿名、对内真名双版教学。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-08-04",
+    "disclosure_facts": {
+      "source": "LG Energy Solution 2024 Financial Results（2025-01-24 披露；公司官网 / 财报新闻稿交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "营业收入",
+          "value": "25.6 万亿韩元",
+          "yoy": "-24.1%"
+        },
+        {
+          "metric": "营业利润",
+          "value": "575.4 亿韩元",
+          "yoy": "-73.4%"
+        },
+        {
+          "metric": "净利润",
+          "value": "338.6 亿韩元",
+          "yoy": "-79.3%"
+        },
+        {
+          "metric": "营业利润率",
+          "value": "2.2%",
+          "yoy": "-5.4pct",
+          "note": "含 IRA 税收抵免影响"
+        }
+      ]
+    }
+  },
+  {
+    "case_id": "case_new_energy_tesla_2026",
+    "subject_anon": "某新能源企业（研究案例·公开披露）",
+    "industry": "新能源 / 动力电池与储能",
+    "industry_key": "new_energy",
+    "real_anchor": "__VAULTED__",
+    "scope": "global",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis",
+      "energy_carbon"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」如何在新能源标杆企业推演 战略 / 供应链 / 合规 / 成本四维，并对外匿名、对内真名双版教学。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-08-04",
+    "disclosure_facts": {
+      "source": "Tesla FY2024 Form 10-K（财年截至 2024-12-31；2025-01 披露；SEC / 公司 10-K 交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "总营收",
+          "value": "976.9 亿美元",
+          "yoy": "+1%"
+        },
+        {
+          "metric": "净利润（归母）",
+          "value": "70.9 亿美元",
+          "yoy": "-53%"
+        },
+        {
+          "metric": "研发投入",
+          "value": "45.4 亿美元",
+          "yoy": "—"
+        },
+        {
+          "metric": "储能部署量",
+          "value": "31.4 GWh",
+          "yoy": "创纪录",
+          "note": "能源 / 储能业务核心指标"
+        }
+      ]
+    }
   }
 ]

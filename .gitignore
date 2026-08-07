@@ -83,3 +83,10 @@ studio/dist_old_bak_*/
 studio/dist_verify/
 studio/.trash_local/
 gh_maintain_run.py
+
+# ===================== 案例库锚定 Vault（明文真名·绝不入库） =====================
+src/agents/case_curator/_real_anchor_vault.json
+
+# ===================== Office 二进制物料（本地保留，不入库） =====================
+docs/智衍EvolvIQ_25个工业智能分身*
+docs/智衍EvolvIQ_系统介绍_上海铁路通信有限公司*

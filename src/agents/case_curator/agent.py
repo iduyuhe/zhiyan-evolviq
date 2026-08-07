@@ -17,6 +17,33 @@ logger = logging.getLogger(__name__)
 
 CASE_STORE_PATH = os.path.join(os.path.dirname(__file__), "cases.json")
 
+# 🔴 零真名铁律（2026-08-05）：扩锚定的真实上市公司名/代码不落库明文；
+# 明文仅存 gitignored 的 _real_anchor_vault.json（internal 视图经解析器注入，绝不进对外视图/提交历史）。
+VAULT_PATH = os.path.join(os.path.dirname(__file__), "_real_anchor_vault.json")
+VAULT_TOKEN = "__VAULTED__"
+VAULT_INTERNAL_TOKEN = "__VAULTED_INTERNAL__"
+_VAULT_CACHE = None
+
+
+def _load_anchor_vault() -> dict:
+    """读取 gitignored 锚定 vault（含真实上市公司名/代码），internal 视图解析用。
+
+    明文绝不入库、绝不经对外视图/提交历史外发；文件缺失时优雅降级为空。
+    """
+    global _VAULT_CACHE
+    if _VAULT_CACHE is not None:
+        return _VAULT_CACHE
+    try:
+        if os.path.exists(VAULT_PATH):
+            with open(VAULT_PATH, encoding="utf-8") as _f:
+                _VAULT_CACHE = json.load(_f) or {}
+        else:
+            _VAULT_CACHE = {}
+    except Exception:  # noqa: BLE001
+        _VAULT_CACHE = {}
+    return _VAULT_CACHE
+
+
 # 🔴 匿名擦洗映射（研究案例外发前统一擦洗；长 token 在前，防子串错洗）
 # 所有 real_anchor 相关真名/代码片段 → 匿名替代；industry_research._sanitize 消费。
 ANON_SCRUB_MAP = [
@@ -1779,6 +1806,21 @@ DEFAULT_CASES = [
     },
 ]
 
+# 2026-08-04 扩锚定：telecom / consumer_electronics / new_energy 各补至配额上限 10
+# （每行业 国际≤5 + 国内≤5）。从 _new_anchors.json 合并已选的 15 条合规锚定，
+# 保证新装 / 重种子（cases.json 为空时）也能拿到扩锚定后的完整库，且不超配额。
+try:
+    import json as _json, os as _os
+
+    _na_path = _os.path.join(_os.path.dirname(__file__), "_new_anchors.json")
+    if _os.path.exists(_na_path):
+        with open(_na_path, encoding="utf-8") as _f:
+            _extra = _json.load(_f)
+        _existing = {c.get("case_id") for c in DEFAULT_CASES}
+        DEFAULT_CASES = DEFAULT_CASES + [c for c in _extra if c.get("case_id") not in _existing]
+except Exception:  # noqa: BLE001  韧性：合并失败不阻塞种子
+    pass
+
 
 class CaseCuratorAgent(BaseAgent):
     """案例库策展 Agent"""
@@ -1872,9 +1914,12 @@ class CaseCuratorAgent(BaseAgent):
             tokens = [q]
         out = []
         for c in self._load():
+            _real = c.get("real_anchor", "")
+            if _real == VAULT_TOKEN:
+                _real = _load_anchor_vault().get(c.get("case_id", ""), {}).get("real_anchor", "")
             hay = " ".join([
                 c.get("case_id", ""), c.get("subject_anon", ""),
-                c.get("industry", ""), c.get("real_anchor", ""),
+                c.get("industry", ""), _real,
                 c.get("teaching_notes_anon", ""),
             ]).lower()
             if any(t.lower() in hay for t in tokens):
@@ -1976,12 +2021,19 @@ class CaseCuratorAgent(BaseAgent):
                 "industry": c["industry"],
                 "teaching_notes": c.get("teaching_notes_anon", ""),
             }
+            _v = _load_anchor_vault().get(c["case_id"], {})
+            _real = c.get("real_anchor")
+            if _real == VAULT_TOKEN:
+                _real = _v.get("real_anchor")
+            _tnote = c.get("teaching_notes_internal")
+            if _tnote == VAULT_INTERNAL_TOKEN:
+                _tnote = _v.get("teaching_notes_internal", "")
             internal = {
                 "case_id": c["case_id"],
-                "real_anchor": c.get("real_anchor"),  # 🔴 仅内部视图含真名
+                "real_anchor": _real,  # 🔴 仅内部视图含真名（经 vault 解析，明文不落库）
                 "subject_anon": c["subject_anon"],
                 "industry": c["industry"],
-                "teaching_notes": c.get("teaching_notes_internal", ""),
+                "teaching_notes": _tnote,
             }
             dual.append({"teaching_external": external, "teaching_internal": internal})
         return {
