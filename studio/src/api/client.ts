@@ -610,9 +610,11 @@ export interface RotateResult {
 
 /** 自助注册新租户。明文 api_key 仅此一次返回。 */
 export async function registerTenant(name: string): Promise<RegisterResult> {
+  // 🔴 /tenants/* 挂在全局 _AUTH_DEPS 下（main.py），生产 ZHIYAN_AUTH_REQUIRE=1
+  // 时必须有 Bearer JWT —— 早期这里用裸 headers 会 401「缺少 Authorization 头」。
   const res = await fetch(`${API_BASE}/tenants/register`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(),
     body: JSON.stringify({ name }),
   });
   if (!res.ok) throw new Error(await res.text());
