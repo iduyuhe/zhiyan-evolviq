@@ -61,6 +61,17 @@ def configure_db(url: Optional[str] = None) -> None:
     async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
+async def _migrate(conn) -> None:
+    """迁移兼容：create_all 仅建新表、不会 ALTER 已存在表，手动补列（PG/SQLite 通用）。
+
+    V2 P0：为既有 tenants 表补 industry 列（方言通用写法）。列已存在时静默忽略。
+    """
+    try:
+        await conn.execute(text("ALTER TABLE tenants ADD COLUMN industry VARCHAR(64) DEFAULT '其他'"))
+    except Exception:
+        pass
+
+
 async def init_db() -> bool:
     """建表 + 连通性探测。PG 不可达自动回退 SQLite。返回 db_available。"""
     global db_available, db_mode
@@ -73,6 +84,7 @@ async def init_db() -> bool:
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            await _migrate(conn)
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
         db_available = True
@@ -88,6 +100,7 @@ async def init_db() -> bool:
         configure_db(_SQLITE_FALLBACK)
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            await _migrate(conn)
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
         db_available = True

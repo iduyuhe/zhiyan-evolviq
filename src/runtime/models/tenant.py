@@ -41,11 +41,14 @@ class Tenant(Base, TimestampMixin):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     # 工业协议网关连接参数覆写（JSON 字符串，缺省 None 表示用平台共享网关）
     gateway_config: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # 行业（V2 一等公民）：租户原生属性；P0 持久化止血 + P1 manifest 套用 + P1.5 行业识别依赖
+    industry: Mapped[str | None] = mapped_column(String(64), nullable=True, default="其他")
 
     def to_dict(self) -> dict:
         return {
             "id": self.id,
             "name": self.name,
+            "industry": self.industry,
             "is_active": self.is_active,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "has_gateway_config": bool(self.gateway_config),

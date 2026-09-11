@@ -22,6 +22,8 @@
 
 from __future__ import annotations
 
+import json
+import os
 import threading
 import time
 import uuid
@@ -30,6 +32,17 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 from src.runtime.context import get_current_tenant
+
+# ---- P0-3 UNS 持久化（韧性安全：失败静默降级，绝不阻断总线）----
+# 复用 enterprise_store 的 data 目录；挂卷后该目录持久，UNS 事件冷加载/落盘即生效。
+_UNS_DATA_DIR = os.environ.get(
+    "ZHIYAN_ENTERPRISE_DATA_DIR",
+    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data"),
+)
+PERSIST_PATH = os.environ.get(
+    "ZHIYAN_UNS_PERSIST_PATH", os.path.join(_UNS_DATA_DIR, "uns_events.json")
+)
+_UNS_PERSIST_INTERVAL = float(os.environ.get("ZHIYAN_UNS_PERSIST_INTERVAL", "5"))
 
 # ---- 六路 channel 常量（与战略文档 §3.3 完全一致，v30 新增 environment）----
 CHANNEL_GATEWAY = "gateway"
@@ -123,6 +136,14 @@ class UnifiedNamespace:
         self._maxlen = maxlen
         self._subscribers: dict[str, list[Callable[[UNSEvent], Any]]] = {}
         self._lock = threading.RLock()
+        self._dirty = False  # P0-3：有新增事件才落盘，降低 IO
+        # P0-3：冷加载既有事件（挂卷后跨重启存活），失败静默
+        self._load_cold()
+        # P0-3：后台守护线程定期落盘（原子替换），绝不阻断总线
+        try:
+            threading.Thread(target=self._persist_loop, daemon=True).start()
+        except Exception:
+            pass
 
     # ---------------- 发布 ----------------
     def publish(
@@ -274,6 +295,62 @@ class UnifiedNamespace:
         with self._lock:
             self._events.clear()
             self._subscribers.clear()
+
+    # ---------------- P0-3 持久化（韧性安全：任何异常静默，不破总线铁律）----------------
+    def _load_cold(self) -> None:
+        """冷加载既有事件（挂卷后跨重启存活）。文件损坏/缺失 → 静默忽略。"""
+        try:
+            if not os.path.exists(PERSIST_PATH):
+                return
+            with open(PERSIST_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if not isinstance(data, list):
+                return
+            with self._lock:
+                for d in data:
+                    try:
+                        self._events.append(
+                            UNSEvent(
+                                id=d.get("id", str(uuid.uuid4())),
+                                channel=d["channel"],
+                                source=d["source"],
+                                type=d["type"],
+                                payload=dict(d.get("payload", {}) or {}),
+                                entities=list(d.get("entities", []) or []),
+                                confidence=float(d.get("confidence", 1.0)),
+                                ts=float(d.get("ts", time.time())),
+                                credibility=d.get("credibility"),
+                                tenant_id=d.get("tenant_id", "default"),
+                            )
+                        )
+                    except Exception:
+                        continue
+        except Exception:
+            pass
+
+    def _persist_now(self) -> None:
+        """快照落盘（原子替换）。dirty 才调用。"""
+        try:
+            with self._lock:
+                snapshot = [e.to_dict() for e in self._events]
+            os.makedirs(os.path.dirname(PERSIST_PATH), exist_ok=True)
+            tmp = f"{PERSIST_PATH}.tmp"
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(snapshot, f, ensure_ascii=False)
+            os.replace(tmp, PERSIST_PATH)
+        except Exception:
+            pass
+
+    def _persist_loop(self) -> None:
+        """后台守护线程：定期（默认 5s）在 dirty 时落盘。异常静默。"""
+        while True:
+            try:
+                time.sleep(_UNS_PERSIST_INTERVAL)
+                if self._dirty:
+                    self._persist_now()
+                    self._dirty = False
+            except Exception:
+                continue
 
 
 # 进程级单例：import 即存在，纯内存，无需 lifespan 初始化
