@@ -186,7 +186,7 @@ class AgentEngine:
 {trace_result.get('historical_similar', 0)} cases
 """
         elif agent_name in ("dfm_check", "bom_selector", "oee_optimizer", "eco_change", "smt_changeover", "aoi_judge", "ipc_standard", "aps_scheduler", "energy_carbon", "cost_analysis", "demand_order", "wms_logistics", "compliance_q", "executive_cockpit", "rd_npi", "procurement_manage"):
-            plan_text = await self._plan_for_generic_agent(agent_name, goal)
+            plan_text = await self._plan_for_generic_agent(agent_name, goal, session_id)
         else:
             plan_text = f"## 目标理解\n> {goal}\n\n无法识别合适的Agent，请明确目标场景。"
 
@@ -530,21 +530,20 @@ class AgentEngine:
     def get_session(self, session_id: str) -> dict | None:
         return self._sessions.get(session_id)
 
-    async def _plan_for_generic_agent(self, agent_name: str, goal: str) -> str:
-        """为非供应链Agent生成规划文本"""
+    async def _plan_for_generic_agent(self, agent_name: str, goal: str, session_id: str) -> str:
+        """为非供应链Agent生成规划文本；按租户行业动态化显示名。"""
         from src.runtime.agent.router import execute_by_agent
+        from src.runtime.api.agents_api import _apply_industry_overlay, _get_tenant_industry
+
         result = await execute_by_agent(agent_name, goal)
 
-        agent_labels = {
-            "dfm_check": "DFM检查Agent",
-            "bom_selector": "BOM选型Agent",
-            "oee_optimizer": "OEE优化Agent",
-            "eco_change": "ECO变更Agent",
-            "smt_changeover": "SMT换线Agent",
-            "aoi_judge": "AOI判定Agent",
-            "ipc_standard": "IPC标准Agent",
-        }
-        label = agent_labels.get(agent_name, agent_name)
+        session = self._sessions.get(session_id, {})
+        industry = _get_tenant_industry(session.get("tenant_id"))
+        label_agent = _apply_industry_overlay(
+            {"id": agent_name, "name": agent_name.replace("_", " ").title() + " Agent"},
+            industry,
+        )
+        label = label_agent.get("name", agent_name)
 
         lines = [f"## {label} report\n", f"### Goal\n> {goal}\n", f"### Summary\n{result.get('summary', '')}\n"]
 

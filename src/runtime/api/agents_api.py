@@ -2,9 +2,11 @@
 
 import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from src.runtime.agent.router import AGENT_REGISTRY as _ROUTER_AGENT_REGISTRY
+from src.runtime.authn.deps import require_auth
+from src.runtime.enterprise_store import profile_store
 
 router = APIRouter(prefix="/agents", tags=["agents"])
 logger = logging.getLogger(__name__)
@@ -229,6 +231,80 @@ AGENT_REGISTRY = [
 ]
 
 
+# 行业化显示覆盖：相同 agent.id 在不同行业下呈现不同名称/描述/场景，
+# 不改变底层 capability_scope 与路由标识（仍按 id 鉴权）。
+INDUSTRY_AGENT_OVERRIDES: dict[str, dict[str, dict]] = {
+    "造船": {
+        "pm_maintenance": {
+            "description": "造船关键设备健康诊断、预测维护建议、关键部件寿命管理",
+        },
+        "smt_changeover": {
+            "name": "分段装配Agent",
+            "description": "分段装配顺序优化与工位预配置，SMED分析+关键路径+检查清单",
+            "scenarios": ["分段装配计划", "工位预配", "SMED优化", "装配检查清单"],
+        },
+        "aoi_judge": {
+            "name": "涂装缺陷判定Agent",
+            "description": "涂装/焊接缺陷智能判定，误报过滤+检测阈值优化+复判工时节省",
+            "scenarios": ["误报率分析", "阈值优化", "缺陷分类", "复判效率"],
+        },
+        "yield_analysis": {
+            "name": "一次合格率Agent",
+            "description": "船体报验合格率趋势分析、缺陷分类统计、根因定位、改进建议",
+            "scenarios": ["合格率趋势", "缺陷分析", "设备-质量关联"],
+        },
+        "quality_trace": {
+            "description": "船体质量根因追溯，客诉→分段→工艺→设备→参数的端到端分析",
+        },
+        "dfm_check": {
+            "name": "可建造性检查Agent",
+            "description": "船体/舾装可建造性自动审查，焊接可达性/精度/安全规则校验",
+            "scenarios": ["焊接可达性", "装配精度校验", "安全规则", "布局审查", "可建造性评审报告"],
+        },
+        "rd_npi": {
+            "name": "新船型导入Agent",
+            "description": "新船型项目全生命周期管理、里程碑跟踪、批量试产与风险识别",
+            "scenarios": ["新船型项目", "里程碑", "项目风险", "批量试产", "船型导入"],
+        },
+        "ipc_standard": {
+            "name": "船级社标准Agent",
+            "description": "船级社标准辅助查询与缺陷判定，IACS/船级社规范+检验方法推荐",
+            "scenarios": ["标准查询", "缺陷判定", "船级社规范", "检验方法"],
+        },
+        "eco_change": {
+            "name": "设计变更Agent",
+            "description": "设计/工程变更指令影响分析，受影响BOM/WIP/库存/工序识别+跨部门协同",
+            "scenarios": ["变更影响分析", "在制库存评估", "行动项分发", "风险评级"],
+        },
+    },
+}
+
+
+def _get_tenant_industry(tenant_id: str | None) -> str | None:
+    """从企业现状画像读取行业；未录入画像返回 None（走默认半导体元数据）。"""
+    if not tenant_id:
+        return None
+    p = profile_store.get(tenant_id)
+    return (p or {}).get("industry")
+
+
+def _apply_industry_overlay(agent: dict, industry: str | None) -> dict:
+    """对单个 agent 元数据应用行业覆盖；未命中覆盖则原样返回。"""
+    if not industry:
+        return agent
+    overlay = INDUSTRY_AGENT_OVERRIDES.get(industry, {}).get(agent["id"])
+    if not overlay:
+        return agent
+    merged = dict(agent)
+    merged.update({k: v for k, v in overlay.items() if v is not None})
+    return merged
+
+
+def _agents_for_industry(industry: str | None) -> list[dict]:
+    """返回应用行业覆盖后的完整 Agent 注册表。"""
+    return [_apply_industry_overlay(a, industry) for a in AGENT_REGISTRY]
+
+
 def _align_with_router():
     """启动期一次性：把 router 已注册但静态元数据缺失的 agent 自动补占位（防再失同步）。
     静态元数据已为新增 agent 显式补充；本函数作为安全网，对未来新增 agent 兜底。
@@ -252,6 +328,8 @@ _align_with_router()
 
 
 @router.get("")
-async def list_agents():
-    """列出所有可用的 Agent"""
-    return {"agents": AGENT_REGISTRY, "total": len(AGENT_REGISTRY)}
+async def list_agents(u: dict = Depends(require_auth)):
+    """列出当前租户可用的 Agent（按企业画像行业动态化显示名称/描述）。"""
+    industry = _get_tenant_industry(u.get("tenant_id"))
+    agents = _agents_for_industry(industry)
+    return {"agents": agents, "total": len(agents), "industry": industry}

@@ -201,7 +201,11 @@ async def set_capability(
 @router.get("/my-agents")
 async def my_agents(u: dict = Depends(get_current_user)):
     """返回当前用户实际可见的智能体列表（前端菜单渲染的唯一真相源）。"""
-    from src.runtime.api.agents_api import AGENT_REGISTRY
+    from src.runtime.api.agents_api import (
+        AGENT_REGISTRY,
+        _agents_for_industry,
+        _get_tenant_industry,
+    )
     from src.runtime.authn.capability import (
         business_role_label,
         is_agent_read_only,
@@ -210,11 +214,13 @@ async def my_agents(u: dict = Depends(get_current_user)):
     )
 
     scope = u.get("capability_scope")
+    industry = _get_tenant_industry(u.get("tenant_id"))
+    all_agents = _agents_for_industry(industry)
     all_ids = [a["id"] for a in AGENT_REGISTRY]
     allowed = set(visible_agents(scope, all_ids))
     items = [
         {**a, "read_only": is_agent_read_only(scope, a["id"])}
-        for a in AGENT_REGISTRY
+        for a in all_agents
         if a["id"] in allowed
     ]
     return {
@@ -223,6 +229,7 @@ async def my_agents(u: dict = Depends(get_current_user)):
         "unrestricted": is_unrestricted(scope),
         "total": len(items),
         "agents": items,
+        "industry": industry,
     }
 
 

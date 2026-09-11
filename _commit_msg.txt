@@ -1,0 +1,8 @@
+feat(runtime): Agent 名称/描述按租户行业动态化，扩展造船路由词
+
+- agents_api: AGENT_REGISTRY 增加 INDUSTRY_AGENT_OVERRIDES；/agents 按企业画像 industry 返回行业化 name/description/scenarios
+- authn/my-agents: 同步应用行业覆盖，前端菜单唯一真相源跟随变化
+- engine: 规划报告标题按租户行业取动态 Agent 显示名
+- router: 为造船场景扩展关键词（分段装配/涂装缺陷/船级社/龙门吊/新船型等），使造船目标能路由到对应 Agent
+
+Co-Authored-By: WorkBuddy <workbuddy@tencent.com>
