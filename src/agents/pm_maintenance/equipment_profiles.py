@@ -123,6 +123,7 @@ INDUSTRY_EQUIPMENT_TYPES: Dict[str, List[str]] = {
     "semiconductor": ["lithography", "etch", "deposition", "cmp", "inspection", "implant"],
     "3c": ["smt", "cnc", "injection"],
     "new_energy": ["coating", "winding", "formation"],
+    "shipbuilding": ["drydock", "gantry_crane", "welding_robot", "cnc_plate", "blast_paint", "marine_engine"],
 }
 
 INDUSTRY_LABELS: Dict[str, str] = {
