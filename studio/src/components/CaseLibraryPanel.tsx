@@ -101,6 +101,7 @@ function industryBarClass(industry: string): string {
   if (head.includes('通讯') || head.includes('通信')) return 'bg-blue-400';
   if (head.includes('消费电子') || head.includes('3C')) return 'bg-sky-500';
   if (head.includes('新能源') || head.includes('动力')) return 'bg-cyan-500';
+  if (head.includes('造船') || head.includes('船舶')) return 'bg-indigo-500';
   return 'bg-gray-400';
 }
 
@@ -172,7 +173,7 @@ export default function CaseLibraryPanel() {
   );
 
   // ── 行业对标可视化（新增）：按 industry 前缀分组，纯前端派生，零真名 ──
-  const IND_ORDER = ['半导体', '通讯', '消费电子', '新能源'];
+  const IND_ORDER = ['半导体', '通讯', '消费电子', '新能源', '造船'];
   const benchGroups = useMemo(() => {
     const map = new Map<string, CaseItem[]>();
     for (const c of cases) {

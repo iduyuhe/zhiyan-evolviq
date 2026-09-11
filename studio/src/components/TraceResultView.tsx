@@ -1,4 +1,4 @@
-/** 质量追溯Agent结果展示——晶圆质量根因追溯 */
+/** 质量追溯Agent结果展示——行业化根因追溯（半导体/造船等按租户行业动态文案） */
 
 interface TraceResult {
   summary?: string;
@@ -14,13 +14,19 @@ interface TraceResult {
   historical_similar: number;
 }
 
-export default function TraceResultView({ result, onNewGoal }: { result: TraceResult; onNewGoal: () => void }) {
+export default function TraceResultView({ result, onNewGoal, industry }: { result: TraceResult; onNewGoal: () => void; industry?: string }) {
   const sevColor = (s: string) => {
     if (s === 'critical') return 'badge-red';
     if (s === 'major') return 'badge-yellow';
     return 'badge-blue';
   };
   const sevLabel = (s: string) => ({ critical: '严重', major: '主要', minor: '轻微' }[s] || s);
+  // 🔧 造船化：受影响数量单位按行业动态（半导体=片，造船=段/件，其余=件）
+  const qtyUnit = (() => {
+    if (industry === '半导体') return '片';
+    if (industry === '造船') return '段';
+    return '件';
+  })();
 
   return (
     <div className="page-transition space-y-4">

@@ -11,7 +11,7 @@ import {
   OnboardingRecommendation,
 } from '../api/client';
 
-const INDUSTRIES = ['半导体', '3C', '新能源汽车', '通讯', '光伏', '工程机械', '其他'];
+const INDUSTRIES = ['半导体', '3C', '新能源汽车', '通讯', '光伏', '工程机械', '造船', '其他'];
 const ERP_OPTIONS = ['无', '用友', '金蝶', 'SAP', 'Oracle', '自研'];
 const MES_OPTIONS = ['无', '自有', '第三方'];
 const GATEWAY_OPTIONS = ['OPC-UA', 'Modbus', 'AMQP', 'MQTT'];
