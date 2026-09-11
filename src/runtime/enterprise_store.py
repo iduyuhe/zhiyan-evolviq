@@ -29,7 +29,7 @@ _DATA_DIR = os.environ.get(
     os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data"),
 )
 
-PROFILE_INDUSTRIES = ["半导体", "3C", "新能源汽车", "通讯", "光伏", "工程机械", "其他"]
+PROFILE_INDUSTRIES = ["半导体", "3C", "新能源汽车", "通讯", "光伏", "工程机械", "造船", "其他"]
 CREDENTIAL_KINDS = [
     "erp_writeback",
     "gateway_opcua",

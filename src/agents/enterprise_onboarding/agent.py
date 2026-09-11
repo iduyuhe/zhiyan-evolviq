@@ -102,6 +102,7 @@ class EnterpriseOnboardingAgent(BaseAgent):
         "半导体": "semiconductor",
         "3C": "3c",
         "新能源汽车": "new_energy",
+        "造船": "shipbuilding",
     }
 
     def _equipment_presets(self, industry: str) -> dict:
