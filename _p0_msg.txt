@@ -1,8 +1,0 @@
-P0 持久化止血（本地代码就绪）+ V2 计划定稿
-
-- Tenant 模型加 industry 列（行业一等公民硬前置），to_dict 暴露
-- init_db 启动期 ALTER 迁移补 industry 列（PG/SQLite 通用，兼容已存在 tenants 表）
-- UNS 事件流冷加载 + 后台定期落盘持久化（韧性安全，任何异常静默，不破总线铁律）
-- docs/V2_UPGRADE_PLAN.md：六阶段路线图 + 愿景主线决策（纳入自助开通 L1+L2，首日公众号降级、三道坎护栏）
-
-注：P0-2 runtime 挂 data/ 卷、P0-4 上机迁移部署验证，因讲课日约束留讲完课后执行。
