@@ -1,0 +1,6 @@
+fix(studio): 修复造船化改造的两个 TS 编译错误
+
+- App.tsx: TraceResultView 改用 tenantIndustry state（StoredTenant 类型无 industry 字段）
+- AgentSelector.tsx: 去掉 export {} 中重复的 getExamples（已由 export function 导出）
+
+Co-Authored-By: WorkBuddy <workbuddy@tencent.com>

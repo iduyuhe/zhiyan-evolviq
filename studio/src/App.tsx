@@ -633,7 +633,7 @@ export default function App() {
                   ) : viewAgent === 'yield_analysis' ? (
                     <YieldResultView result={result as any} onNewGoal={handleNewGoal} />
                   ) : viewAgent === 'quality_trace' ? (
-                    <TraceResultView result={result as any} onNewGoal={handleNewGoal} industry={activeTenant?.industry} />
+                    <TraceResultView result={result as any} onNewGoal={handleNewGoal} industry={tenantIndustry} />
                   ) : ['dfm_check','bom_selector','oee_optimizer','eco_change','smt_changeover','aoi_judge','ipc_standard','aps_scheduler','energy_carbon','cost_analysis','demand_order','wms_logistics','compliance_q','executive_cockpit','rd_npi','procurement_manage','bid_intel'].includes(viewAgent) ? (
                     <GenericResultView result={result as any} onNewGoal={handleNewGoal} />
                   ) : (

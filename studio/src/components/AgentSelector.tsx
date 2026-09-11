@@ -385,4 +385,4 @@ export default function AgentSelector({ onSelect }: { onSelect: (agent: AgentInf
   );
 }
 
-export { DEFAULT_EXAMPLES, getExamples };
+export { DEFAULT_EXAMPLES };
