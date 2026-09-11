@@ -108,6 +108,13 @@ export default function DeviceMonitor() {
         const data = await r.json();
         const list: EquipSeed[] = data?.equipment_presets?.equipments || [];
         setEquips(list.length > 0 ? list.map(toLive) : []);
+        // 把本租户设备孪生上线进 UNS 事件流（孪生大屏实时可见），best-effort
+        if (list.length > 0) {
+          fetch(apiUrl('/enterprise/equipment/seed-uns'), {
+            method: 'POST',
+            headers: authHeaders(),
+          }).catch(() => {});
+        }
       } else {
         setEquips([]);
       }

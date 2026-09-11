@@ -113,3 +113,66 @@ async def recommendations(u: dict = Depends(require_auth)):
     result = await enterprise_onboarding_agent.analyze("入驻推荐", tenant_id=u["tenant_id"])
     result["agent"] = "enterprise_onboarding"
     return result
+
+
+# 幂等去重：同一 (tenant, equipment_id) 仅发布一次（与 UNS 同生命周期，容器内进程共享）
+_seeded_equipment_keys: set[str] = set()
+
+
+class SeedUnsIn(BaseModel):
+    force: bool = False  # 强制重新发布（覆盖去重）
+
+
+@router.post("/equipment/seed-uns")
+async def seed_equipment_to_uns(req: SeedUnsIn, u: dict = Depends(require_auth)):
+    """把本租户匹配的设备模板实例化进 UNS 事件流（gateway 通道），便于孪生大屏实时事件流展示。
+
+    每台设备发布一条 gateway 事件（source=opcua://{id}、type=equipment_onboard、
+    entities=[DEV:{id}]、tenant_id 快照、route_holon=machine 进入孪生体状态上行）。
+    幂等：同一 (tenant, equipment_id) 默认仅发布一次，除非 force=True。
+    """
+    from src.runtime.uns import uns, CHANNEL_GATEWAY
+    from src.agents.enterprise_onboarding.agent import enterprise_onboarding_agent
+
+    tenant_id = u["tenant_id"]
+    result = await enterprise_onboarding_agent.analyze("入驻推荐", tenant_id=tenant_id)
+    equipments = (result.get("equipment_presets") or {}).get("equipments", [])
+    if not equipments:
+        return {"status": "no_equipment", "seeded": 0, "skipped": 0, "total": 0}
+
+    seeded, skipped = 0, 0
+    for eq in equipments:
+        eid = eq.get("equipment_id")
+        if not eid:
+            continue
+        key = f"{tenant_id}:{eid}"
+        if key in _seeded_equipment_keys and not req.force:
+            skipped += 1
+            continue
+        uns.publish(
+            CHANNEL_GATEWAY,
+            source=f"opcua://{eid}",
+            type="equipment_onboard",
+            payload={
+                "equipment_id": eid,
+                "name": eq.get("name"),
+                "type_cn": eq.get("type_cn"),
+                "vendor": eq.get("vendor"),
+                "model": eq.get("model"),
+                "mtbf_hours": eq.get("mtbf_hours"),
+                "opcua_tag_count": eq.get("opcua_tag_count"),
+                "tenant_id": tenant_id,
+                "industry_cn": (result.get("equipment_presets") or {}).get("industry_cn"),
+            },
+            entities=[f"DEV:{eid}"],
+            tenant_id=tenant_id,
+            route_holon="machine",
+        )
+        _seeded_equipment_keys.add(key)
+        seeded += 1
+    return {
+        "status": "ok",
+        "seeded": seeded,
+        "skipped": skipped,
+        "total": len(equipments),
+    }
