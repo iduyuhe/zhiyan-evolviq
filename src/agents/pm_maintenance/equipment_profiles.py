@@ -17,6 +17,9 @@
 from dataclasses import dataclass, field
 from typing import List, Dict
 
+# 🔴 V2 P1：行业设备表 / 中文名改为从行业 manifest 注册表动态派生（data/industries/*.json）
+from src.runtime.industry_manifest import manifest_registry as _manifest_registry
+
 # ── 设备分类 ──────────────────────────────────────────────────────
 # 根据全球纯晶圆代工第二的匿名企业（内部锚定中芯国际·Fab8 28nm）
 # 实际产线部署的主流设备型号整理。
@@ -118,19 +121,13 @@ EQUIPMENT_CATEGORIES = {
 }
 
 # ── 行业归属映射（预设层：客户入驻选行业 → 自动匹配该行业设备模板）──
-# key = 行业代码，value = 该行业的设备类型列表
+# 🔴 V2 P1：从行业 manifest 注册表动态派生，保留 INDUSTRY_EQUIPMENT_TYPES / INDUSTRY_LABELS
+# 名义以维持旧调用点（.get / .items）兼容；新增行业零代码改动（drop 一个 manifest 文件）。
 INDUSTRY_EQUIPMENT_TYPES: Dict[str, List[str]] = {
-    "semiconductor": ["lithography", "etch", "deposition", "cmp", "inspection", "implant"],
-    "3c": ["smt", "cnc", "injection"],
-    "new_energy": ["coating", "winding", "formation"],
-    "shipbuilding": ["drydock", "gantry_crane", "welding_robot", "cnc_plate", "blast_paint", "marine_engine"],
+    m.key: m.equipment_types for m in _manifest_registry.all_manifests()
 }
-
 INDUSTRY_LABELS: Dict[str, str] = {
-    "semiconductor": "半导体 / 集成电路晶圆制造",
-    "3c": "3C 消费电子 / 精密制造",
-    "new_energy": "新能源 / 动力电池与储能",
-    "shipbuilding": "造船 / 船舶总装制造",
+    m.key: m.label for m in _manifest_registry.all_manifests()
 }
 
 # 反向注入：让每个设备类别自带 industry 归属，避免调用方硬编码判断

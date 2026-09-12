@@ -200,6 +200,7 @@ V1 把"行业"当成**代码里的枚举 + 硬编码覆盖字典 + 写死在 Age
 - [ ] `equipment_profiles.INDUSTRY_EQUIPMENT_TYPES` 改为读 manifest（保留向后兼容的 fallback）。
 - [ ] 把现有"半导体""造船"落地为两个 manifest 文件，验证零回归。
 - **验收**：新增 `data/industries/新能源电池.json` 即可让该行业上架，无需改任何 `.py`。
+- ✅ **2026-09-12 已落地（本地，讲课日未部署）**：`src/runtime/industry_manifest.py` 注册表 + `data/industries/semiconductor.json`/`shipbuilding.json` 已建；`agents_api`/`equipment_profiles`/`enterprise_store`/`enterprise.py`/`router` 全部改读 manifest，删硬编码 `INDUSTRY_AGENT_OVERRIDES` 与造船触发词；原 8 行业闭枚举 + 4 类设备映射零回归保留为兜底（DEFAULT_MANIFESTS）。
 
 ### 阶段 1.5 — 多模态开户 + 战略态势共构引擎（愿景主线，2~3 天）【新增】
 **目标：客户多通道开户（名片/手输/表单/对话并存），系统以"宏观公开信号 × 微观对话事实"实时派生企业真实画像与机遇挑战，动态更新。表单注册不剔除，双模共存用于实测哪种更被客户接受。**

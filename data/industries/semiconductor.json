@@ -1,0 +1,16 @@
+{
+  "key": "semiconductor",
+  "label": "半导体",
+  "agent_overrides": {},
+  "router_triggers_extra": {},
+  "equipment_types": [
+    "lithography",
+    "etch",
+    "deposition",
+    "cmp",
+    "inspection",
+    "implant"
+  ],
+  "knowledge_pack": "semiconductor",
+  "sample_seed": "semiconductor"
+}

@@ -21,6 +21,8 @@ import os
 import uuid
 from datetime import datetime, timezone
 
+from src.runtime.industry_manifest import manifest_registry
+
 logger = logging.getLogger(__name__)
 
 # 存储路径（测试可用 env 覆盖到 tmp）
@@ -29,7 +31,8 @@ _DATA_DIR = os.environ.get(
     os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data"),
 )
 
-PROFILE_INDUSTRIES = ["半导体", "3C", "新能源汽车", "通讯", "光伏", "工程机械", "造船", "其他"]
+# 🔴 V2 P1：行业枚举从行业 manifest 注册表动态派生（开放枚举，drop 一个 manifest 文件即上架新行业）
+PROFILE_INDUSTRIES = manifest_registry.all_labels()
 CREDENTIAL_KINDS = [
     "erp_writeback",
     "gateway_opcua",

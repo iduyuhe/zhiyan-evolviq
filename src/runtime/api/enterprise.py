@@ -24,6 +24,7 @@ from src.runtime.enterprise_store import (
     PROFILE_INDUSTRIES,
     credential_vault,
     profile_store,
+    manifest_registry,
 )
 
 router = APIRouter(prefix="/enterprise", tags=["enterprise"])
@@ -62,8 +63,9 @@ class CredentialIn(BaseModel):
 @router.post("/profile")
 async def upsert_profile(req: ProfileIn, u: dict = Depends(require_auth)):
     """录入/更新企业现状画像。租户取自 JWT，客户端不可指定。"""
-    if req.industry not in PROFILE_INDUSTRIES:
-        raise HTTPException(status_code=400, detail=f"industry 须为 {PROFILE_INDUSTRIES} 之一")
+    # 🔴 V2 P1：行业校验走 manifest 注册表，兼容中文名（label）与行业代码（key）
+    if manifest_registry.get(req.industry) is None:
+        raise HTTPException(status_code=400, detail=f"industry 须为 {PROFILE_INDUSTRIES} 之一（或行业代码）")
     if req.intent.internal_connect not in INTENT_CHOICES:
         raise HTTPException(status_code=400, detail=f"internal_connect 须为 {INTENT_CHOICES} 之一")
     saved = profile_store.upsert(u["tenant_id"], req.model_dump())

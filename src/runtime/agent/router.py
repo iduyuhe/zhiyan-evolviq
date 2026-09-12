@@ -30,6 +30,8 @@
 import importlib
 import logging
 
+from src.runtime.industry_manifest import manifest_registry
+
 logger = logging.getLogger(__name__)
 
 
@@ -93,17 +95,17 @@ ROUTING_RULES = [
     # OEE优化Agent触发词（放在设备维护之前，避免"综合效率"被"设备"截获；去掉"停机"避免抢维护）
     (["oee", "产线效率", "可用率", "性能率", "综合效率", "六大损失", "换线效率"], "oee_optimizer"),
     # 设备维护Agent触发词（造船设备扩展）
-    (["设备", "维护", "保养", "故障", "光刻机", "刻蚀机", "沉积", "备件", "维修", "健康", "pm", "maintenance", "龙门吊", "焊接机器人", "船坞", "干船坞", "涂装线", "船用柴油机", "曲轴"], "pm_maintenance"),
+    (["设备", "维护", "保养", "故障", "光刻机", "刻蚀机", "沉积", "备件", "维修", "健康", "pm", "maintenance"], "pm_maintenance"),
     # 换线Agent触发词（造船场景映射为分段装配）
-    (["换线", "changeover", "smt", "料站", "feeder", "钢网", "贴装程序", "分段装配", "分段建造", "分段合拢", "船体分段", "装配顺序", "舾装顺序"], "smt_changeover"),
+    (["换线", "changeover", "smt", "料站", "feeder", "钢网", "贴装程序"], "smt_changeover"),
     # AOI判定Agent触发词（造船场景映射为涂装/焊接缺陷判定）
-    (["aoi", "误报", "复判", "光学检测", "缺陷检测", "涂装缺陷", "焊接缺陷", "缺陷判定", "外观检验", "焊缝检测", "探伤"], "aoi_judge"),
+    (["aoi", "误报", "复判", "光学检测", "缺陷检测", "缺陷判定", "外观检验"], "aoi_judge"),
     # ECO变更Agent触发词
     (["eco", "ecn", "变更", "工程变更", "物料切换", "版本切换"], "eco_change"),
     # 质量追溯Agent触发词（放在良率前面）
     (["追溯", "trace", "客诉", "投诉", "根因", "root", "cause", "归因", "异常批次"], "quality_trace"),
     # IPC标准Agent触发词（造船场景映射为船级社规范）
-    (["ipc", "标准", "判定", "检验规范", "class 1", "class 2", "class 3", "可接受性", "桥连", "焊点", "拒收", "可接受", "船级社", "船级规范", "ccs", "lr", "dnv", "abs", "iacs"], "ipc_standard"),
+    (["ipc", "标准", "判定", "检验规范", "class 1", "class 2", "class 3", "可接受性", "桥连", "焊点", "拒收", "可接受"], "ipc_standard"),
     # 需求订单Agent触发词（经营决策大脑；置于排程之前，靠需求/订单/未交付/产销协同等专属词截获，不抢交期）
     (["需求", "订单", "接单", "未交付", "交期风险", "产销协同", "s&op", "备货", "forecast", "backlog", "需求预测"], "demand_order"),
     # 计划排程Agent触发词（经营决策大脑）
@@ -120,11 +122,11 @@ ROUTING_RULES = [
     # 经营驾驶舱Agent触发词（经营决策大脑；置于良率之前）
     (["经营", "驾驶舱", "kpi", "看板", "财务报表", "预算", "利润", "营收", "产出完成", "决策支持", "毛利率", "现金流", "损益"], "executive_cockpit"),
     # 研发新产导入Agent触发词（经营决策大脑；置于良率之前；造船映射新船型导入）
-    (["npi", "新产", "新产品导入", "研发项目", "里程碑", "试产", "原型", "design review", "量产放行", "产品开发", "项目进度", "新船型", "船型开发", "船型导入"], "rd_npi"),
+    (["npi", "新产", "新产品导入", "研发项目", "里程碑", "试产", "原型", "design review", "量产放行", "产品开发", "项目进度"], "rd_npi"),
     # 采购与供应商管理Agent触发词（经营决策大脑；用复合词避免被供应链的"采购/供应"截获）
     (["供应商绩效", "合同到期", "竞价", "srm", "战略采购", "供应商管理", "供应商评审", "长协", "供应商评分", "供应商品质", "供应商业绩"], "procurement_manage"),
     # 良率分析Agent触发词（放最后，作为宽泛兜底；造船映射一次合格率）
-    (["良率", "yield", "缺陷", "defect", "质量", "quality", "颗粒", "污染", "合格率", "不良", "一次合格率", "报验合格率", "船体合格率"], "yield_analysis"),
+    (["良率", "yield", "缺陷", "defect", "质量", "quality", "颗粒", "污染", "合格率", "不良"], "yield_analysis"),
     # 企业入驻Agent触发词（两阶段实例化；专属复合词，置于行业研究之前避免"企业画像"被"匿名画像"混淆）
     (["企业入驻", "入驻", "现状描述", "企业画像", "onboarding", "接口实例化", "开通接口", "入驻推荐"], "enterprise_onboarding"),
     # 案例库策展Agent触发词（案例库本体；🔴顺序铁律：必须置于 industry_research 之前——
@@ -145,6 +147,16 @@ ROUTING_RULES = [
     # 行业研究Agent触发词（研究案例范式发动机；置于兜底之前，靠专属复合词截获）
     (["研究案例", "行业研究", "标杆企业", "案例推演", "范式发动机", "industry research", "benchmark study", "匿名画像"], "industry_research"),
 ]
+
+
+# 🔴 V2 P1：行业专属路由触发词从 manifest 注册表注入（追加到对应 Agent 的规则，不污染通用词）。
+# 新增行业的触发词只需在 data/industries/<key>.json 的 router_triggers_extra 声明，零代码改动。
+_MANIFEST_ROUTER_EXTRAS = manifest_registry.collect_router_triggers()
+if _MANIFEST_ROUTER_EXTRAS:
+    ROUTING_RULES = [
+        (list(kws) + _MANIFEST_ROUTER_EXTRAS.get(agent, []), agent)
+        for kws, agent in ROUTING_RULES
+    ]
 
 
 def route_goal(goal: str) -> str:
