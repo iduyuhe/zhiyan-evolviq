@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>造船生产排产决策看板 · 三场景切换器</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:#071a33;color:#E2E8F0;padding:24px}
+.wrap{max-width:1280px;margin:0 auto}
+header{border-bottom:2px solid #2563EB;padding-bottom:14px;margin-bottom:18px}
+h1{font-size:24px;color:#fff;letter-spacing:1px}
+.sub{color:#06B6D4;font-size:13px;margin-top:4px}
+.tabs{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.tab{flex:1;min-width:220px;background:#10294d;border:1px solid #1e3a5f;border-radius:10px;padding:14px 16px;cursor:pointer;transition:.15s}
+.tab:hover{border-color:#2563EB}
+.tab.active{background:#16335c;border-color:#2563EB;box-shadow:0 0 0 1px #2563EB inset}
+.tab .t-name{font-size:15px;color:#fff;font-weight:600}
+.tab .t-meta{font-size:12px;color:#94A3B8;margin-top:4px;line-height:1.5}
+.tab .t-focus{font-size:12px;color:#06B6D4;margin-top:6px}
+.tab.active .t-focus{color:#7dd3fc}
+.frame{border:1px solid #1e3a5f;border-radius:12px;overflow:hidden;background:#0B2545}
+.frame iframe{width:100%;height:1460px;border:0;display:block}
+.bar-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:#94A3B8;margin:10px 2px 0}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+footer{font-size:11px;color:#94A3B8;text-align:center;margin-top:14px;line-height:1.6}
+a.back{color:#7dd3fc;font-size:12px;text-decoration:none;margin-left:10px}
+</style></head>
+<body><div class="wrap">
+<header><h1>造船生产排产决策看板 · 三场景切换器</h1>
+<div class="sub">智衍 EvolvIQ · 决策分身视角 · 同一套决策脑 × 三大匿名造船标杆场景对照（零真名）</div></header>
+
+<div class="tabs">
+<div class="tab active" data-src="dashboard.html" onclick="sel(this)">
+<div class="t-name">① 某大型造船集团</div>
+<div class="t-meta">综合型 · 多船种并行</div>
+<div class="t-focus">聚焦：通用船坞节拍 / 负荷均衡 / 托盘齐套（LIVE 真实事件流快照）</div></div>
+<div class="tab" data-src="dashboard_jiangnan.html" onclick="sel(this)">
+<div class="t-name">② 某液化气船与高端船舶建造龙头</div>
+<div class="t-meta">LNG 双燃料 / 液货舱围护 / 高端特种</div>
+<div class="t-focus">聚焦：围护系统密性 / 双燃料联调 / 液货舱里程碑 / 低温材料齐套</div></div>
+<div class="tab" data-src="dashboard_waigaoqiao.html" onclick="sel(this)">
+<div class="t-name">③ 某邮轮与散货船建造龙头</div>
+<div class="t-meta">大型邮轮内装 / 散货船节拍流水线</div>
+<div class="t-focus">聚焦：薄板分段成形质量 / 邮轮内装舾装物量 / 散货船节拍稳定性</div></div>
+</div>
+
+<div class="frame"><iframe id="f" src="dashboard.html" title="造船排产看板"></iframe></div>
+
+<div class="bar-legend">
+<span><span class="dot" style="background:#10B981"></span>达标 / 安全</span>
+<span><span class="dot" style="background:#F59E0B"></span>临界 / 关注</span>
+<span><span class="dot" style="background:#EF4444"></span>风险 / 告警</span>
+<span><a class="back" href="index.html">← 返回标准包门户</a></span></div>
+
+<footer>三套看板共用同一套排产决策脑（APS Agent「造船感知」模式），差异来自各场景的焦点约束与声明式现状数据。
+其中①为某大型造船集团演示租户真实事件流静态快照，②③为声明式场景模板（非真实业绩，零真名）。<br>
+所有排产 Agent 人留终审、不代签计划。真实事件流接入方式见合作方案书 5.5 节。</footer>
+</div>
+<script>
+function sel(el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('f').src = el.dataset.src;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body></html>

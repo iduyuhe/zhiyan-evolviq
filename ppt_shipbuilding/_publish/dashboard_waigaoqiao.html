@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>造船生产排产决策看板 · 某邮轮与散货船建造龙头（场景模板）</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:#0B2545;color:#E2E8F0;padding:28px}
+.wrap{max-width:1180px;margin:0 auto}
+header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;border-bottom:2px solid #2563EB;padding-bottom:14px;flex-wrap:wrap;gap:8px}
+h1{font-size:24px;color:#fff;letter-spacing:1px}
+.sub{color:#06B6D4;font-size:13px;margin-top:4px}
+.tag{background:#2563EB;color:#fff;font-size:12px;padding:4px 10px;border-radius:14px}
+.tag.tpl{background:#F59E0B}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px}
+.kpi{background:#10294d;border:1px solid #1e3a5f;border-radius:10px;padding:14px;text-align:center}
+.kpi-val{font-size:26px;font-weight:700}
+.kpi-name{font-size:13px;margin-top:6px;color:#CBD5E1}
+.kpi-sub{font-size:11px;color:#94A3B8;margin-top:2px}
+.panel{background:#10294d;border:1px solid #1e3a5f;border-radius:12px;padding:18px;margin-bottom:18px}
+.panel h2{font-size:16px;color:#fff;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.panel h2::before{content:"";width:4px;height:16px;background:#06B6D4;border-radius:2px;display:inline-block}
+.diff-note{background:#0a1c36;border-radius:8px;padding:12px;font-size:12px;color:#CBD5E1;margin-bottom:18px;line-height:1.7}
+.diff-note b{color:#06B6D4}
+.g-row{display:flex;align-items:center;margin:10px 0}
+.g-label{width:130px;font-size:13px}
+.g-sub{font-size:11px;color:#94A3B8}
+.g-track{position:relative;flex:1;height:26px;background:#0a1c36;border-radius:6px;overflow:hidden;display:flex}
+.g-seg{height:100%;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;white-space:nowrap;padding:0 6px}
+.g-seg.cur{background:#2563EB}
+.g-seg.nxt{opacity:.85}
+.g-flag{position:absolute;top:-3px;width:3px;height:32px;transform:translateX(-50%)}
+.g-ready{width:64px;text-align:right;font-size:13px;font-weight:600}
+.bar{position:relative;flex:1;height:18px;background:#0a1c36;border-radius:5px;overflow:hidden}
+.bar-fill{height:100%;border-radius:5px}
+.bar-label{position:absolute;right:6px;top:0;font-size:11px;line-height:18px;color:#fff}
+.heat{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.heat-cell{background:#0a1c36;border-radius:8px;padding:14px;text-align:center}
+.heat-num{font-size:22px;font-weight:700}
+.heat-name{font-size:13px;margin-top:4px}
+.heat-sub{font-size:11px;color:#94A3B8}
+.tray-row{display:flex;align-items:center;gap:12px;margin:8px 0;font-size:13px}
+.tray-id{width:60px;color:#06B6D4;font-weight:600}
+.tray-scope{width:150px;color:#CBD5E1}
+.tray-miss{width:60px;text-align:right;color:#F59E0B;font-size:12px}
+.ivs{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.iv{background:#0a1c36;border-radius:10px;padding:14px;border-left:3px solid #2563EB}
+.iv-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.iv-dot{width:8px;height:8px;border-radius:50%}
+.iv-conf{margin-left:auto;font-size:11px;color:#94A3B8}
+.iv-in,.iv-out{font-size:12px;margin:4px 0;line-height:1.5}
+.iv-k{display:inline-block;width:34px;color:#06B6D4;font-weight:600}
+.iv-val{font-size:12px;color:#CBD5E1;margin-top:4px}
+.iv-status{font-size:11px;color:#F59E0B;margin-top:6px}
+.wi{background:linear-gradient(135deg,#10294d,#0a1c36);border:1px solid #06B6D4;border-radius:10px;padding:16px}
+.wi-title{color:#06B6D4;font-weight:700;margin-bottom:8px}
+.wi-body{font-size:13px;line-height:1.6}
+.wi-mit{font-size:12px;color:#10B981;margin-top:8px}
+footer{font-size:11px;color:#94A3B8;text-align:center;margin-top:10px;line-height:1.6}
+</style></head>
+<body><div class="wrap">
+<header><div><h1>造船生产排产决策看板</h1>
+<div class="sub">智衍 EvolvIQ · 决策分身视角 · 邮轮与散货船建造场景</div></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+<div class="tag">G 模式 · 决策实时化率 MVP≥40%</div><div class="tag tpl">场景模板 · 声明式现状</div></div></header>
+
+<div class="diff-note">
+<b>差异化定位：</b>本看板针对「某邮轮与散货船建造龙头」（大型邮轮内装 / 散货船节拍化流水线双线并行方向），
+相较「某大型造船集团」综合型看板，把决策焦点从<b>通用船坞节拍</b>转向<b>薄板分段成形质量、邮轮内装舾装物量均衡、散货船节拍流水线稳定性</b>三类约束；
+相较「某液化气船与高端船舶建造龙头」的围护/低温约束，本场景的瓶颈在<b>邮轮内装进口长周期物料与薄板焊接变形修复</b>。
+下方数据为<b>声明式现状描述</b>（用于演示决策逻辑，非真实业绩，零真名）。如需接入真实事件流，按方案书 5.5 节在 12 周内点亮该场景设备即可复用同一决策脑。
+</div>
+
+<div class="kpis"><div class="kpi"><div class="kpi-val" style="color:#F59E0B">96.8%</div><div class="kpi-name">薄板分段一次成形合格率</div><div class="kpi-sub">目标≥97%</div></div><div class="kpi"><div class="kpi-val" style="color:#EF4444">73.5%</div><div class="kpi-name">邮轮内装齐套率</div><div class="kpi-sub">安全线≥75%</div></div><div class="kpi"><div class="kpi-val" style="color:#10B981">94.2%</div><div class="kpi-name">散货船分段节拍达成率</div><div class="kpi-sub">基线 90%</div></div><div class="kpi"><div class="kpi-val" style="color:#EF4444">1 项</div><div class="kpi-name">舾装物量均衡偏差</div><div class="kpi-sub">内装舾装工争用</div></div><div class="kpi"><div class="kpi-val" style="color:#06B6D4">2 型</div><div class="kpi-name">在制船型</div><div class="kpi-sub">邮轮×1 / 散货×多艘</div></div></div>
+
+<div class="panel"><h2>关键分段/船台甘特（薄板变形修复为邮轮关键路径）</h2><div class="g-row"><div class="g-label">CABIN-A<br><span class="g-sub">邮轮客房模块</span></div><div class="g-track"><div class="g-seg cur" style="width:81%" title="当前 内装 81%">内装 81%</div><div class="g-seg nxt" style="width:68%;background:#06B6D4" title="下一舱室齐套 68%">舱室齐套</div><div class="g-flag" style="left:73.5%;background:#EF4444"></div></div><div class="g-ready" style="color:#EF4444">73.5%</div></div><div class="g-row"><div class="g-label">HULL-B<br><span class="g-sub">散货船分段线</span></div><div class="g-track"><div class="g-seg cur" style="width:94%" title="当前 分段节拍 94%">节拍 94%</div><div class="g-seg nxt" style="width:91%;background:#06B6D4" title="下一船段">下一船段</div><div class="g-flag" style="left:94.2%;background:#10B981"></div></div><div class="g-ready" style="color:#10B981">94.2%</div></div><div class="g-row"><div class="g-label">BLOCK-C<br><span class="g-sub">薄板分段修复</span></div><div class="g-track"><div class="g-seg cur" style="width:62%" title="当前 变形修复 62%">修复 62%</div><div class="g-seg nxt" style="width:48%;background:#06B6D4" title="下一分段">下一分段</div><div class="g-flag" style="left:58.7%;background:#F59E0B"></div></div><div class="g-ready" style="color:#F59E0B">58.7%</div></div>
+<div style="font-size:11px;color:#94A3B8;margin-top:8px">蓝=当前进度 · 青=下一节点材料齐套 · 竖标=内装/节拍就绪度</div></div>
+
+<div class="panel"><h2>关键工种负荷热力（薄板焊工 / 内装舾装工争用）</h2><div class="heat"><div class="heat-cell"><div class="heat-num" style="color:#EF4444">106.7%</div><div class="heat-name">薄板焊工</div><div class="heat-sub">余量 -130h</div></div><div class="heat-cell"><div class="heat-num" style="color:#F59E0B">98.3%</div><div class="heat-name">内装舾装工</div><div class="heat-sub">余量 -18h</div></div><div class="heat-cell"><div class="heat-num" style="color:#F59E0B">84.0%</div><div class="heat-name">管系工</div><div class="heat-sub">余量 112h</div></div><div class="heat-cell"><div class="heat-num" style="color:#10B981">79.5%</div><div class="heat-name">涂装</div><div class="heat-sub">余量 160h</div></div></div></div>
+
+<div class="panel"><h2>邮轮内装材料齐套监控（进口长周期物料为窝工根因）</h2><div class="tray-row"><span class="tray-id">I-001</span><span class="tray-scope">客房模块家具</span><div class="bar"><div class="bar-fill" style="width:44.2%;background:#EF4444"></div><span class="bar-label">44.2%</span></div><span class="tray-miss">缺 18</span></div><div class="tray-row"><span class="tray-id">I-002</span><span class="tray-scope">舾装管件</span><div class="bar"><div class="bar-fill" style="width:71.3%;background:#F59E0B"></div><span class="bar-label">71.3%</span></div><span class="tray-miss">缺 9</span></div><div class="tray-row"><span class="tray-id">I-003</span><span class="tray-scope">电缆桥架</span><div class="bar"><div class="bar-fill" style="width:88.0%;background:#10B981"></div><span class="bar-label">88.0%</span></div><span class="tray-miss">缺 3</span></div><div class="tray-row"><span class="tray-id">I-004</span><span class="tray-scope">薄板板材</span><div class="bar"><div class="bar-fill" style="width:92.4%;background:#10B981"></div><span class="bar-label">92.4%</span></div><span class="tray-miss">缺 1</span></div><div class="tray-row"><span class="tray-id">I-005</span><span class="tray-scope">内装饰面板</span><div class="bar"><div class="bar-fill" style="width:38.9%;background:#EF4444"></div><span class="bar-label">38.9%</span></div><span class="tray-miss">缺 24</span></div></div>
+
+<div class="panel"><h2>五类排产决策干预（人留终审）</h2><div class="ivs"><div class="iv"><div class="iv-head"><span class="iv-dot" style="background:#2563EB"></span><b>多项目负荷均衡</b><span class="iv-conf">置信 0.86</span></div><div class="iv-in"><span class="iv-k">输入</span>薄板焊工(106.7%)与内装舾装工(98.3%)跨邮轮/散货并行</div><div class="iv-out"><span class="iv-k">输出</span>将 110 工时从薄板焊工调配至内装舾装工（余量 -18h 已临界）</div><div class="iv-val">价值：化解邮轮内装关键路径上的工种争用</div><div class="iv-status">人留终审 · pending_approval</div></div><div class="iv"><div class="iv-head"><span class="iv-dot" style="background:#2563EB"></span><b>船台就绪度预测</b><span class="iv-conf">置信 0.84</span></div><div class="iv-in"><span class="iv-k">输入</span>邮轮客房模块内装 + 散货船分段节拍并联</div><div class="iv-out"><span class="iv-k">输出</span>邮轮内装齐套率 73.5% 已低于安全线(≥75%)；散货船节拍 94.2% 稳定</div><div class="iv-val">价值：把进口长周期内装物料当关键闸门，提前预警滑移</div><div class="iv-status">人留终审 · pending_approval</div></div><div class="iv"><div class="iv-head"><span class="iv-dot" style="background:#2563EB"></span><b>内装材料齐套预警</b><span class="iv-conf">置信 0.88</span></div><div class="iv-in"><span class="iv-k">输入</span>5 个邮轮内装托盘（进口周期长）</div><div class="iv-out"><span class="iv-k">输出</span>2 项齐套度低于 80%，重点：I-001客房家具、I-005饰面板</div><div class="iv-val">价值：直击邮轮窝工根因（进口长周期内装物料齐套）</div><div class="iv-status">人留终审 · pending_approval</div></div><div class="iv"><div class="iv-head"><span class="iv-dot" style="background:#2563EB"></span><b>节拍偏离监控</b><span class="iv-conf">置信 0.83</span></div><div class="iv-in"><span class="iv-k">输入</span>散货船标准船型重复建造节拍 + 薄板分段变形修复</div><div class="iv-out"><span class="iv-k">输出</span>散货船节拍达成 94.2% 稳定；薄板分段修复(BLOCK-C) 58.7% 偏低拖累</div><div class="iv-val">价值：识别薄板成形质量对整船节拍的隐性拖累</div><div class="iv-status">人留终审 · pending_approval</div></div><div class="iv"><div class="iv-head"><span class="iv-dot" style="background:#2563EB"></span><b>What-if 排产推演</b><span class="iv-conf">置信 0.8</span></div><div class="iv-in"><span class="iv-k">输入</span>邮轮客舱布局设计变更(ECN) 2 条</div><div class="iv-out"><span class="iv-k">输出</span>若 ECN 落地且不做干预，内装齐套率 73.5→61.0（滑移 12.5pt）</div><div class="iv-val">价值：量化设计变更对进口物料冻结点的冲击</div><div class="iv-status">人留终审 · pending_approval</div></div></div></div>
+
+<div class="panel"><h2>设计变更动态再平衡</h2><div class="wi"><div class="wi-title">What-if 排产推演</div><div class="wi-body">若 ECN-4102（客舱布局调整,7天）落地且不做干预 → 邮轮内装齐套率 73.5→61.0（滑移 12.5pt），触发安全线告警</div><div class="wi-mit">通过提前 21 天冻结 I-001/I-005 进口批次 + 错峰薄板焊工负荷，可将滑移收敛至 3pt 内</div></div></div>
+
+<footer>本看板为「某邮轮与散货船建造龙头」场景模板，数据均为声明式现状描述，用于呈现决策逻辑，不指向任何真实船厂业绩；船坞/船型/托盘均为匿名代号。<br>
+所有排产 Agent 人留终审、不代签计划。真实事件流接入方式与「某大型造船集团」一致（按方案书 5.5 节点亮该场景设备即可复用同一决策脑）。
+</footer>
+</div></body></html>
