@@ -23,6 +23,9 @@ import pytest
 from src.agents.case_curator.agent import (
     ANON_SCRUB_MAP,
     DEFAULT_CASES,
+    INDUSTRY_QUOTA_OVERRIDES,
+    MAX_ANCHORS_PER_INDUSTRY,
+    MAX_ANCHORS_PER_SCOPE,
     case_curator_agent,
 )
 from src.agents.pm_maintenance import equipment_profiles
@@ -43,6 +46,9 @@ LEAK_TOKENS = [
     "豪威集团", "韦尔股份", "豪威", "韦尔", "603501", "OmniVision", "omnivision",
     "兆易创新", "兆易", "603986", "GigaDevice", "gigadevice",
     "长电科技", "长电微电子", "长电微", "长电", "600584", "JCET", "jcet", "晟碟",
+    # 2026-10-16 造船扩列：外高桥造船 / 江南造船（真实接触客户，对外匿名）
+    "外高桥造船", "上海外高桥造船", "Waigaoqiao Shipbuilding", "SWS",
+    "江南造船", "江南造船（集团）有限责任公司", "Jiangnan Shipbuilding",
 ]
 
 
@@ -86,15 +92,42 @@ def test_p2a_case_count_four_industries():
         else:
             bucket["other"] += 1
     for key, cnt in by_key.items():
-        assert cnt["global"] <= 5, f"❌ {key} 国际锚超 5：{cnt['global']}"
-        assert cnt["domestic"] <= 5, f"❌ {key} 国内锚超 5：{cnt['domestic']}"
-        assert cnt["global"] + cnt["domestic"] <= 10, f"❌ {key} 合计超 10"
+        scope_cap = INDUSTRY_QUOTA_OVERRIDES.get(key, {}).get("scope", MAX_ANCHORS_PER_SCOPE)
+        ind_cap = INDUSTRY_QUOTA_OVERRIDES.get(key, {}).get("industry", MAX_ANCHORS_PER_INDUSTRY)
+        assert cnt["global"] <= scope_cap, f"❌ {key} 国际锚超 {scope_cap}：{cnt['global']}"
+        assert cnt["domestic"] <= scope_cap, f"❌ {key} 国内锚超 {scope_cap}：{cnt['domestic']}"
+        assert cnt["global"] + cnt["domestic"] <= ind_cap, f"❌ {key} 合计超 {ind_cap}"
 
     # 半导体首批应已拉满 10（国际5 + 国内5）
     semi = by_key["semiconductor"]
     assert semi["global"] == 5, f"半导体国际锚应=5，实={semi['global']}"
     assert semi["domestic"] == 5, f"半导体国内锚应=5（含中芯国际），实={semi['domestic']}"
     assert semi["global"] + semi["domestic"] == 10, f"半导体合计应=10，实={semi['global'] + semi['domestic']}"
+
+
+def test_shipbuilding_quota_exception():
+    """造船行业配额例外（2026-10-16）：国内 3 家头部船厂真实接触，国内由 5 放宽至 7、合计至 12。"""
+    by_key: dict = {}
+    for c in DEFAULT_CASES:
+        bucket = by_key.setdefault(c["industry_key"], {"global": 0, "domestic": 0, "other": 0})
+        sc = c.get("scope")
+        if sc == "global":
+            bucket["global"] += 1
+        elif sc == "domestic":
+            bucket["domestic"] += 1
+        else:
+            bucket["other"] += 1
+    sb = by_key["shipbuilding"]
+    # 例外界：国内 = 7、合计 = 12（5 国际 + 7 国内，含沪东中华/外高桥/江南）
+    assert sb["domestic"] == 7, f"造船国内锚应=7，实={sb['domestic']}"
+    assert sb["global"] + sb["domestic"] == 12, f"造船合计应=12，实={sb['global'] + sb['domestic']}"
+    # 例外仅限造船：其余行业仍须 ≤5 / ≤10
+    for key, cnt in by_key.items():
+        if key == "shipbuilding":
+            continue
+        assert cnt["global"] <= 5, f"❌ {key} 国际锚超 5：{cnt['global']}"
+        assert cnt["domestic"] <= 5, f"❌ {key} 国内锚超 5：{cnt['domestic']}"
+        assert cnt["global"] + cnt["domestic"] <= 10, f"❌ {key} 合计超 10"
 
 
 def test_p2a_global_anchors_scope_and_fields():

@@ -1829,5 +1829,246 @@
         ]
       }
     ]
+  },
+  {
+    "case_id": "case_shipbuilding_cn_waigaoqiao_2026",
+    "subject_anon": "某某国内大型邮轮与散货船建造龙头（研究案例·公开披露）",
+    "industry": "造船 / 船舶海工",
+    "industry_key": "shipbuilding",
+    "real_anchor": "__VAULTED__",
+    "scope": "domestic",
+    "value_chain_node": "总装建造（大型邮轮·散货船·双燃料船）",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis",
+      "pm_maintenance",
+      "energy_carbon"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在国内大型邮轮与散货船建造龙头上的推演：国产大型邮轮零的突破、绿色双燃料船型占比提升与总装建造瓶颈。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-10-16",
+    "disclosure_facts": {
+      "source": "行业公开信息推演（匿名；公司公告 / 船队网 / 证券媒体交叉核对；集团合并口径）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "国产大型邮轮",
+          "value": "首艘国产大型邮轮商业首航，标志大型邮轮建造零的突破",
+          "yoy": "—",
+          "note": "高复杂度总装能力"
+        },
+        {
+          "metric": "年交付能力",
+          "value": "散货船 / 油船 / 集装箱船批量交付，年交付约 20+ 艘量级",
+          "yoy": "—"
+        },
+        {
+          "metric": "手持订单",
+          "value": "饱满，覆盖至 2027 年以后",
+          "yoy": "—"
+        },
+        {
+          "metric": "绿色船舶占比",
+          "value": "双燃料 / 甲醇 / LNG 双燃料船型占比持续提升",
+          "yoy": "结构性上行"
+        },
+        {
+          "metric": "营收规模",
+          "value": "集团口径约 300+ 亿元量级（推演区间）",
+          "yoy": "稳健"
+        },
+        {
+          "metric": "全球地位",
+          "value": "全球散货船与 LNG 双燃料船主力建造基地之一",
+          "yoy": "—"
+        }
+      ]
+    },
+    "derived_insights": [
+      {
+        "dimension": "strategy",
+        "claim": "大型邮轮是全球造船业难度最高的船型之一，国产突破后订单与品牌溢价弹性显著。",
+        "rationale": "首艘国产大型邮轮商业首航，总装复杂度与系统集成能力跃迁，打开高端船型订单空间。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "大型邮轮",
+          "零的突破",
+          "高端船型"
+        ]
+      },
+      {
+        "dimension": "supply_chain",
+        "claim": "大型邮轮数千万零件、全球定制采购，供应链齐套与跨文化协同是交付关键。",
+        "rationale": "邮轮供应链长、进口配套多；齐套率与到货准时率直接决定船坞占用与交付节奏。",
+        "assertion_type": "predictive",
+        "value_judgment": "high",
+        "key_figures": [
+          "千万零件",
+          "全球采购",
+          "齐套率"
+        ]
+      },
+      {
+        "dimension": "cost",
+        "claim": "双燃料 / 绿色船型焊接与管系工艺要求高，工艺数字孪生是降本核心杠杆。",
+        "rationale": "双燃料船型焊接长度长、精度高；返工成本高昂，工艺仿真与质量预测可直接转化为利润。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "双燃料",
+          "焊接工艺",
+          "返工成本"
+        ]
+      },
+      {
+        "dimension": "equipment",
+        "claim": "船坞、龙门吊、焊接机器人与涂装设施是高负荷瓶颈，设备预测维护价值高。",
+        "rationale": "大型船尺寸大、建造周期长；重型设备高负荷运行，停机将直接延误交付里程碑。",
+        "assertion_type": "descriptive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "船坞",
+          "龙门吊",
+          "焊接机器人"
+        ]
+      },
+      {
+        "dimension": "compliance",
+        "claim": "大型邮轮需满足多家国际船级社与终端客户双重规范，合规前置是交付关键。",
+        "rationale": "邮轮安全要求极高，需通过船级社、船东、租家多重检验；合规节点嵌入建造全流程。",
+        "assertion_type": "predictive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "多船级社",
+          "认证周期长"
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "case_shipbuilding_cn_jiangnan_2026",
+    "subject_anon": "某某国内液化气船与高端船舶建造龙头（研究案例·公开披露）",
+    "industry": "造船 / 船舶海工",
+    "industry_key": "shipbuilding",
+    "real_anchor": "__VAULTED__",
+    "scope": "domestic",
+    "value_chain_node": "总装建造（液化气船·军品·公务船）",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis",
+      "pm_maintenance",
+      "energy_carbon"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在国内液化气船与高端船舶建造龙头上的推演：VLGC/LNGC 领先、智能船厂数字化与高端船舶建造瓶颈。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-10-16",
+    "disclosure_facts": {
+      "source": "行业公开信息推演（匿名；公司公告 / 船队网 / 证券媒体交叉核对；集团合并口径）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "液化气船地位",
+          "value": "超大型液化气船（VLGC）/ LNG 船国内领先，批量交付",
+          "yoy": "—",
+          "note": "高附加值气体船"
+        },
+        {
+          "metric": "智能船厂",
+          "value": "国内首批智能船厂示范，焊接 / 分段制造数字化",
+          "yoy": "—",
+          "note": "数字化造船标杆"
+        },
+        {
+          "metric": "手持订单",
+          "value": "饱满，高端船舶占比高",
+          "yoy": "—"
+        },
+        {
+          "metric": "营收规模",
+          "value": "集团口径约 300+ 亿元量级（推演区间）",
+          "yoy": "稳健"
+        },
+        {
+          "metric": "绿色船舶占比",
+          "value": "LNG / 甲醇双燃料船型占比持续提升",
+          "yoy": "结构性上行"
+        },
+        {
+          "metric": "全球地位",
+          "value": "全球液化气船建造核心企业之一",
+          "yoy": "—"
+        }
+      ]
+    },
+    "derived_insights": [
+      {
+        "dimension": "strategy",
+        "claim": "液化气船（VLGC/LNGC）是高附加值船型，技术壁垒构成盈利护城河。",
+        "rationale": "超大型液化气船与 LNG 船国内领先、批量交付，产品结构向高附加值气体船集中。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "VLGC",
+          "LNG 船",
+          "高附加值"
+        ]
+      },
+      {
+        "dimension": "supply_chain",
+        "claim": "殷瓦钢、低温泵阀、双燃料主机等关键配套国产化决定液化气船降本与交付可控。",
+        "rationale": "LNG 船高价值配套长期依赖进口；国产化替代进度决定建造成本与国际竞争力。",
+        "assertion_type": "predictive",
+        "value_judgment": "high",
+        "key_figures": [
+          "殷瓦钢",
+          "低温泵阀",
+          "双燃料主机"
+        ]
+      },
+      {
+        "dimension": "cost",
+        "claim": "智能船厂数字化使分段焊接与舾装精度可控，是降本与周期压缩核心杠杆。",
+        "rationale": "焊接/分段制造数字化提升一次合格率、减少返工；精度可控直接压缩建造周期。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "智能船厂",
+          "一次合格率",
+          "建造周期"
+        ]
+      },
+      {
+        "dimension": "equipment",
+        "claim": "船坞、龙门吊、焊接机器人与涂装设施是高端船舶建造瓶颈，设备预测维护价值高。",
+        "rationale": "高端船舶尺寸大、建造周期长；重型设备高负荷运行，停机将直接延误交付。",
+        "assertion_type": "descriptive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "船坞",
+          "焊接机器人",
+          "涂装"
+        ]
+      },
+      {
+        "dimension": "compliance",
+        "claim": "液化气船与高端船舶需满足多家国际船级社与终端客户规范，认证周期长、合规前置关键。",
+        "rationale": "气体船安全要求极高，需通过船级社、船东、租家多重检验；合规节点嵌入建造全流程。",
+        "assertion_type": "predictive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "多船级社",
+          "认证周期长"
+        ]
+      }
+    ]
   }
 ]
