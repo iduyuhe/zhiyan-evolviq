@@ -655,5 +655,1179 @@
         }
       ]
     }
+  },
+  {
+    "case_id": "case_shipbuilding_global_hhi_2026",
+    "subject_anon": "某某全球综合造船龙头（研究案例·公开披露·全球）",
+    "industry": "造船 / 船舶海工",
+    "industry_key": "shipbuilding",
+    "real_anchor": "__VAULTED__",
+    "scope": "global",
+    "value_chain_node": "总装建造（商船·海工·LNG 船）",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis",
+      "pm_maintenance",
+      "energy_carbon"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在全球综合造船龙头上的产业级推演：订单结构、船型高端化与造船周期对成本/供应链的传导。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-10-16",
+    "disclosure_facts": {
+      "source": "2024 年年度报告及四季报（2025 年披露；公司官网 IR / 韩国交易所交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "营业总收入",
+          "value": "约 25.7 万亿韩元",
+          "yoy": "+12.1%"
+        },
+        {
+          "metric": "营业利润",
+          "value": "约 1.35 万亿韩元",
+          "yoy": "扭亏为盈"
+        },
+        {
+          "metric": "新接订单金额",
+          "value": "约 240 亿美元",
+          "yoy": "—",
+          "note": "商船与海工并重"
+        },
+        {
+          "metric": "手持订单",
+          "value": "约 3.5 年船位",
+          "yoy": "—",
+          "note": "订单覆盖度高"
+        },
+        {
+          "metric": "LNG 船/集装箱船占比",
+          "value": "高附加值船型占主导",
+          "yoy": "—"
+        },
+        {
+          "metric": "研发投入",
+          "value": "约 8,500 亿韩元",
+          "yoy": "占营收约 3.3%"
+        },
+        {
+          "metric": "全球地位",
+          "value": "全球造船完工量前列",
+          "yoy": "—"
+        }
+      ]
+    },
+    "derived_insights": [
+      {
+        "dimension": "strategy",
+        "claim": "高附加值船型（LNG 船、超大型集装箱船）占主导，造船周期上行使订单覆盖度达 3.5 年，盈利弹性来自船型结构而非单纯量价。",
+        "rationale": "手持订单约 3.5 年船位且高附加值船型为主；造船业产能周期长，订单结构决定未来 2-3 年盈利中枢。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "3.5 年船位",
+          "高附加值船型"
+        ]
+      },
+      {
+        "dimension": "supply_chain",
+        "claim": "船用钢板、主机、LNG 舱等关键配套集中度高，供应链韧性是交付节奏的核心变量。",
+        "rationale": "综合造船龙头依赖全球配套网络；船用厚钢板、低速柴油机、泵阀甲板机械等供应链瓶颈在周期上行期易被放大。",
+        "assertion_type": "predictive",
+        "value_judgment": "high",
+        "key_figures": [
+          "船用钢板",
+          "低速柴油机",
+          "LNG 舱"
+        ]
+      },
+      {
+        "dimension": "cost",
+        "claim": "船坞周转率与分段装配效率是重资产造船业的成本主杠杆，数字化排产与能耗孪生价值显著。",
+        "rationale": "造船业固定资产重、船坞资源稀缺；分段装配节拍、涂装周期、下水试航节奏直接影响船坞周转与毛利。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "船坞周转",
+          "分段装配"
+        ]
+      },
+      {
+        "dimension": "equipment",
+        "claim": "焊接机器人、龙门吊、平板运输车等重型设备稼动率与船坞节拍强耦合，预测维护可避免整船交付延误。",
+        "rationale": "大型龙门吊、焊接机器人、涂装房等关键设备单点故障会导致整条船坞线停滞；预测维护在订单饱满期 ROI 极高。",
+        "assertion_type": "descriptive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "龙门吊",
+          "焊接机器人",
+          "涂装房"
+        ]
+      },
+      {
+        "dimension": "compliance",
+        "claim": "IMO 温室气体减排法规与船级社新规范持续推高合规成本，绿色燃料船型成为新订单的技术门槛。",
+        "rationale": "国际海事组织 EEXI/CII 等法规倒逼船东更新船队；氨/甲醇/LNG 双燃料技术路线成为新船型合规焦点。",
+        "assertion_type": "predictive",
+        "value_judgment": "high",
+        "key_figures": [
+          "EEXI/CII",
+          "绿色燃料"
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "case_shipbuilding_global_shi_2026",
+    "subject_anon": "某某全球高端造船企业（研究案例·公开披露·全球）",
+    "industry": "造船 / 船舶海工",
+    "industry_key": "shipbuilding",
+    "real_anchor": "__VAULTED__",
+    "scope": "global",
+    "value_chain_node": "总装建造（高端 LNG·超大型集装箱船）",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis",
+      "pm_maintenance",
+      "energy_carbon"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在全球高端造船企业上的推演：LNG 船与超大型集装箱船的技术壁垒与盈利结构。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-10-16",
+    "disclosure_facts": {
+      "source": "2024 年年度报告及四季报（2025 年披露；公司官网 IR / 韩国交易所交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "营业总收入",
+          "value": "约 9.5 万亿韩元",
+          "yoy": "+8.7%"
+        },
+        {
+          "metric": "营业利润",
+          "value": "约 4,100 亿韩元",
+          "yoy": "改善"
+        },
+        {
+          "metric": "新接订单",
+          "value": "约 98 亿美元",
+          "yoy": "—",
+          "note": "LNG 船与集装箱船为主"
+        },
+        {
+          "metric": "手持订单",
+          "value": "约 3 年船位",
+          "yoy": "—"
+        },
+        {
+          "metric": "LNG 船技术地位",
+          "value": "全球领先",
+          "yoy": "—",
+          "note": "薄膜型 LNG 舱核心技术"
+        },
+        {
+          "metric": "研发投入",
+          "value": "约 3,000 亿韩元",
+          "yoy": "占营收约 3.2%"
+        }
+      ]
+    },
+    "derived_insights": [
+      {
+        "dimension": "strategy",
+        "claim": "专注 LNG 船与超大型集装箱船等高端船型，技术壁垒带来高于行业平均的订单毛利。",
+        "rationale": "薄膜型 LNG 舱与超大型集装箱船设计建造技术门槛高；高端船型占比高使其在周期上行期获得超额利润。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "LNG 船",
+          "薄膜型舱",
+          "超大型集装箱船"
+        ]
+      },
+      {
+        "dimension": "cost",
+        "claim": "高端船型的毛利对分段装配精度与焊接质量高度敏感，数字化质量管控是降本关键。",
+        "rationale": "LNG 舱焊接与分段合拢精度要求极高；返工成本占船价比例显著，质量预测与工艺数字孪生可直接转化为利润。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "分段精度",
+          "焊接质量",
+          "返工成本"
+        ]
+      },
+      {
+        "dimension": "supply_chain",
+        "claim": "LNG 舱材料与低温阀门等关键配套依赖少数供应商，供应链风险集中于高价值子系统。",
+        "rationale": "薄膜型 LNG 舱用殷瓦钢、低温泵阀等配套技术集中；配套可得性直接决定 LNG 船交付周期。",
+        "assertion_type": "predictive",
+        "value_judgment": "high",
+        "key_figures": [
+          "殷瓦钢",
+          "低温泵阀"
+        ]
+      },
+      {
+        "dimension": "compliance",
+        "claim": "绿色船舶规范与船级社认证周期是高端船型交付的核心外部约束。",
+        "rationale": "高端船型需满足多船级社规范；EEXI/CII 与绿色燃料就绪(Gas Ready)认证影响设计与交付节奏。",
+        "assertion_type": "predictive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "多船级社",
+          "Gas Ready"
+        ]
+      },
+      {
+        "dimension": "energy",
+        "claim": "船坞与涂装车间能耗强度高，能耗孪生在订单饱满期可直接摊薄单位建造成本。",
+        "rationale": "大型船坞起重、分段焊接、喷砂涂装等工序能耗集中；单船能耗优化对毛利率敏感。",
+        "assertion_type": "descriptive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "船坞能耗",
+          "涂装车间"
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "case_shipbuilding_global_dhhi_2026",
+    "subject_anon": "某某全球造船与海工企业（研究案例·公开披露·全球）",
+    "industry": "造船 / 船舶海工",
+    "industry_key": "shipbuilding",
+    "real_anchor": "__VAULTED__",
+    "scope": "global",
+    "value_chain_node": "海工装备（FPSO·LNG 运输船）",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis",
+      "pm_maintenance"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在全球造船与海工企业上的推演：海工装备长周期、重资本与项目制交付特征。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-10-16",
+    "disclosure_facts": {
+      "source": "2024 年年度报告（2025 年披露；公司官网 IR / 韩国交易所交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "营业总收入",
+          "value": "约 6.8 万亿韩元",
+          "yoy": "+5.3%"
+        },
+        {
+          "metric": "新接订单",
+          "value": "约 72 亿美元",
+          "yoy": "—",
+          "note": "海工与 LNG 船为主"
+        },
+        {
+          "metric": "手持订单",
+          "value": "约 2.8 年船位",
+          "yoy": "—"
+        },
+        {
+          "metric": "FPSO/LNG 相关营收占比",
+          "value": "海工装备占比高",
+          "yoy": "—"
+        },
+        {
+          "metric": "研发投入",
+          "value": "约 2,200 亿韩元",
+          "yoy": "占营收约 3.2%"
+        }
+      ]
+    },
+    "derived_insights": [
+      {
+        "dimension": "strategy",
+        "claim": "海工装备（FPSO、LNG 运输船）项目单体金额高、交付周期长，订单结构决定现金流与利润分布。",
+        "rationale": "海工项目通常按节点付款、交付周期 2-4 年；项目制管理使收入确认与成本归集复杂度高于标准船型。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "FPSO",
+          "节点付款",
+          "2-4 年周期"
+        ]
+      },
+      {
+        "dimension": "cost",
+        "claim": "海工项目成本超支风险高，工程变更与材料浪费是主要利润侵蚀点，需强项目成本孪生。",
+        "rationale": "海工装备定制化程度高，设计变更与现场修改频繁；实时成本归集与变更预警是项目盈利核心。",
+        "assertion_type": "predictive",
+        "value_judgment": "high",
+        "key_figures": [
+          "工程变更",
+          "成本超支"
+        ]
+      },
+      {
+        "dimension": "supply_chain",
+        "claim": "海工模块与船用配套全球采购，长周期物资提前锁定是避免延误的关键。",
+        "rationale": "FPSO 上部模块、低温系统、系泊系统等采购周期长；供应链前置规划能力直接影响项目交付。",
+        "assertion_type": "descriptive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "长周期物资",
+          "上部模块"
+        ]
+      },
+      {
+        "dimension": "equipment",
+        "claim": "海工坞与重型龙门吊是稀缺资源，其稼动率决定海工项目整体 throughput。",
+        "rationale": "大型海工装备需在专用船坞/码头建造；关键重型设备稼动率是产能瓶颈。",
+        "assertion_type": "descriptive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "海工坞",
+          "重型龙门吊"
+        ]
+      },
+      {
+        "dimension": "compliance",
+        "claim": "海工装备需同时满足船级社、船旗国与油气客户规范，合规链条长、认证成本高。",
+        "rationale": "FPSO 等项目涉及多类规范与客户标准；合规文档与检验节点是交付前置条件。",
+        "assertion_type": "predictive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "多规范",
+          "认证成本"
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "case_shipbuilding_global_mhi_ship_2026",
+    "subject_anon": "某某全球综合重工造船企业（研究案例·公开披露·全球）",
+    "industry": "造船 / 船舶海工",
+    "industry_key": "shipbuilding",
+    "real_anchor": "__VAULTED__",
+    "scope": "global",
+    "value_chain_node": "总装建造（特种船·滚装船·军舰）",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis",
+      "pm_maintenance"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在全球综合重工造船企业上的推演：特种船、滚装船与防务船的多品种小批量特征。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-10-16",
+    "disclosure_facts": {
+      "source": "2024 年年度报告（2025 年披露；公司官网 IR / 东京证券交易所交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "造船相关业务营收",
+          "value": "约 7,000 亿日元",
+          "yoy": "+4.2%"
+        },
+        {
+          "metric": "营业利润",
+          "value": "约 250 亿日元",
+          "yoy": "改善"
+        },
+        {
+          "metric": "新接订单",
+          "value": "约 55 亿美元",
+          "yoy": "—",
+          "note": "特种船与滚装船为主"
+        },
+        {
+          "metric": "手持订单",
+          "value": "约 2.5 年船位",
+          "yoy": "—"
+        },
+        {
+          "metric": "研发投入",
+          "value": "约 400 亿日元",
+          "yoy": "—",
+          "note": "低碳船型与自动化焊接"
+        }
+      ]
+    },
+    "derived_insights": [
+      {
+        "dimension": "strategy",
+        "claim": "多品种小批量造船模式对柔性产线与项目制管理要求高，高端特种船毛利优于标准商船。",
+        "rationale": "特种船、滚装船、防务船单次建造数量少但技术复杂度高；柔性制造与项目制成本核算是竞争力来源。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "多品种小批量",
+          "特种船"
+        ]
+      },
+      {
+        "dimension": "cost",
+        "claim": "小批量船型单位研发与设计成本高，需通过模块化与系列化设计摊薄。",
+        "rationale": "单次订单量小使设计费与工装成本难以摊薄；模块化设计可提高复用率、降低单船成本。",
+        "assertion_type": "descriptive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "模块化",
+          "系列化"
+        ]
+      },
+      {
+        "dimension": "equipment",
+        "claim": "焊接自动化与机器人应用是应对老龄焊工短缺与质量一致性的关键路径。",
+        "rationale": "造船业焊工老龄化严重；自动化焊接与质量追溯可提升一致性和人均产出。",
+        "assertion_type": "predictive",
+        "value_judgment": "high",
+        "key_figures": [
+          "焊接自动化",
+          "机器人"
+        ]
+      },
+      {
+        "dimension": "compliance",
+        "claim": "日本船级社规范与防务船保密合规叠加，使合规与质量体系复杂度高于民用商船。",
+        "rationale": "防务船项目涉及保密与出口管制；多船级社认证与军品合规并行。",
+        "assertion_type": "predictive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "船级社",
+          "防务合规"
+        ]
+      },
+      {
+        "dimension": "supply_chain",
+        "claim": "本土配套率较高但关键主机与系统仍全球化采购，地缘风险影响交付稳定性。",
+        "rationale": "日本造船本土配套相对完整，但大型主机、导航通信、特种材料仍依赖全球供应链。",
+        "assertion_type": "descriptive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "本土配套",
+          "全球采购"
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "case_shipbuilding_global_fincantieri_2026",
+    "subject_anon": "某某全球邮轮与军舰建造企业（研究案例·公开披露·全球）",
+    "industry": "造船 / 船舶海工",
+    "industry_key": "shipbuilding",
+    "real_anchor": "__VAULTED__",
+    "scope": "global",
+    "value_chain_node": "总装建造（邮轮·军舰·特种船）",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis",
+      "pm_maintenance"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在全球邮轮与军舰建造企业上的推演：邮轮复杂系统集成与项目交付风险。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-10-16",
+    "disclosure_facts": {
+      "source": "2024 年年度报告（2025 年披露；公司官网 IR / 意大利证券交易所交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "营业总收入",
+          "value": "约 92 亿欧元",
+          "yoy": "+6.5%"
+        },
+        {
+          "metric": "EBITDA",
+          "value": "约 7.5 亿欧元",
+          "yoy": "+8.2%"
+        },
+        {
+          "metric": "新接订单",
+          "value": "约 110 亿欧元",
+          "yoy": "—",
+          "note": "邮轮与海军舰艇为主"
+        },
+        {
+          "metric": "手持订单",
+          "value": "约 390 亿欧元",
+          "yoy": "—",
+          "note": "覆盖多年"
+        },
+        {
+          "metric": "邮轮业务占比",
+          "value": "约 55%",
+          "yoy": "—"
+        },
+        {
+          "metric": "研发投入",
+          "value": "约 3.5 亿欧元",
+          "yoy": "占营收约 3.8%"
+        }
+      ]
+    },
+    "derived_insights": [
+      {
+        "dimension": "strategy",
+        "claim": "邮轮与军舰双轮驱动，邮轮业务提供规模与现金流，军舰业务提供技术与政策护城河。",
+        "rationale": "邮轮占营收约 55%、手持订单庞大；军舰业务受各国国防预算支撑，订单可见性高。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "55%",
+          "390 亿欧元手持订单"
+        ]
+      },
+      {
+        "dimension": "cost",
+        "claim": "邮轮是造船业最复杂的系统集成项目，内装与系统调试占成本与工期大头，项目成本控制难度极高。",
+        "rationale": "邮轮涉及数万件内装、暖通、餐饮、娱乐系统；现场变更与调试周期是成本超支高发区。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "内装系统",
+          "调试周期"
+        ]
+      },
+      {
+        "dimension": "supply_chain",
+        "claim": "邮轮配套供应链高度全球化，舱室、厨房、娱乐系统需提前 18-24 个月锁定。",
+        "rationale": "邮轮配套商全球分布，长周期物资与设计冻结节点严格；供应链延误会直接压缩试航窗口。",
+        "assertion_type": "predictive",
+        "value_judgment": "high",
+        "key_figures": [
+          "18-24 个月",
+          "设计冻结"
+        ]
+      },
+      {
+        "dimension": "compliance",
+        "claim": "邮轮需满足船级社、船旗国、港口国与乘客安全多重规范，合规文档量远超普通商船。",
+        "rationale": "邮轮载客量大、安全要求高；消防安全、救生、公共卫生等规范复杂，合规是交付关键路径。",
+        "assertion_type": "predictive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "乘客安全",
+          "多重规范"
+        ]
+      },
+      {
+        "dimension": "equipment",
+        "claim": "邮轮建造对薄板焊接精度与舱室噪音控制要求极高，专用工装与检测设备是质量保障。",
+        "rationale": "邮轮薄板结构多、变形控制难；舱室噪音与振动直接影响乘客体验，需专用工艺装备。",
+        "assertion_type": "descriptive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "薄板焊接",
+          "噪音控制"
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "case_shipbuilding_cn_cssc_2026",
+    "subject_anon": "某某国内综合造船龙头（研究案例·公开披露）",
+    "industry": "造船 / 船舶海工",
+    "industry_key": "shipbuilding",
+    "real_anchor": "__VAULTED__",
+    "scope": "domestic",
+    "value_chain_node": "总装建造（军民船·LNG 船·集装箱船）",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis",
+      "pm_maintenance",
+      "energy_carbon"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在国内综合造船龙头上的推演：军民船协同、LNG 船突破与造船周期上行红利。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-10-16",
+    "disclosure_facts": {
+      "source": "2024 年年度报告（2025 年 4 月披露；公司公告 / 上交所 / 证券媒体交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "营业总收入",
+          "value": "约 850 亿元",
+          "yoy": "+12.3%"
+        },
+        {
+          "metric": "归母净利润",
+          "value": "约 38 亿元",
+          "yoy": "+35.6%"
+        },
+        {
+          "metric": "新接订单",
+          "value": "约 1,300 亿元",
+          "yoy": "—",
+          "note": "民船订单高增"
+        },
+        {
+          "metric": "手持订单",
+          "value": "约 3.5 年船位",
+          "yoy": "—"
+        },
+        {
+          "metric": "LNG 船接单",
+          "value": "显著增长",
+          "yoy": "—",
+          "note": "薄膜型 LNG 船批量交付"
+        },
+        {
+          "metric": "研发投入",
+          "value": "约 45 亿元",
+          "yoy": "占营收约 5.3%"
+        },
+        {
+          "metric": "全球地位",
+          "value": "全球造船完工量与新接订单前列",
+          "yoy": "—"
+        }
+      ]
+    },
+    "derived_insights": [
+      {
+        "dimension": "strategy",
+        "claim": "军民船协同+高端民船突破，造船周期上行带动盈利弹性释放，LNG 船成为新增长极。",
+        "rationale": "营收 850 亿(+12.3%)、归母 38 亿(+35.6%)，利润增速显著高于收入；LNG 船批量接单与交付提升产品结构。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "850 亿",
+          "+35.6%",
+          "LNG 船"
+        ]
+      },
+      {
+        "dimension": "supply_chain",
+        "claim": "国内船用配套自主化率持续提升，但高端主机、低温阀门等仍存在进口依赖，供应链韧性强弱决定高端船型放量节奏。",
+        "rationale": "LNG 船、大型集装箱船配套链条长；船用低速机、低温系统国产化是降本与交付可控的关键。",
+        "assertion_type": "predictive",
+        "value_judgment": "high",
+        "key_figures": [
+          "自主化率",
+          "高端主机",
+          "低温阀门"
+        ]
+      },
+      {
+        "dimension": "cost",
+        "claim": "订单饱满背景下，船坞周转与分段装配效率是利润释放的核心变量，数字化排产价值凸显。",
+        "rationale": "手持订单约 3.5 年船位，产能利用率高位；分段装配节拍、涂装周期、下水试航节奏决定船坞 throughput。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "3.5 年船位",
+          "船坞周转"
+        ]
+      },
+      {
+        "dimension": "equipment",
+        "claim": "大型船坞、龙门吊、焊接机器人等关键设备高负荷运行，预测维护对避免整船交付延误至关重要。",
+        "rationale": "订单饱满期设备稼动率高；关键重型设备单点故障会导致船坞线停滞，预测维护 ROI 显著。",
+        "assertion_type": "descriptive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "龙门吊",
+          "焊接机器人",
+          "船坞"
+        ]
+      },
+      {
+        "dimension": "compliance",
+        "claim": "军品保密合规与民船国际规范并行，绿色船舶法规加速船型技术升级。",
+        "rationale": "综合造船龙头同时承担军品与民船；IMO 绿色法规与多船级社认证使合规体系复杂度高。",
+        "assertion_type": "predictive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "军品合规",
+          "绿色法规"
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "case_shipbuilding_cn_csic_2026",
+    "subject_anon": "某某国内船舶重工龙头（研究案例·公开披露）",
+    "industry": "造船 / 船舶海工",
+    "industry_key": "shipbuilding",
+    "real_anchor": "__VAULTED__",
+    "scope": "domestic",
+    "value_chain_node": "总装建造（军舰·民船·海工）",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis",
+      "pm_maintenance"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在国内船舶重工龙头上的推演：军舰与海工装备的长周期项目制管理。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-10-16",
+    "disclosure_facts": {
+      "source": "2024 年年度报告（2025 年 4 月披露；公司公告 / 上交所 / 证券媒体交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "营业总收入",
+          "value": "约 520 亿元",
+          "yoy": "+8.7%"
+        },
+        {
+          "metric": "归母净利润",
+          "value": "约 12 亿元",
+          "yoy": "+45%"
+        },
+        {
+          "metric": "新接订单",
+          "value": "约 680 亿元",
+          "yoy": "—",
+          "note": "军舰与民船并重"
+        },
+        {
+          "metric": "手持订单",
+          "value": "约 3 年船位",
+          "yoy": "—"
+        },
+        {
+          "metric": "研发投入",
+          "value": "约 28 亿元",
+          "yoy": "占营收约 5.4%"
+        },
+        {
+          "metric": "业务结构",
+          "value": "海洋防务装备 + 船舶造修 + 海工",
+          "yoy": "—"
+        }
+      ]
+    },
+    "derived_insights": [
+      {
+        "dimension": "strategy",
+        "claim": "海洋防务装备为基、民船周期修复，盈利弹性主要来自民船订单回暖与成本管控。",
+        "rationale": "营收 520 亿(+8.7%)、归母 12 亿(+45%)，利润增速远高于收入；民船周期上行与内部降本共同驱动。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "520 亿",
+          "+45%"
+        ]
+      },
+      {
+        "dimension": "cost",
+        "claim": "军舰项目制交付与海工装备长周期特征使成本归集复杂，项目成本孪生是管控关键。",
+        "rationale": "防务与海工项目定制化高、变更频繁；实时成本追踪与变更预警可避免项目级亏损。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "项目制",
+          "成本归集"
+        ]
+      },
+      {
+        "dimension": "supply_chain",
+        "claim": "军舰配套体系自主可控要求高，民船配套则需与全球供应链协同，双轨供应链管理能力是壁垒。",
+        "rationale": "防务装备强调自主可控；民船建造需参与全球分工。同一企业需运行两套供应链逻辑。",
+        "assertion_type": "descriptive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "自主可控",
+          "全球协同"
+        ]
+      },
+      {
+        "dimension": "equipment",
+        "claim": "重型船坞、龙门吊与大型加工设备是稀缺资源，设备健康管理支撑多项目并行交付。",
+        "rationale": "大型船舶与海工装备建造依赖重型基础设施；设备健康度直接影响多项目并行能力。",
+        "assertion_type": "descriptive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "重型船坞",
+          "多项目并行"
+        ]
+      },
+      {
+        "dimension": "compliance",
+        "claim": "军品保密与出口管制合规是刚性红线，合规能力直接决定防务订单获取。",
+        "rationale": "船舶重工龙头承担军品任务；保密、出口管制、军工资质是前置门槛。",
+        "assertion_type": "predictive",
+        "value_judgment": "high",
+        "key_figures": [
+          "军品保密",
+          "出口管制"
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "case_shipbuilding_cn_hudong_2026",
+    "subject_anon": "某某国内 LNG 船建造龙头（研究案例·公开披露）",
+    "industry": "造船 / 船舶海工",
+    "industry_key": "shipbuilding",
+    "real_anchor": "__VAULTED__",
+    "scope": "domestic",
+    "value_chain_node": "总装建造（LNG 船·集装箱船）",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis",
+      "pm_maintenance",
+      "energy_carbon"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在国内 LNG 船建造龙头上的推演：薄膜型 LNG 船技术壁垒与沪东演示租户行业映射。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-10-16",
+    "disclosure_facts": {
+      "source": "2024 年年度报告（2025 年 4 月披露；公司公告 / 上交所 / 证券媒体交叉核对；集团合并口径）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "营业总收入",
+          "value": "约 280 亿元",
+          "yoy": "+15.2%"
+        },
+        {
+          "metric": "归母净利润",
+          "value": "约 9 亿元",
+          "yoy": "+62%"
+        },
+        {
+          "metric": "LNG 船交付/新接",
+          "value": "批量交付",
+          "yoy": "—",
+          "note": "薄膜型 LNG 船核心技术自主"
+        },
+        {
+          "metric": "手持订单",
+          "value": "约 3 年船位",
+          "yoy": "—"
+        },
+        {
+          "metric": "研发投入",
+          "value": "约 12 亿元",
+          "yoy": "占营收约 4.3%"
+        },
+        {
+          "metric": "全球地位",
+          "value": "全球 LNG 船建造核心企业之一",
+          "yoy": "—"
+        }
+      ]
+    },
+    "derived_insights": [
+      {
+        "dimension": "strategy",
+        "claim": "LNG 船是造船业'皇冠上的明珠'，技术突破后订单与盈利弹性显著高于传统船型。",
+        "rationale": "营收 280 亿(+15.2%)、归母 9 亿(+62%)；LNG 船批量交付带动产品结构升级与利润率改善。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "280 亿",
+          "+62%",
+          "LNG 船"
+        ]
+      },
+      {
+        "dimension": "cost",
+        "claim": "LNG 船建造对分段合拢精度、焊接质量与舱体绝缘要求极高，工艺数字孪生是降本核心杠杆。",
+        "rationale": "薄膜型 LNG 舱焊接长度长、精度高；返工成本高昂，工艺仿真与质量预测可直接转化为利润。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "分段合拢",
+          "焊接质量",
+          "返工成本"
+        ]
+      },
+      {
+        "dimension": "supply_chain",
+        "claim": "殷瓦钢、低温泵阀、双燃料主机等关键配套国产化是 LNG 船降本与交付可控的决定性因素。",
+        "rationale": "LNG 船高价值配套长期依赖进口；国产化替代进度决定建造成本与国际竞争力。",
+        "assertion_type": "predictive",
+        "value_judgment": "high",
+        "key_figures": [
+          "殷瓦钢",
+          "低温泵阀",
+          "双燃料主机"
+        ]
+      },
+      {
+        "dimension": "equipment",
+        "claim": "船坞、龙门吊、焊接机器人与涂装设施是 LNG 船建造的关键瓶颈，设备预测维护价值高。",
+        "rationale": "LNG 船尺寸大、建造周期长；关键重型设备高负荷运行，停机将直接延误交付。",
+        "assertion_type": "descriptive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "船坞",
+          "焊接机器人",
+          "涂装"
+        ]
+      },
+      {
+        "dimension": "compliance",
+        "claim": "LNG 船需满足多家国际船级社与终端客户规范，认证周期长，合规前置是交付关键。",
+        "rationale": "LNG 船安全要求高，需通过船级社、船东、租家多重检验；合规节点嵌入建造全流程。",
+        "assertion_type": "predictive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "多船级社",
+          "认证周期长"
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "case_shipbuilding_cn_yangzijiang_2026",
+    "subject_anon": "某某国内民营造船龙头（研究案例·公开披露）",
+    "industry": "造船 / 船舶海工",
+    "industry_key": "shipbuilding",
+    "real_anchor": "__VAULTED__",
+    "scope": "domestic",
+    "value_chain_node": "总装建造（散货船·集装箱船·气体船）",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis",
+      "pm_maintenance",
+      "energy_carbon"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在国内民营造船龙头上的推演：民营机制下的成本竞争力与船型升级路径。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-10-16",
+    "disclosure_facts": {
+      "source": "2024 年年度报告（2025 年披露；公司公告 / 新交所 / 港交所 / 证券媒体交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "营业总收入",
+          "value": "约 260 亿元人民币",
+          "yoy": "+18.5%"
+        },
+        {
+          "metric": "归母净利润",
+          "value": "约 38 亿元人民币",
+          "yoy": "+65%"
+        },
+        {
+          "metric": "新接订单",
+          "value": "约 120 艘",
+          "yoy": "—",
+          "note": "集装箱船与气体船占比提升"
+        },
+        {
+          "metric": "手持订单",
+          "value": "约 180 艘",
+          "yoy": "—",
+          "note": "排产至 2028 年"
+        },
+        {
+          "metric": "研发投入",
+          "value": "约 8 亿元",
+          "yoy": "占营收约 3.1%"
+        },
+        {
+          "metric": "全球地位",
+          "value": "国内民营造船龙头",
+          "yoy": "—"
+        }
+      ]
+    },
+    "derived_insights": [
+      {
+        "dimension": "strategy",
+        "claim": "民营机制下成本控制能力突出，船型结构从散货船向集装箱船、气体船升级，盈利弹性显著。",
+        "rationale": "营收 260 亿(+18.5%)、归母 38 亿(+65%)；高附加值船型占比提升使利润增速远超收入。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "260 亿",
+          "+65%",
+          "气体船"
+        ]
+      },
+      {
+        "dimension": "cost",
+        "claim": "民营造船企业成本控制精益，分段建造节拍与供应链周转是核心竞争优势。",
+        "rationale": "民营船企管理效率高、决策链条短；分段节拍快、库存周转高、人工效率优。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "分段节拍",
+          "库存周转"
+        ]
+      },
+      {
+        "dimension": "supply_chain",
+        "claim": "钢材等大宗商品价格波动直接影响毛利，套期保值与集中采购是成本管控关键。",
+        "rationale": "散货船与集装箱船钢材成本占比高；民营船企通过集中采购与锁价策略平滑钢价波动。",
+        "assertion_type": "predictive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "钢材成本",
+          "集中采购"
+        ]
+      },
+      {
+        "dimension": "equipment",
+        "claim": "产线自动化与焊接机器人应用是应对焊工短缺、提升人均产出的关键路径。",
+        "rationale": "民营船企订单饱满但面临焊工短缺；自动化焊接与机器人应用可提升产出稳定性。",
+        "assertion_type": "predictive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "自动化焊接",
+          "焊工短缺"
+        ]
+      },
+      {
+        "dimension": "compliance",
+        "claim": "出口船订单占比高，需满足多船级社与国际船东规范，合规与交付质量是获取海外订单前提。",
+        "rationale": "民营龙头海外船东订单占比高；船级社认证、ESG 与绿色法规是出海门槛。",
+        "assertion_type": "predictive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "出口船",
+          "多船级社"
+        ]
+      }
+    ]
+  },
+  {
+    "case_id": "case_shipbuilding_cn_defence_2026",
+    "subject_anon": "某某国内海洋防务装备企业（研究案例·公开披露）",
+    "industry": "造船 / 船舶海工",
+    "industry_key": "shipbuilding",
+    "real_anchor": "__VAULTED__",
+    "scope": "domestic",
+    "value_chain_node": "海洋防务装备（军舰·海警船·军贸）",
+    "recommended_interfaces": [
+      "industry_research",
+      "executive_cockpit",
+      "supply_chain",
+      "compliance_q",
+      "cost_analysis",
+      "pm_maintenance"
+    ],
+    "teaching_notes_anon": "对外以匿名案例呈现，演示「研究案例范式」在国内海洋防务装备企业上的推演：防务装备长周期项目制与合规要求。",
+    "teaching_notes_internal": "__VAULTED_INTERNAL__",
+    "status": "active",
+    "updated_at": "2026-10-16",
+    "disclosure_facts": {
+      "source": "2024 年年度报告（2025 年 4 月披露；公司公告 / 上交所 / 证券媒体交叉核对）",
+      "fiscal_year": 2024,
+      "facts": [
+        {
+          "metric": "营业总收入",
+          "value": "约 180 亿元",
+          "yoy": "+9.3%"
+        },
+        {
+          "metric": "归母净利润",
+          "value": "约 5 亿元",
+          "yoy": "+22%"
+        },
+        {
+          "metric": "新接订单",
+          "value": "约 220 亿元",
+          "yoy": "—",
+          "note": "防务与公务船为主"
+        },
+        {
+          "metric": "手持订单",
+          "value": "约 2.5 年船位",
+          "yoy": "—"
+        },
+        {
+          "metric": "研发投入",
+          "value": "约 10 亿元",
+          "yoy": "占营收约 5.6%"
+        },
+        {
+          "metric": "业务结构",
+          "value": "海洋防务装备 + 公务船 + 军贸",
+          "yoy": "—"
+        }
+      ]
+    },
+    "derived_insights": [
+      {
+        "dimension": "strategy",
+        "claim": "海洋防务装备订单稳定、付款条件优，是逆周期业务压舱石；军贸打开第二增长空间。",
+        "rationale": "防务订单受国防预算支撑，周期波动小；军贸出口可平滑国内订单节奏。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "防务订单",
+          "军贸"
+        ]
+      },
+      {
+        "dimension": "cost",
+        "claim": "防务项目定制化高、变更频繁，项目成本孪生与变更控制是盈利关键。",
+        "rationale": "军舰项目技术状态变更多；实时成本追踪与变更审批是避免超支的核心手段。",
+        "assertion_type": "descriptive",
+        "value_judgment": "high",
+        "key_figures": [
+          "项目变更",
+          "成本孪生"
+        ]
+      },
+      {
+        "dimension": "supply_chain",
+        "claim": "防务配套强调自主可控，供应链安全优先于成本，国产化率是核心考核指标。",
+        "rationale": "军舰动力系统、武备、电子系统需自主可控；供应链审查严格，国产化率影响订单获取。",
+        "assertion_type": "predictive",
+        "value_judgment": "high",
+        "key_figures": [
+          "自主可控",
+          "国产化率"
+        ]
+      },
+      {
+        "dimension": "compliance",
+        "claim": "军品保密、出口管制与质量体系认证是防务企业的合规生命线。",
+        "rationale": "防务装备涉及国家秘密与军贸合规；保密资质、军工资质、出口许可缺一不可。",
+        "assertion_type": "predictive",
+        "value_judgment": "high",
+        "key_figures": [
+          "军品保密",
+          "出口管制"
+        ]
+      },
+      {
+        "dimension": "equipment",
+        "claim": "防务船建造对精度、可靠性与测试验证要求极高，专用试验设施与检测设备是质量保障。",
+        "rationale": "军舰需在专用码头/试验场完成系泊、航行、武备等试验；设施能力是产能瓶颈之一。",
+        "assertion_type": "descriptive",
+        "value_judgment": "medium",
+        "key_figures": [
+          "试验设施",
+          "航行试验"
+        ]
+      }
+    ]
   }
 ]
