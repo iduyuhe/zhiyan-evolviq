@@ -6,3 +6,7 @@
 *.bak
 *_preview_*.png
 test_blank.pptx
+
+# 沪东演示租户实时快照（含未脱敏设备命名，仅本地重建看板用，不进版本库）
+hudong_snapshot.json
+

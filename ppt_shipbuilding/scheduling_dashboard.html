@@ -6,10 +6,11 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:#0B2545;color:#E2E8F0;padding:28px}
 .wrap{max-width:1180px;margin:0 auto}
-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;border-bottom:2px solid #2563EB;padding-bottom:14px}
+header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;border-bottom:2px solid #2563EB;padding-bottom:14px;flex-wrap:wrap;gap:8px}
 h1{font-size:24px;color:#fff;letter-spacing:1px}
 .sub{color:#06B6D4;font-size:13px;margin-top:4px}
 .tag{background:#2563EB;color:#fff;font-size:12px;padding:4px 10px;border-radius:14px}
+.tag.live{background:#10B981}
 .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px}
 .kpi{background:#10294d;border:1px solid #1e3a5f;border-radius:10px;padding:14px;text-align:center}
 .kpi-val{font-size:26px;font-weight:700}
@@ -18,6 +19,20 @@ h1{font-size:24px;color:#fff;letter-spacing:1px}
 .panel{background:#10294d;border:1px solid #1e3a5f;border-radius:12px;padding:18px;margin-bottom:18px}
 .panel h2{font-size:16px;color:#fff;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .panel h2::before{content:"";width:4px;height:16px;background:#06B6D4;border-radius:2px;display:inline-block}
+.live-panel{border-color:#10B981}
+.live-meta{font-size:12px;color:#06B6D4;margin-bottom:12px}
+.feed-head,.feed-row{display:grid;grid-template-columns:1.1fr 1.8fr 1fr 2.2fr 1fr 1fr 1.1fr;gap:8px;align-items:center;font-size:12px;padding:7px 6px}
+.feed-head{color:#94A3B8;border-bottom:1px solid #1e3a5f;font-weight:600}
+.feed-row{border-bottom:1px solid #143055}
+.feed-id{color:#06B6D4;font-weight:600}
+.feed-name{color:#E2E8F0}
+.feed-type{color:#CBD5E1}
+.feed-vendor{color:#CBD5E1}
+.feed-mtbf,.feed-tags{color:#94A3B8}
+.feed-chan{color:#10B981;font-size:11px}
+.feed-empty{color:#94A3B8;font-size:13px;padding:10px}
+.live-note{font-size:12px;color:#CBD5E1;margin-top:12px;line-height:1.6;background:#0a1c36;padding:10px;border-radius:8px}
+.live-note code{background:#143055;padding:2px 6px;border-radius:4px;color:#F59E0B}
 .g-row{display:flex;align-items:center;margin:10px 0}
 .g-label{width:130px;font-size:13px}
 .g-sub{font-size:11px;color:#94A3B8}
@@ -57,9 +72,19 @@ footer{font-size:11px;color:#94A3B8;text-align:center;margin-top:10px;line-heigh
 <body><div class="wrap">
 <header><div><h1>造船生产排产决策看板</h1>
 <div class="sub">智衍 EvolvIQ · 决策分身视角 · 懂造船约束的实时排产脑</div></div>
-<div class="tag">G 模式 · 决策实时化率 MVP≥40%</div></header>
+<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+<div class="tag">G 模式 · 决策实时化率 MVP≥40%</div><div class="tag live">LIVE · 已接入真实事件流</div></div></header>
 
 <div class="kpis"><div class="kpi"><div class="kpi-val" style="color:#EF4444">70.5%</div><div class="kpi-name">平均船坞窗口就绪度</div><div class="kpi-sub">安全线≥70%</div></div><div class="kpi"><div class="kpi-val" style="color:#F59E0B">74.2%</div><div class="kpi-name">平均托盘齐套度</div><div class="kpi-sub">齐套线≥80%</div></div><div class="kpi"><div class="kpi-val" style="color:#EF4444">1 座</div><div class="kpi-name">坞期风险船坞</div><div class="kpi-sub">共 3 座船坞</div></div><div class="kpi"><div class="kpi-val" style="color:#EF4444">2 艘</div><div class="kpi-name">节拍偏离船型</div><div class="kpi-sub">共 6 艘船型</div></div><div class="kpi"><div class="kpi-val" style="color:#F59E0B">2 条</div><div class="kpi-name">待处理 ECN</div><div class="kpi-sub">设计变更高频</div></div></div>
+
+
+<div class="panel live-panel"><h2>真实事件流接入 · 某大型造船集团演示租户</h2>
+<div class="live-meta">数据快照时间：<b>2026-10-16T21:20:47</b> · 网关在线 4/4（simulated）· UNS 通道 environment:45 · gateway:21 · system:73</div>
+<div class="feed-head"><span>设备ID</span><span>设备</span><span>类型</span><span>厂商/型号</span><span>MTBF</span><span>采集点</span><span>通道</span></div>
+<div class="feed-row"><span class="feed-id">drydock_1</span><span class="feed-name">30万吨级干船坞 #1</span><span class="feed-type">船坞</span><span class="feed-vendor">船厂自建（非标） 300K-DWT 举力式</span><span class="feed-mtbf">MTBF 6000h</span><span class="feed-tags">OPC-UA 6 点</span><span class="feed-chan">UNS·gateway</span></div><div class="feed-row"><span class="feed-id">gantry_1</span><span class="feed-name">900吨龙门吊 #1</span><span class="feed-type">龙门吊</span><span class="feed-vendor">振华重工 ZPMC 900t Gantry</span><span class="feed-mtbf">MTBF 4500h</span><span class="feed-tags">OPC-UA 6 点</span><span class="feed-chan">UNS·gateway</span></div><div class="feed-row"><span class="feed-id">welding_1</span><span class="feed-name">FANUC 焊接机器人工作站 #1</span><span class="feed-type">焊接机器人</span><span class="feed-vendor">FANUC ArcMate 120iD</span><span class="feed-mtbf">MTBF 5000h</span><span class="feed-tags">OPC-UA 7 点</span><span class="feed-chan">UNS·gateway</span></div><div class="feed-row"><span class="feed-id">welding_2</span><span class="feed-name">唐山开元 焊接机器人 #2</span><span class="feed-type">焊接机器人</span><span class="feed-vendor">唐山开元 OTC-TA1400</span><span class="feed-mtbf">MTBF 4800h</span><span class="feed-tags">OPC-UA 7 点</span><span class="feed-chan">UNS·gateway</span></div><div class="feed-row"><span class="feed-id">cnc_plate_1</span><span class="feed-name">梅塞尔 数控切割机 #1</span><span class="feed-type">数控切割机</span><span class="feed-vendor">梅塞尔 Omnimat 激光/等离子</span><span class="feed-mtbf">MTBF 4000h</span><span class="feed-tags">OPC-UA 7 点</span><span class="feed-chan">UNS·gateway</span></div><div class="feed-row"><span class="feed-id">blast_paint_1</span><span class="feed-name">分段抛丸涂装线 #1</span><span class="feed-type">抛丸涂装线</span><span class="feed-vendor">非标集成（船厂自建） Blast-Paint Line 24m</span><span class="feed-mtbf">MTBF 3500h</span><span class="feed-tags">OPC-UA 7 点</span><span class="feed-chan">UNS·gateway</span></div><div class="feed-row"><span class="feed-id">marine_engine_1</span><span class="feed-name">某重机 船用低速柴油机 #1</span><span class="feed-type">船用柴油机</span><span class="feed-vendor">某重机 6S60ME-C8.5</span><span class="feed-mtbf">MTBF 20000h</span><span class="feed-tags">OPC-UA 8 点</span><span class="feed-chan">UNS·gateway</span></div>
+<div class="live-note">↑ 上表为平台从某大型造船集团演示租户实时拉取的 UNS gateway 设备上线事件——决策脑的「第一手信息」底座。
+重新拉取：<code>python fetch_hudong_snapshot.py</code>（需在 43 服务器运行，读取服务器侧 .env 鉴权）。</div>
+</div>
 
 <div class="panel"><h2>船坞窗口甘特（船坞=不可复制的瓶颈闸门）</h2><div class="g-row"><div class="g-label">DOCK-A<br><span class="g-sub">一号干船坞</span></div><div class="g-track"><div class="g-seg cur" style="width:78%" title="当前 HULL-001">HULL-001 78%</div><div class="g-seg nxt" style="width:64%;background:#06B6D4" title="下一船型托盘齐套 64%">下一 HULL-002</div><div class="g-flag" style="left:72.4%;background:#F59E0B"></div></div><div class="g-ready" style="color:#F59E0B">72.4%</div></div><div class="g-row"><div class="g-label">DOCK-B<br><span class="g-sub">二号浮船坞</span></div><div class="g-track"><div class="g-seg cur" style="width:91%" title="当前 HULL-003">HULL-003 91%</div><div class="g-seg nxt" style="width:88%;background:#06B6D4" title="下一船型托盘齐套 88%">下一 HULL-004</div><div class="g-flag" style="left:89.8%;background:#10B981"></div></div><div class="g-ready" style="color:#10B981">89.8%</div></div><div class="g-row"><div class="g-label">DOCK-C<br><span class="g-sub">舾装码头</span></div><div class="g-track"><div class="g-seg cur" style="width:55%" title="当前 HULL-005">HULL-005 55%</div><div class="g-seg nxt" style="width:41%;background:#06B6D4" title="下一船型托盘齐套 41%">下一 HULL-006</div><div class="g-flag" style="left:49.4%;background:#EF4444"></div></div><div class="g-ready" style="color:#EF4444">49.4%</div></div>
 <div style="font-size:11px;color:#94A3B8;margin-top:8px">蓝=当前船型进度 · 青=下一船型托盘齐套 · 竖标=窗口就绪度</div></div>
@@ -73,5 +98,6 @@ footer{font-size:11px;color:#94A3B8;text-align:center;margin-top:10px;line-heigh
 <div class="panel"><h2>设计变更动态再平衡</h2><div class="wi"><div class="wi-title">What-if 排产推演</div><div class="wi-body">若 ECN-2208（住舱防火分隔,8天）落地且不做干预 → 窗口就绪度 49.4→37.4（滑移 12.0pt）</div><div class="wi-mit">把高频设计变更从「计划崩塌」转为「动态再平衡」</div></div></div>
 
 <footer>数据均为匿名化演示种子，用于呈现决策逻辑，不指向任何真实船厂业绩。<br>
-本看板数字来自平台 APS Agent 造船感知模式的确定性演示种子，用于呈现决策逻辑；所有船坞/船型/托盘均为匿名代号，不指向任何真实船厂业绩。</footer>
+本看板「排产决策」部分数字来自平台 APS Agent 造船感知模式的确定性演示种子，用于呈现决策逻辑；所有船坞/船型/托盘均为匿名代号，不指向任何真实船厂业绩。
+「真实事件流接入」面板来自某大型造船集团演示租户的实时 UNS 快照，设备命名已做匿名化脱敏。</footer>
 </div></body></html>

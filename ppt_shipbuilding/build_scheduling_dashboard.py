@@ -2,6 +2,9 @@
 把结构化输出渲染为自包含单文件 HTML（内联 CSS + SVG，无外部依赖），可离线打开。
 
 数字一律来自后端 Agent 的确定性种子，零真名（船坞/船型/托盘均为匿名代号）。
+真实事件流层：若同目录存在 hudong_snapshot.json（由 fetch_hudong_snapshot.py 从
+演示租户实时拉取），则额外渲染「真实事件流接入」面板，展示该租户已点亮进
+UNS gateway 通道的 7 台设备与在线网关；展示时对租户命名做匿名化脱敏，与对外零真名铁律一致。
 """
 import asyncio
 import html
@@ -14,6 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.agents.aps_scheduler.agent import aps_agent
 
 OUT = os.path.join(os.path.dirname(__file__), "scheduling_dashboard.html")
+SNAP = os.path.join(os.path.dirname(__file__), "hudong_snapshot.json")
 
 NAVY = "#0B2545"
 BLUE = "#2563EB"
@@ -28,9 +32,23 @@ def esc(s):
     return html.escape(str(s))
 
 
+def scrub(s):
+    """对外脱敏：演示租户命名中的真实字号统一替换为『某』，与其余对外物料口径一致。"""
+    return str(s).replace("沪东", "某")
+
+
 def bar(pct, color):
     return (f'<div class="bar"><div class="bar-fill" style="width:{pct}%;'
             f'background:{color}"></div><span class="bar-label">{pct}%</span></div>')
+
+
+def load_snapshot():
+    if not os.path.exists(SNAP):
+        return None
+    try:
+        return json.load(open(SNAP, encoding="utf-8"))
+    except Exception:
+        return None
 
 
 async def main():
@@ -41,6 +59,46 @@ async def main():
     trays = r["trays"]
     wf = r["workforce"]
     ivs = r["interventions"]
+
+    snap = load_snapshot()
+    live_html = ""
+    live_badge = ""
+    if snap:
+        live_badge = '<div class="tag live">LIVE · 已接入真实事件流</div>'
+        fetched = snap.get("fetched_at", "")
+        dash = snap.get("twin_dashboard", {})
+        evs = (dash.get("uns", {}) or {}).get("recent_events", [])
+        eq_events = [e for e in evs if e.get("type") == "equipment_onboard"]
+        gw = snap.get("gateways", {})
+        gtotal = gw.get("total") if isinstance(gw, dict) else None
+        gready = gw.get("ready") if isinstance(gw, dict) else None
+        cc = (dash.get("uns", {}) or {}).get("channel_counts", {})
+
+        rows = ""
+        for e in eq_events:
+            p = e.get("payload", {}) or {}
+            rows += (
+                f'<div class="feed-row">'
+                f'<span class="feed-id">{esc(p.get("equipment_id",""))}</span>'
+                f'<span class="feed-name">{esc(scrub(p.get("name","")))}</span>'
+                f'<span class="feed-type">{esc(scrub(p.get("type_cn","")))}</span>'
+                f'<span class="feed-vendor">{esc(scrub(p.get("vendor","")))} {esc(scrub(p.get("model","")))}</span>'
+                f'<span class="feed-mtbf">MTBF {esc(p.get("mtbf_hours",""))}h</span>'
+                f'<span class="feed-tags">OPC-UA {esc(p.get("opcua_tag_count",""))} 点</span>'
+                f'<span class="feed-chan">UNS·gateway</span>'
+                f'</div>'
+            )
+        if not rows:
+            rows = '<div class="feed-empty">（本次快照未捕获设备上线事件，可重跑 fetch_hudong_snapshot.py 刷新）</div>'
+        ch_text = " · ".join(f"{scrub(k2)}:{v}" for k2, v in (cc or {}).items())
+        live_html = f"""
+<div class="panel live-panel"><h2>真实事件流接入 · 某大型造船集团演示租户</h2>
+<div class="live-meta">数据快照时间：<b>{esc(fetched)}</b> · 网关在线 {esc(gready)}/{esc(gtotal)}（simulated）· UNS 通道 {esc(ch_text)}</div>
+<div class="feed-head"><span>设备ID</span><span>设备</span><span>类型</span><span>厂商/型号</span><span>MTBF</span><span>采集点</span><span>通道</span></div>
+{rows}
+<div class="live-note">↑ 上表为平台从某大型造船集团演示租户实时拉取的 UNS gateway 设备上线事件——决策脑的「第一手信息」底座。
+重新拉取：<code>python fetch_hudong_snapshot.py</code>（需在 43 服务器运行，读取服务器侧 .env 鉴权）。</div>
+</div>"""
 
     def risk_color(v, hi, mid):
         return RED if v >= hi else AMBER if v >= mid else GREEN
@@ -118,10 +176,11 @@ async def main():
 *{{box-sizing:border-box;margin:0;padding:0}}
 body{{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:{NAVY};color:#E2E8F0;padding:28px}}
 .wrap{{max-width:1180px;margin:0 auto}}
-header{{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;border-bottom:2px solid {BLUE};padding-bottom:14px}}
+header{{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;border-bottom:2px solid {BLUE};padding-bottom:14px;flex-wrap:wrap;gap:8px}}
 h1{{font-size:24px;color:#fff;letter-spacing:1px}}
 .sub{{color:{CYAN};font-size:13px;margin-top:4px}}
 .tag{{background:{BLUE};color:#fff;font-size:12px;padding:4px 10px;border-radius:14px}}
+.tag.live{{background:{GREEN}}}
 .kpis{{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px}}
 .kpi{{background:#10294d;border:1px solid #1e3a5f;border-radius:10px;padding:14px;text-align:center}}
 .kpi-val{{font-size:26px;font-weight:700}}
@@ -130,6 +189,20 @@ h1{{font-size:24px;color:#fff;letter-spacing:1px}}
 .panel{{background:#10294d;border:1px solid #1e3a5f;border-radius:12px;padding:18px;margin-bottom:18px}}
 .panel h2{{font-size:16px;color:#fff;margin-bottom:14px;display:flex;align-items:center;gap:8px}}
 .panel h2::before{{content:"";width:4px;height:16px;background:{CYAN};border-radius:2px;display:inline-block}}
+.live-panel{{border-color:{GREEN}}}
+.live-meta{{font-size:12px;color:{CYAN};margin-bottom:12px}}
+.feed-head,.feed-row{{display:grid;grid-template-columns:1.1fr 1.8fr 1fr 2.2fr 1fr 1fr 1.1fr;gap:8px;align-items:center;font-size:12px;padding:7px 6px}}
+.feed-head{{color:{GREY};border-bottom:1px solid #1e3a5f;font-weight:600}}
+.feed-row{{border-bottom:1px solid #143055}}
+.feed-id{{color:{CYAN};font-weight:600}}
+.feed-name{{color:#E2E8F0}}
+.feed-type{{color:#CBD5E1}}
+.feed-vendor{{color:#CBD5E1}}
+.feed-mtbf,.feed-tags{{color:{GREY}}}
+.feed-chan{{color:{GREEN};font-size:11px}}
+.feed-empty{{color:{GREY};font-size:13px;padding:10px}}
+.live-note{{font-size:12px;color:#CBD5E1;margin-top:12px;line-height:1.6;background:#0a1c36;padding:10px;border-radius:8px}}
+.live-note code{{background:#143055;padding:2px 6px;border-radius:4px;color:{AMBER}}}
 .g-row{{display:flex;align-items:center;margin:10px 0}}
 .g-label{{width:130px;font-size:13px}}
 .g-sub{{font-size:11px;color:{GREY}}}
@@ -169,9 +242,12 @@ footer{{font-size:11px;color:{GREY};text-align:center;margin-top:10px;line-heigh
 <body><div class="wrap">
 <header><div><h1>造船生产排产决策看板</h1>
 <div class="sub">智衍 EvolvIQ · 决策分身视角 · 懂造船约束的实时排产脑</div></div>
-<div class="tag">G 模式 · 决策实时化率 MVP≥40%</div></header>
+<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+<div class="tag">G 模式 · 决策实时化率 MVP≥40%</div>{live_badge}</div></header>
 
 <div class="kpis">{kpi_html}</div>
+
+{live_html}
 
 <div class="panel"><h2>船坞窗口甘特（船坞=不可复制的瓶颈闸门）</h2>{gantt_rows}
 <div style="font-size:11px;color:{GREY};margin-top:8px">蓝=当前船型进度 · 青=下一船型托盘齐套 · 竖标=窗口就绪度</div></div>
@@ -185,13 +261,14 @@ footer{{font-size:11px;color:{GREY};text-align:center;margin-top:10px;line-heigh
 <div class="panel"><h2>设计变更动态再平衡</h2>{wi_html}</div>
 
 <footer>{esc(r.get('disclaimer',''))}<br>
-本看板数字来自平台 APS Agent 造船感知模式的确定性演示种子，用于呈现决策逻辑；所有船坞/船型/托盘均为匿名代号，不指向任何真实船厂业绩。</footer>
+本看板「排产决策」部分数字来自平台 APS Agent 造船感知模式的确定性演示种子，用于呈现决策逻辑；所有船坞/船型/托盘均为匿名代号，不指向任何真实船厂业绩。
+「真实事件流接入」面板来自某大型造船集团演示租户的实时 UNS 快照，设备命名已做匿名化脱敏。</footer>
 </div></body></html>"""
 
     with open(OUT, "w", encoding="utf-8") as f:
         f.write(doc)
     print("wrote", OUT, os.path.getsize(OUT), "bytes")
-    print("summary:", r["summary"])
+    print("live:", bool(snap), "| summary:", r["summary"])
 
 
 if __name__ == "__main__":
