@@ -190,7 +190,7 @@ KEYWORD_TO_AGENTS: list[tuple[list[str], list[str]]] = [
     (["ipc", "标准", "判定", "class 1", "class 2", "class 3", "桥连", "焊点"], ["ipc_standard"]),
     (["良率", "yield", "缺陷", "defect", "颗粒", "污染", "合格率"], ["yield_analysis"]),
     (["设备", "维护", "保养", "故障", "光刻机", "刻蚀机", "备件", "健康"], ["pm_maintenance"]),
-    (["排程", "排产", "生产计划", "产能", "工单", "aps", "scheduling"], ["aps_scheduler"]),
+    (["排程", "排产", "生产计划", "产能", "工单", "aps", "scheduling", "船坞", "坞期", "托盘齐套", "合拢", "节拍", "壳舾涂", "多船型并行", "排产推演"], ["aps_scheduler"]),
     (["需求", "订单", "接单", "未交付", "交期风险", "s&op", "forecast", "backlog"], ["demand_order"]),
     (["仓储", "仓库", "库容", "补货", "呆滞", "物流", "在途", "wms", "周转"], ["wms_logistics"]),
     (["能耗", "能源", "碳", "碳排放", "esg", "双碳", "节能", "绿电"], ["energy_carbon"]),

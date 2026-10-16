@@ -1,10 +1,10 @@
 <Slide style={{ width: 1280, height: 720, position: 'relative', background: '#F1F5F9' }}>
   <Box style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 120, background: '#0B2545', justifyContent: 'center', padding: '0 64' }}>
-    <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#ffffff', fontFamily: 'Microsoft YaHei' }}>造船解决方案总览：九类智能体</Text>
+    <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#ffffff', fontFamily: 'Microsoft YaHei' }}>造船解决方案总览：十类智能体</Text>
   </Box>
   <Box style={{ height: 720, padding: '150 64 140 64', flexDirection: 'column', gap: 24 }}>
-    <Box style={{ width: '100%', height: 280, background: '#ffffff', borderRadius: 16, padding: 24, justifyContent: 'center', alignItems: 'center' }}>
-      <svg width='100%' height='100%' viewBox='0 0 900 320'>
+    <Box style={{ width: '100%', height: 320, background: '#ffffff', borderRadius: 16, padding: 24, justifyContent: 'center', alignItems: 'center' }}>
+      <svg width='100%' height='100%' viewBox='0 0 900 430'>
         <rect x='10' y='10' width='280' height='90' rx='12' fill='#0B2545' />
         <text x='40' y='55' fill='#ffffff' fontSize='18' fontFamily='Microsoft YaHei' fontWeight='bold'>设备健康 Agent</text>
         <rect x='310' y='10' width='280' height='90' rx='12' fill='#2563EB' />
@@ -23,6 +23,9 @@
         <text x='340' y='265' fill='#ffffff' fontSize='18' fontFamily='Microsoft YaHei' fontWeight='bold'>船级社标准 Agent</text>
         <rect x='610' y='220' width='280' height='90' rx='12' fill='#06B6D4' />
         <text x='640' y='265' fill='#ffffff' fontSize='18' fontFamily='Microsoft YaHei' fontWeight='bold'>设计变更 Agent</text>
+        <rect x='10' y='325' width='880' height='90' rx='12' fill='#F59E0B' />
+        <text x='40' y='370' fill='#ffffff' fontSize='18' fontFamily='Microsoft YaHei' fontWeight='bold'>造船生产排产 Agent（新增·已落地）</text>
+        <text x='430' y='370' fill='#FFF7ED' fontSize='15' fontFamily='Microsoft YaHei'>船坞窗口 · 托盘齐套 · 多船并行 · 节拍 · What-if</text>
       </svg>
     </Box>
     <Box style={{ height: 110, flexDirection: 'row', gap: 40, alignItems: 'center' }}>

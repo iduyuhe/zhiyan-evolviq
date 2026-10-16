@@ -17,7 +17,7 @@
           <text x='250' y='88' fill='#94A3B8' fontSize='18' fontFamily='Microsoft YaHei'>▼</text>
           <rect x='20' y='100' width='480' height='60' rx='10' fill='#2563EB' />
           <text x='44' y='136' fill='#ffffff' fontSize='20' fontFamily='Microsoft YaHei' fontWeight='bold'>Agent 智能层</text>
-          <text x='280' y='136' fill='#DBEAFE' fontSize='15' fontFamily='Microsoft YaHei'>九类行业智能体决策</text>
+          <text x='280' y='136' fill='#DBEAFE' fontSize='15' fontFamily='Microsoft YaHei'>十类行业智能体决策</text>
           <text x='250' y='178' fill='#94A3B8' fontSize='18' fontFamily='Microsoft YaHei'>▼</text>
           <rect x='20' y='190' width='480' height='60' rx='10' fill='#06B6D4' />
           <text x='44' y='226' fill='#ffffff' fontSize='20' fontFamily='Microsoft YaHei' fontWeight='bold'>实时数据</text>
