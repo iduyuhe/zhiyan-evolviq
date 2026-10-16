@@ -8,7 +8,10 @@ import {
   AuthBoundary,
   Intervention,
   EffectReport,
+  authHeaders,
+  apiUrl,
 } from '../api/client';
+import type { AgentInfo } from './AgentSelector';
 
 type Panel = 'boundary' | 'intervention' | 'report';
 
@@ -26,6 +29,12 @@ const AGENT_LABELS: Record<string, string> = {
   ipc_standard: '📋 IPC标准',
 };
 
+function getAgentLabel(agentId: string, agents: AgentInfo[]): string {
+  const info = agents.find((a) => a.id === agentId);
+  if (info) return `${info.icon} ${info.name}`;
+  return AGENT_LABELS[agentId] || agentId;
+}
+
 export default function ConsoleTab() {
   const [panel, setPanel] = useState<Panel>('boundary');
   const [boundaries, setBoundaries] = useState<AuthBoundary[]>([]);
@@ -33,6 +42,7 @@ export default function ConsoleTab() {
   const [pendingCount, setPendingCount] = useState(0);
   const [report, setReport] = useState<EffectReport | null>(null);
   const [loading, setLoading] = useState(true);
+  const [agents, setAgents] = useState<AgentInfo[]>([]);
 
   const loadBoundaries = useCallback(async () => {
     try {
@@ -65,6 +75,20 @@ export default function ConsoleTab() {
     const t = setInterval(loadAll, 6000);
     return () => clearInterval(t);
   }, [loadAll]);
+
+  // 按当前用户可见 Agent 列表动态解析标签，避免控制台里造船租户仍显示 DFM/SMT/AOI 等半导体名称。
+  useEffect(() => {
+    const loadAgents = async () => {
+      try {
+        const r = await fetch(apiUrl('/authn/my-agents'), { headers: authHeaders() });
+        if (r.ok) {
+          const d = await r.json();
+          setAgents(d.agents || []);
+        }
+      } catch { /* silent */ }
+    };
+    void loadAgents();
+  }, []);
 
   const handleBoundaryChange = async (id: string, patch: Partial<AuthBoundary>) => {
     await patchBoundary(id, patch);
@@ -129,7 +153,7 @@ export default function ConsoleTab() {
             授权边界定义 Agent 可自主执行的范围。超出边界的动作会暂停并推送到「异常介入中心」等你确认。
           </p>
           {boundaries.map(b => (
-            <BoundaryCard key={b.id} boundary={b} onChange={handleBoundaryChange} />
+            <BoundaryCard key={b.id} boundary={b} onChange={handleBoundaryChange} agents={agents} />
           ))}
         </div>
       )}
@@ -139,6 +163,7 @@ export default function ConsoleTab() {
           interventions={interventions}
           pending={pendingCount}
           onDecide={handleDecide}
+          agents={agents}
         />
       )}
 
@@ -147,7 +172,7 @@ export default function ConsoleTab() {
   );
 }
 
-function BoundaryCard({ boundary, onChange }: { boundary: AuthBoundary; onChange: (id: string, patch: Partial<AuthBoundary>) => void }) {
+function BoundaryCard({ boundary, onChange, agents }: { boundary: AuthBoundary; onChange: (id: string, patch: Partial<AuthBoundary>) => void; agents: AgentInfo[] }) {
   const [open, setOpen] = useState(false);
   const [qty, setQty] = useState(boundary.max_lock_qty);
   const [price, setPrice] = useState(boundary.price_tolerance_pct);
@@ -161,7 +186,7 @@ function BoundaryCard({ boundary, onChange }: { boundary: AuthBoundary; onChange
     <div className="card space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-base">{AGENT_LABELS[boundary.agent] || boundary.agent}</span>
+          <span className="text-base">{getAgentLabel(boundary.agent, agents)}</span>
           <span className={`px-2 py-0.5 text-[10px] rounded-full ${boundary.enabled ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
             {boundary.enabled ? '已启用' : '已停用'}
           </span>
@@ -236,8 +261,8 @@ function Slider({ label, value, min, max, step, unit, onChange, onCommit }: {
   );
 }
 
-function InterventionPanel({ interventions, pending, onDecide }: {
-  interventions: Intervention[]; pending: number; onDecide: (id: string, approved: boolean) => void;
+function InterventionPanel({ interventions, pending, onDecide, agents }: {
+  interventions: Intervention[]; pending: number; onDecide: (id: string, approved: boolean) => void; agents: AgentInfo[];
 }) {
   if (interventions.length === 0) {
     return (
@@ -259,7 +284,7 @@ function InterventionPanel({ interventions, pending, onDecide }: {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-gray-800">{iv.action.detail}</span>
-                <span className="px-1.5 py-0.5 text-[10px] rounded bg-gray-100 text-gray-500">{AGENT_LABELS[iv.agent] || iv.agent}</span>
+                <span className="px-1.5 py-0.5 text-[10px] rounded bg-gray-100 text-gray-500">{getAgentLabel(iv.agent, agents)}</span>
               </div>
               <p className="text-xs text-amber-600 mt-1">⏸️ {iv.reason}</p>
               <p className="text-[11px] text-gray-400 mt-1">

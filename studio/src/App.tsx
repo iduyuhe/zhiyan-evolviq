@@ -25,7 +25,7 @@ import SupplyChainFederation from './components/SupplyChainFederation';
 import AiInsightPanel from './components/AiInsightPanel';
 import NotificationBell from './components/NotificationBell';
 import type { AgentInfo } from './components/AgentSelector';
-import { DEFAULT_EXAMPLES } from './components/AgentSelector';
+import { DEFAULT_EXAMPLES, getExamples } from './components/AgentSelector';
 import AgentSidebar from './components/AgentSidebar';
 import TenantSwitcher from './components/TenantSwitcher';
 import TenantManagement from './components/TenantManagement';
@@ -38,7 +38,7 @@ import FeedbackPanel from './components/FeedbackPanel';
 import CaseLibraryPanel from './components/CaseLibraryPanel';
 import PresetLibraryPanel from './components/PresetLibraryPanel';
 import UserPermissionPanel from './components/UserPermissionPanel';
-import { createSession, approveSession, quickCheck, authHeaders, apiUrl } from './api/client';
+import { createSession, approveSession, quickCheck, authHeaders, apiUrl, getEnterpriseProfile } from './api/client';
 import type { Session, ExecutionResult } from './api/client';
 import Login from './components/Login';
 import { getToken, fetchMe, logout, requireLocalToken, AuthExpiredError, type AuthUser } from './api/client';
@@ -85,6 +85,10 @@ export default function App() {
   const [examples, setExamples] = useState<string[]>(DEFAULT_EXAMPLES.supply_chain);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // 🔧 造船化：租户行业由当前登录用户 JWT 对应的企业画像决定，
+  // 用于切换智能体示例/占位符/结果标题等行业化文案。
+  const [tenantIndustry, setTenantIndustry] = useState<string>('');
 
   // ============ 企业认证态（v28） ============
   const [me, setMe] = useState<AuthUser | null>(null);
@@ -163,6 +167,32 @@ export default function App() {
     });
   };
 
+  // 🔧 造船化：登录用户（me）变化时拉取其企业画像行业，驱动右侧示例/占位符/结果标题等行业化文案切换。
+  // 兼容两条登录路径：TenantContext 注册租户（有 activeTenant）与用户名密码直接登录（如 hudong_admin，无 activeTenant 但 me.tenant_id 存在）。
+  // 未登录 → 行业置空（回退默认半导体示例），避免悬空态。
+  useEffect(() => {
+    if (!me) {
+      setTenantIndustry('');
+      setExamples(getExamples('').supply_chain);
+      return;
+    }
+    let cancelled = false;
+    getEnterpriseProfile()
+      .then((d) => {
+        if (cancelled) return;
+        const ind = d?.profile?.industry || '';
+        setTenantIndustry(ind);
+        setExamples(getExamples(ind)[currentAgent] || getExamples(ind).supply_chain);
+      })
+      .catch(() => {
+        if (!cancelled) setTenantIndustry('');
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me?.tenant_id]);
+
   const currentAgentInfo = agents.find((a) => a.id === currentAgent) || agents[0];
 
   // F4：agent id → 显示名（未在可见清单里时回退显示 id，绝不显示空）
@@ -171,7 +201,7 @@ export default function App() {
 
   const handleAgentChange = (agent: AgentInfo) => {
     setCurrentAgent(agent.id);
-    setExamples(DEFAULT_EXAMPLES[agent.id] || DEFAULT_EXAMPLES.supply_chain);
+    setExamples(getExamples(tenantIndustry)[agent.id] || getExamples(tenantIndustry).supply_chain);
     handleNewGoal();
   };
 
@@ -530,7 +560,7 @@ export default function App() {
                   )}
                   {/* F3：北极星双率（真实客户信号 vs 演示数据）显式区分 */}
                   <NorthStarStrip />
-                  <GoalInput onSubmit={handleSubmitGoal} onQuickCheck={handleQuickCheck} loading={false} agentExamples={examples} />
+                  <GoalInput onSubmit={handleSubmitGoal} onQuickCheck={handleQuickCheck} loading={false} agentExamples={examples} industry={tenantIndustry} />
                 </>
               )}
 
@@ -603,9 +633,9 @@ export default function App() {
                   ) : viewAgent === 'yield_analysis' ? (
                     <YieldResultView result={result as any} onNewGoal={handleNewGoal} />
                   ) : viewAgent === 'quality_trace' ? (
-                    <TraceResultView result={result as any} onNewGoal={handleNewGoal} />
+                    <TraceResultView result={result as any} onNewGoal={handleNewGoal} industry={tenantIndustry} />
                   ) : ['dfm_check','bom_selector','oee_optimizer','eco_change','smt_changeover','aoi_judge','ipc_standard','aps_scheduler','energy_carbon','cost_analysis','demand_order','wms_logistics','compliance_q','executive_cockpit','rd_npi','procurement_manage','bid_intel'].includes(viewAgent) ? (
-                    <GenericResultView result={result as any} onNewGoal={handleNewGoal} />
+                    <GenericResultView result={result as any} onNewGoal={handleNewGoal} agents={agents} />
                   ) : (
                     <ExecutionResultView result={result as any} onNewGoal={handleNewGoal} />
                   )}
