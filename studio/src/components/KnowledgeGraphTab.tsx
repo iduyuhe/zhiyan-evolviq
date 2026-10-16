@@ -150,12 +150,31 @@ function GraphView({ centerId, neighbors }: { centerId: string; neighbors: KgNei
   );
 }
 
-export default function KnowledgeGraphTab() {
+interface KnowledgeGraphTabProps {
+  industry?: string;
+}
+
+const EXAMPLE_QUERIES: Record<string, { name: string; node_id: string; edge: string }[]> = {
+  造船: [
+    { name: '质量案例→分段（跨Agent）', node_id: 'CASE:CASE-2026-001', edge: '怀疑设备' },
+    { name: '设备→部件', node_id: 'EQP:gantry_1', edge: '有部件' },
+    { name: '产线联邦(船坞/分段/涂装)', node_id: 'LINE:drydock_1', edge: '' },
+  ],
+};
+
+const DEFAULT_QUERIES = [
+  { name: '质量案例→设备（跨Agent）', node_id: 'CASE:CASE-2026-001', edge: '怀疑设备' },
+  { name: '设备→部件', node_id: 'EQP:scanner_1', edge: '有部件' },
+  { name: '产线联邦(OEE/SMT/AOI)', node_id: 'LINE:SMT-L01', edge: '' },
+];
+
+export default function KnowledgeGraphTab({ industry = '' }: KnowledgeGraphTabProps) {
+  const examples = EXAMPLE_QUERIES[industry] || DEFAULT_QUERIES;
   const [stats, setStats] = useState<KgStats | null>(null);
   const [mode, setMode] = useState<'list' | 'neighbors'>('list');
   const [label, setLabel] = useState('Material');
   const [category, setCategory] = useState('');
-  const [nodeId, setNodeId] = useState('CASE:CASE-2026-001');
+  const [nodeId, setNodeId] = useState(examples[0].node_id);
   const [edge, setEdge] = useState('');
   const [nodes, setNodes] = useState<KgNode[]>([]);
   const [neighbors, setNeighbors] = useState<KgNeighbor[]>([]);
@@ -209,12 +228,6 @@ export default function KnowledgeGraphTab() {
       setLoading(false);
     }
   };
-
-  const examples = [
-    { name: '质量案例→设备（跨Agent）', node_id: 'CASE:CASE-2026-001', edge: '怀疑设备' },
-    { name: '设备→部件', node_id: 'EQP:scanner_1', edge: '有部件' },
-    { name: '产线联邦(OEE/SMT/AOI)', node_id: 'LINE:SMT-L01', edge: '' },
-  ];
 
   return (
     <div className="space-y-4">

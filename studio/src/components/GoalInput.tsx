@@ -5,10 +5,16 @@ interface GoalInputProps {
   onQuickCheck: (goal: string) => void;
   loading: boolean;
   agentExamples: string[];
+  industry?: string;
 }
 
-export default function GoalInput({ onSubmit, onQuickCheck, loading, agentExamples }: GoalInputProps) {
+const PLACEHOLDERS: Record<string, string> = {
+  造船: '描述你的业务目标，例如：检查船体分段物料齐套，发现缺料风险时自动检索替代方案...',
+};
+
+export default function GoalInput({ onSubmit, onQuickCheck, loading, agentExamples, industry = '' }: GoalInputProps) {
   const [goal, setGoal] = useState('');
+  const placeholder = PLACEHOLDERS[industry] || '描述你的业务目标，例如：检查NPI物料齐套，发现缺料风险时自动检索替代方案...';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +44,7 @@ export default function GoalInput({ onSubmit, onQuickCheck, loading, agentExampl
             <div className="relative">
               <textarea
                 className="input min-h-[120px] resize-y text-base leading-relaxed"
-                placeholder="描述你的业务目标，例如：检查NPI物料齐套，发现缺料风险时自动检索替代方案..."
+                placeholder={placeholder}
                 value={goal}
                 onChange={(e) => setGoal(e.target.value)}
                 disabled={loading}

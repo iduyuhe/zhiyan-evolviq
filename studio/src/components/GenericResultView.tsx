@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import type { ReactElement } from 'react';
+import type { AgentInfo } from './AgentSelector';
 
 interface ResultViewProps {
   result: any;
   onNewGoal: () => void;
+  agents?: AgentInfo[];
 }
 
 const AGENT_META: Record<string, { title: string; icon: string }> = {
@@ -26,9 +28,12 @@ const AGENT_META: Record<string, { title: string; icon: string }> = {
   bid_intel: { title: '商机情报', icon: '🎯' },
 };
 
-export default function GenericResultView({ result, onNewGoal }: ResultViewProps) {
+export default function GenericResultView({ result, onNewGoal, agents = [] }: ResultViewProps) {
   const agent = result.agent || 'unknown';
-  const meta = AGENT_META[agent] || { title: '分析结果', icon: '📊' };
+  const agentInfo = agents.find((a) => a.id === agent);
+  const meta = agentInfo
+    ? { title: agentInfo.name, icon: agentInfo.icon }
+    : (AGENT_META[agent] || { title: '分析结果', icon: '📊' });
   const [activeTab, setActiveTab] = useState(0);
 
   const tabs = getTabs(agent, result);
