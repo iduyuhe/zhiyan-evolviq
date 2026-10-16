@@ -1,0 +1,11 @@
+<Slide style={{ width: 1280, height: 720, position: 'relative', background: '#0B2545' }}>
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 30, padding: '60 64' }}>
+    <Text style={{ fontSize: 18, color: '#06B6D4', fontFamily: 'Microsoft YaHei', fontWeight: 'bold', letterSpacing: '3px' }}>智衍 EvolvIQ · 造船行业版</Text>
+    <Text style={{ fontSize: 56, fontWeight: 'bold', color: '#ffffff', fontFamily: 'Microsoft YaHei', lineHeight: 1.25, textAlign: 'center' }}>让每艘船，<br />都有可对话的决策分身</Text>
+    <Box style={{ width: 240, height: 300, borderRadius: 16, overflow: 'hidden', background: '#ffffff' }}>
+      <Image src="assets/qrcode_card.png" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+    </Box>
+    <Text style={{ fontSize: 18, color: '#E2E8F0', fontFamily: 'Microsoft YaHei' }}>扫码体验 Demo ｜ 账号 <Text style={{ color: '#06B6D4', fontWeight: 'bold', fontFamily: 'Microsoft YaHei' }}>demo</Text> / 密码 <Text style={{ color: '#06B6D4', fontWeight: 'bold', fontFamily: 'Microsoft YaHei' }}>EvolvIQ2026</Text></Text>
+    <Text style={{ fontSize: 14, color: '#94A3B8', fontFamily: 'Microsoft YaHei' }}>杜玉河 · 工业 5 点 0 产业生态联盟</Text>
+  </Box>
+</Slide>

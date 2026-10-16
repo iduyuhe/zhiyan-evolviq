@@ -1,0 +1,50 @@
+<Slide style={{ width: 1280, height: 720, position: 'relative', background: '#F1F5F9' }}>
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 120, background: '#0B2545', justifyContent: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#ffffff', fontFamily: 'Microsoft YaHei' }}>客户广度 · 我们已走进多家头部造船集团</Text>
+  </Box>
+  <Box style={{ height: 720, padding: '150 64 120 64', flexDirection: 'row', gap: 40 }}>
+    <Box style={{ width: '38%', height: '100%', background: 'linear-gradient(135deg, #0B2545 0%, #2563EB 100%)', borderRadius: 16, padding: '32 30', flexDirection: 'column', justifyContent: 'center' }}>
+      <Text style={{ fontSize: 18, color: '#06B6D4', fontFamily: 'Microsoft YaHei', fontWeight: 'bold', letterSpacing: '2px' }}>CLIENT BREADTH · 广度</Text>
+      <Box style={{ flexDirection: 'row', alignItems: 'baseline', gap: 10, marginTop: 18 }}>
+        <Text style={{ fontSize: 96, fontWeight: 'bold', color: '#06B6D4', fontFamily: 'Arial' }}>3+</Text>
+        <Text style={{ fontSize: 28, color: '#ffffff', fontFamily: 'Microsoft YaHei', fontWeight: 'bold' }}>家头部<bt />造船集团</Text>
+      </Box>
+      <Box style={{ width: 80, height: 4, background: '#06B6D4', marginTop: 24 }} />
+      <Text style={{ fontSize: 17, color: '#CBD5E1', fontFamily: 'Microsoft YaHei', lineHeight: 1.8, marginTop: 24 }}>已覆盖三类典型形态：大型造船集团演示租户、邮轮与散货船建造龙头、液化气船与高端船舶建造龙头。</Text>
+      <Text style={{ fontSize: 17, color: '#CBD5E1', fontFamily: 'Microsoft YaHei', lineHeight: 1.8, marginTop: 16 }}>推进路径：培训赋能 → 业务接触 → 试点进阶，系统化沉淀行业认知。</Text>
+    </Box>
+    <Box style={{ flex: 1, height: '100%', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <Box style={{ background: '#ffffff', borderRadius: 12, padding: '20 24', boxShadow: '0 2px 12px rgba(11,37,69,0.06)', flexDirection: 'row', gap: 18, alignItems: 'center' }}>
+        <Box style={{ width: 8, height: 64, background: '#0B2545', borderRadius: 4 }} />
+        <Box style={{ flex: 1 }}>
+          <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#0B2545', fontFamily: 'Microsoft YaHei' }}>某大型造船集团演示租户</Text>
+          <Text style={{ fontSize: 15, color: '#475569', fontFamily: 'Microsoft YaHei', lineHeight: 1.6, marginTop: 6 }}>已完成 7 台关键设备点亮 + UNS 实时事件流上线，进入演示验证阶段（分阶段推进）。</Text>
+        </Box>
+        <Text style={{ fontSize: 14, color: '#06B6D4', fontFamily: 'Microsoft YaHei', fontWeight: 'bold' }}>试点中</Text>
+      </Box>
+      <Box style={{ background: '#ffffff', borderRadius: 12, padding: '20 24', boxShadow: '0 2px 12px rgba(11,37,69,0.06)', flexDirection: 'row', gap: 18, alignItems: 'center' }}>
+        <Box style={{ width: 8, height: 64, background: '#2563EB', borderRadius: 4 }} />
+        <Box style={{ flex: 1 }}>
+          <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#0B2545', fontFamily: 'Microsoft YaHei' }}>某邮轮与散货船建造龙头</Text>
+          <Text style={{ fontSize: 15, color: '#475569', fontFamily: 'Microsoft YaHei', lineHeight: 1.6, marginTop: 6 }}>已完成专项培训与业务场景接触，聚焦设备健康与质量一次合格率。</Text>
+        </Box>
+        <Text style={{ fontSize: 14, color: '#2563EB', fontFamily: 'Microsoft YaHei', fontWeight: 'bold' }}>接触中</Text>
+      </Box>
+      <Box style={{ background: '#ffffff', borderRadius: 12, padding: '20 24', boxShadow: '0 2px 12px rgba(11,37,69,0.06)', flexDirection: 'row', gap: 18, alignItems: 'center' }}>
+        <Box style={{ width: 8, height: 64, background: '#06B6D4', borderRadius: 4 }} />
+        <Box style={{ flex: 1 }}>
+          <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#0B2545', fontFamily: 'Microsoft YaHei' }}>某液化气船与高端船舶建造龙头</Text>
+          <Text style={{ fontSize: 15, color: '#475569', fontFamily: 'Microsoft YaHei', lineHeight: 1.6, marginTop: 6 }}>已完成管理层培训与智能船厂蓝图探讨，聚焦研发与船级社标准。</Text>
+        </Box>
+        <Text style={{ fontSize: 14, color: '#06B6D4', fontFamily: 'Microsoft YaHei', fontWeight: 'bold' }}>培训中</Text>
+      </Box>
+      <Box style={{ background: '#EFF6FF', borderRadius: 10, padding: '10 16' }}>
+        <Text style={{ fontSize: 13, color: '#475569', fontFamily: 'Microsoft YaHei', lineHeight: 1.5 }}>零真名铁律：对外均匿名呈现，真实主体仅限内部视图，不点名、不暴露商业关系。</Text>
+      </Box>
+    </Box>
+  </Box>
+  <Box style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: 60, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei' }}>智衍 EvolvIQ · 造船行业版</Text>
+    <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei' }}>11 / 14</Text>
+  </Box>
+</Slide>

@@ -1,0 +1,39 @@
+<Slide style={{ width: 1280, height: 720, position: 'relative', background: '#F1F5F9' }}>
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 120, background: '#0B2545', justifyContent: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#ffffff', fontFamily: 'Microsoft YaHei' }}>核心能力 ③：研发与船级社标准</Text>
+  </Box>
+  <Box style={{ height: 720, padding: '150 64 120 64', flexDirection: 'row', gap: 40 }}>
+    <Box style={{ width: '65%', height: '100%', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <Box style={{ background: '#ffffff', borderRadius: 12, padding: '22 26', boxShadow: '0 2px 12px rgba(11,37,69,0.06)' }}>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#0B2545', fontFamily: 'Microsoft YaHei' }}>新船型导入 Agent</Text>
+        <Text style={{ fontSize: 16, color: '#475569', fontFamily: 'Microsoft YaHei', lineHeight: 1.6, marginTop: 8 }}>全生命周期里程碑跟踪、风险识别与批量试产节点提醒，让新项目不再靠人脑记节点。</Text>
+      </Box>
+      <Box style={{ background: '#ffffff', borderRadius: 12, padding: '22 26', boxShadow: '0 2px 12px rgba(11,37,69,0.06)' }}>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#0B2545', fontFamily: 'Microsoft YaHei' }}>船级社标准 Agent</Text>
+        <Text style={{ fontSize: 16, color: '#475569', fontFamily: 'Microsoft YaHei', lineHeight: 1.6, marginTop: 8 }}>IACS / CCS / LR / DNV / ABS 等规范辅助查询与缺陷判定，对话即得答案。</Text>
+      </Box>
+      <Box style={{ background: '#ffffff', borderRadius: 12, padding: '22 26', boxShadow: '0 2px 12px rgba(11,37,69,0.06)' }}>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#0B2545', fontFamily: 'Microsoft YaHei' }}>设计变更 Agent</Text>
+        <Text style={{ fontSize: 16, color: '#475569', fontFamily: 'Microsoft YaHei', lineHeight: 1.6, marginTop: 8 }}>受影响 BOM、在制、库存、工序自动识别，并驱动跨部门协同闭环。</Text>
+      </Box>
+    </Box>
+    <Box style={{ flex: 1, height: '100%', background: 'linear-gradient(135deg, #0B2545 0%, #2563EB 100%)', borderRadius: 16, padding: '28 26', flexDirection: 'column', justifyContent: 'center', gap: 26 }}>
+      <Box>
+        <Text style={{ fontSize: 30, color: '#ffffff', fontFamily: 'Microsoft YaHei', fontWeight: 'bold' }}>缩短研发周期</Text>
+        <Text style={{ fontSize: 15, color: '#CBD5E1', fontFamily: 'Microsoft YaHei', lineHeight: 1.6, marginTop: 6 }}>规范查询从「翻文档」变「问一句」。</Text>
+      </Box>
+      <Box>
+        <Text style={{ fontSize: 30, color: '#ffffff', fontFamily: 'Microsoft YaHei', fontWeight: 'bold' }}>合规可追溯</Text>
+        <Text style={{ fontSize: 15, color: '#CBD5E1', fontFamily: 'Microsoft YaHei', lineHeight: 1.6, marginTop: 6 }}>船级社条款与判定有据可查。</Text>
+      </Box>
+      <Box>
+        <Text style={{ fontSize: 30, color: '#ffffff', fontFamily: 'Microsoft YaHei', fontWeight: 'bold' }}>跨部门协同</Text>
+        <Text style={{ fontSize: 15, color: '#CBD5E1', fontFamily: 'Microsoft YaHei', lineHeight: 1.6, marginTop: 6 }}>变更影响一键量化并分发。</Text>
+      </Box>
+    </Box>
+  </Box>
+  <Box style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: 60, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei' }}>智衍 EvolvIQ · 造船行业版</Text>
+    <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei' }}>08 / 12</Text>
+  </Box>
+</Slide>

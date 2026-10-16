@@ -1,0 +1,43 @@
+<Slide style={{ width: 1280, height: 720, position: 'relative', background: '#F1F5F9' }}>
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 120, background: '#0B2545', justifyContent: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#ffffff', fontFamily: 'Microsoft YaHei' }}>技术架构：数字孪生五要素</Text>
+  </Box>
+  <Box style={{ height: 720, padding: '150 64 120 64', flexDirection: 'row', gap: 40 }}>
+    <Box style={{ width: '32%', height: '100%', background: 'linear-gradient(135deg, #0B2545 0%, #2563EB 100%)', borderRadius: 16, padding: '32 28', flexDirection: 'column', justifyContent: 'center' }}>
+      <Text style={{ fontSize: 18, color: '#06B6D4', fontFamily: 'Microsoft YaHei', fontWeight: 'bold' }}>ARCHITECTURE · 底座</Text>
+      <Text style={{ fontSize: 36, color: '#ffffff', fontFamily: 'Microsoft YaHei', fontWeight: 'bold', marginTop: 14, lineHeight: 1.3 }}>数字孪生<br />五要素</Text>
+      <Text style={{ fontSize: 16, color: '#CBD5E1', fontFamily: 'Microsoft YaHei', lineHeight: 1.7, marginTop: 18 }}>行业成为数据驱动的一等公民：行业 = manifest，新增行业只丢一个 JSON。</Text>
+    </Box>
+    <Box style={{ flex: 1, height: '100%', background: '#ffffff', borderRadius: 16, padding: 20, flexDirection: 'column', boxShadow: '0 2px 12px rgba(11,37,69,0.06)' }}>
+      <Box style={{ height: 280, justifyContent: 'center', alignItems: 'center' }}>
+        <svg width='100%' height='100%' viewBox='0 0 520 400'>
+          <rect x='20' y='10' width='480' height='60' rx='10' fill='#0B2545' />
+          <text x='44' y='46' fill='#ffffff' fontSize='20' fontFamily='Microsoft YaHei' fontWeight='bold'>OGG 几何内核</text>
+          <text x='280' y='46' fill='#94A3B8' fontSize='15' fontFamily='Microsoft YaHei'>统一几何与拓扑真相源</text>
+          <text x='250' y='88' fill='#94A3B8' fontSize='18' fontFamily='Microsoft YaHei'>▼</text>
+          <rect x='20' y='100' width='480' height='60' rx='10' fill='#2563EB' />
+          <text x='44' y='136' fill='#ffffff' fontSize='20' fontFamily='Microsoft YaHei' fontWeight='bold'>Agent 智能层</text>
+          <text x='280' y='136' fill='#DBEAFE' fontSize='15' fontFamily='Microsoft YaHei'>九类行业智能体决策</text>
+          <text x='250' y='178' fill='#94A3B8' fontSize='18' fontFamily='Microsoft YaHei'>▼</text>
+          <rect x='20' y='190' width='480' height='60' rx='10' fill='#06B6D4' />
+          <text x='44' y='226' fill='#ffffff' fontSize='20' fontFamily='Microsoft YaHei' fontWeight='bold'>实时数据</text>
+          <text x='280' y='226' fill='#E0F2FE' fontSize='15' fontFamily='Microsoft YaHei'>UNS 事件流持续接入</text>
+          <text x='250' y='268' fill='#94A3B8' fontSize='18' fontFamily='Microsoft YaHei'>▼</text>
+          <rect x='20' y='280' width='480' height='60' rx='10' fill='#475569' />
+          <text x='44' y='316' fill='#ffffff' fontSize='20' fontFamily='Microsoft YaHei' fontWeight='bold'>CAE 仿真</text>
+          <text x='280' y='316' fill='#E2E8F0' fontSize='15' fontFamily='Microsoft YaHei'>工艺与结构虚拟验证</text>
+          <text x='250' y='358' fill='#94A3B8' fontSize='18' fontFamily='Microsoft YaHei'>▼</text>
+          <rect x='20' y='370' width='480' height='22' rx='8' fill='#0B2545' />
+          <text x='44' y='386' fill='#ffffff' fontSize='14' fontFamily='Microsoft YaHei' fontWeight='bold'>验证闭环：结论回流资产层，持续自我进化</text>
+        </svg>
+      </Box>
+      <Box style={{ marginTop: 12, background: '#EFF6FF', borderRadius: 10, padding: '12 16' }}>
+        <Text style={{ fontSize: 15, color: '#0B2545', fontFamily: 'Microsoft YaHei', lineHeight: 1.6 }}>行业 = manifest（设备表 / 触发词 / 智能体覆盖），新增行业只丢一个 JSON，零代码改动。</Text>
+      </Box>
+    </Box>
+  </Box>
+  <Box style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: 60, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei' }}>智衍 EvolvIQ · 造船行业版</Text>
+    <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei' }}>09 / 12</Text>
+  </Box>
+</Slide>

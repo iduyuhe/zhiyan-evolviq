@@ -1,0 +1,42 @@
+<Slide style={{ width: 1280, height: 720, position: 'relative', background: '#F1F5F9' }}>
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 120, background: '#0B2545', justifyContent: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#ffffff', fontFamily: 'Microsoft YaHei' }}>智衍是什么：工业 AI 决策分身</Text>
+  </Box>
+  <Box style={{ height: 720, padding: '160 64 100 64', flexDirection: 'row', gap: 40 }}>
+    <Box style={{ width: '58%', height: '100%', background: '#ffffff', borderRadius: 16, padding: 32, justifyContent: 'center', alignItems: 'center' }}>
+      <svg width='100%' height='100%' viewBox='0 0 560 400'>
+        <rect x='40' y='30' width='480' height='70' rx='12' fill='#0B2545' />
+        <text x='70' y='72' fill='#ffffff' fontSize='22' fontFamily='Microsoft YaHei' fontWeight='bold'>产业级</text>
+        <text x='210' y='72' fill='#94A3B8' fontSize='16' fontFamily='Microsoft YaHei'>全球价值链与宏观研判</text>
+        <rect x='40' y='120' width='480' height='70' rx='12' fill='#2563EB' />
+        <text x='70' y='162' fill='#ffffff' fontSize='22' fontFamily='Microsoft YaHei' fontWeight='bold'>行业级</text>
+        <text x='210' y='162' fill='#DBEAFE' fontSize='16' fontFamily='Microsoft YaHei'>标杆对标与竞争情报</text>
+        <rect x='40' y='210' width='480' height='70' rx='12' fill='#06B6D4' />
+        <text x='70' y='252' fill='#ffffff' fontSize='22' fontFamily='Microsoft YaHei' fontWeight='bold'>企业级</text>
+        <text x='210' y='252' fill='#E0F2FE' fontSize='16' fontFamily='Microsoft YaHei'>经营驾驶舱与管控分身</text>
+        <rect x='40' y='300' width='480' height='70' rx='12' fill='#475569' />
+        <text x='70' y='342' fill='#ffffff' fontSize='22' fontFamily='Microsoft YaHei' fontWeight='bold'>专业级</text>
+        <text x='210' y='342' fill='#E2E8F0' fontSize='16' fontFamily='Microsoft YaHei'>设备工艺岗位执行分身</text>
+      </svg>
+    </Box>
+    <Box style={{ flex: 1, height: '100%', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <Box style={{ background: '#ffffff', borderRadius: 12, padding: '24 28', boxShadow: '0 2px 12px rgba(11,37,69,0.06)' }}>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#0B2545', fontFamily: 'Microsoft YaHei' }}>不替代 ERP / MES</Text>
+        <Text style={{ fontSize: 16, color: '#475569', fontFamily: 'Microsoft YaHei', lineHeight: 1.6, marginTop: 8 }}>而是在其上叠加「实时决策脑 + 全息真相源」，让经营管控者拥有可对话的分身。</Text>
+      </Box>
+      <Box style={{ background: '#ffffff', borderRadius: 12, padding: '24 28', boxShadow: '0 2px 12px rgba(11,37,69,0.06)' }}>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#0B2545', fontFamily: 'Microsoft YaHei' }}>成熟度阶梯 L0 → L3</Text>
+        <Text style={{ fontSize: 16, color: '#475569', fontFamily: 'Microsoft YaHei', lineHeight: 1.6, marginTop: 8 }}>L0 观察 · L1 判断 · L2 预案 · L3 授权执行</Text>
+        <Text style={{ fontSize: 16, color: '#06B6D4', fontFamily: 'Microsoft YaHei', lineHeight: 1.6, marginTop: 6 }}>当前造船场景以 L0–L2 为主，人留终审红线。</Text>
+      </Box>
+      <Box style={{ background: 'linear-gradient(135deg, #0B2545 0%, #2563EB 100%)', borderRadius: 12, padding: '24 28' }}>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#ffffff', fontFamily: 'Microsoft YaHei' }}>一个核心定位</Text>
+        <Text style={{ fontSize: 16, color: '#E2E8F0', fontFamily: 'Microsoft YaHei', lineHeight: 1.6, marginTop: 8 }}>把离散数据、专家经验、行业知识变成可实时对话的决策能力。</Text>
+      </Box>
+    </Box>
+  </Box>
+  <Box style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: 60, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei' }}>智衍 EvolvIQ · 造船行业版</Text>
+    <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei' }}>04 / 12</Text>
+  </Box>
+</Slide>

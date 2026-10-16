@@ -1,0 +1,33 @@
+<Slide style={{ width: 1280, height: 720, position: 'relative', background: '#F1F5F9' }}>
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 120, background: '#0B2545', justifyContent: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#ffffff', fontFamily: 'Microsoft YaHei' }}>核心能力 ①：设备健康与预测维护</Text>
+  </Box>
+  <Box style={{ height: 720, padding: '130 64 70 64', flexDirection: 'row', gap: 40 }}>
+    <Image src="assets/equip_monitor.png" style={{ width: '55%', height: '100%', borderRadius: 16, objectFit: 'cover' }} />
+    <Box style={{ flex: 1, height: '100%', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <Box style={{ background: '#0B2545', borderRadius: 12, padding: '24 28' }}>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#ffffff', fontFamily: 'Microsoft YaHei' }}>覆盖造船 6 类 7 台关键设备</Text>
+        <Text style={{ fontSize: 16, color: '#CBD5E1', fontFamily: 'Microsoft YaHei', lineHeight: 1.6, marginTop: 8 }}>船坞、龙门吊、焊接机器人、数控板材、喷砂涂装线、船用柴油机</Text>
+      </Box>
+      <Box style={{ background: '#ffffff', borderRadius: 12, padding: '20 24', boxShadow: '0 2px 12px rgba(11,37,69,0.06)' }}>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#0B2545', fontFamily: 'Microsoft YaHei' }}>健康诊断</Text>
+        <Text style={{ fontSize: 15, color: '#475569', fontFamily: 'Microsoft YaHei', lineHeight: 1.5, marginTop: 6 }}>实时振动、温度、电流趋势分析，异常自动预警。</Text>
+      </Box>
+      <Box style={{ background: '#ffffff', borderRadius: 12, padding: '20 24', boxShadow: '0 2px 12px rgba(11,37,69,0.06)' }}>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#0B2545', fontFamily: 'Microsoft YaHei' }}>预测维护建议</Text>
+        <Text style={{ fontSize: 15, color: '#475569', fontFamily: 'Microsoft YaHei', lineHeight: 1.5, marginTop: 6 }}>关键部件寿命预测与换件窗口推荐。</Text>
+      </Box>
+      <Box style={{ background: '#ffffff', borderRadius: 12, padding: '20 24', boxShadow: '0 2px 12px rgba(11,37,69,0.06)' }}>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#0B2545', fontFamily: 'Microsoft YaHei' }}>UNS 事件流实时上屏</Text>
+        <Text style={{ fontSize: 15, color: '#475569', fontFamily: 'Microsoft YaHei', lineHeight: 1.5, marginTop: 6 }}>异常触发秒级预警，设备卡动态点亮。</Text>
+      </Box>
+      <Box style={{ background: 'linear-gradient(135deg, #2563EB 0%, #06B6D4 100%)', borderRadius: 12, padding: '18 24' }}>
+        <Text style={{ fontSize: 16, color: '#ffffff', fontFamily: 'Microsoft YaHei' }}>某大型造船集团演示租户已点亮 7 台设备并接入实时事件流</Text>
+      </Box>
+    </Box>
+  </Box>
+  <Box style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: 60, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei' }}>智衍 EvolvIQ · 造船行业版</Text>
+    <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei' }}>06 / 12</Text>
+  </Box>
+</Slide>

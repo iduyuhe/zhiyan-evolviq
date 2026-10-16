@@ -1,0 +1,27 @@
+<Slide style={{ width: 1280, height: 720, position: 'relative', background: '#0B2545' }}>
+  <Image src="assets/demo_screen.png" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(135deg, rgba(11,37,69,0.88) 0%, rgba(11,37,69,0.6) 45%, rgba(11,37,69,0.25) 75%, transparent 100%)' }} />
+  <Box style={{ position: 'relative', zIndex: 2, padding: '64px 64px 56px 64px', height: '100%', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+    <Box style={{ flexDirection: 'column', gap: 10 }}>
+      <Text style={{ fontSize: 18, color: '#06B6D4', fontFamily: 'Microsoft YaHei', fontWeight: 'bold', letterSpacing: '2px' }}>应用价值 · 演示成效</Text>
+      <Text style={{ fontSize: 54, fontWeight: 'bold', color: '#ffffff', fontFamily: 'Microsoft YaHei', lineHeight: 1.1 }}>从看报表到<br />实时决策</Text>
+    </Box>
+    <Box style={{ flexDirection: 'column', gap: 16, maxWidth: 760 }}>
+      <Box style={{ flexDirection: 'row', gap: 16, flexWrap: 'wrap' }}>
+        <Box style={{ background: 'rgba(6,182,212,0.18)', borderRadius: 10, padding: '12 18', borderLeft: '4px solid #06B6D4' }}>
+          <Text style={{ fontSize: 18, color: '#ffffff', fontFamily: 'Microsoft YaHei', fontWeight: 'bold' }}>7 台关键设备点亮进设备卡</Text>
+        </Box>
+        <Box style={{ background: 'rgba(6,182,212,0.18)', borderRadius: 10, padding: '12 18', borderLeft: '4px solid #06B6D4' }}>
+          <Text style={{ fontSize: 18, color: '#ffffff', fontFamily: 'Microsoft YaHei', fontWeight: 'bold' }}>UNS 实时事件流上屏</Text>
+        </Box>
+        <Box style={{ background: 'rgba(6,182,212,0.18)', borderRadius: 10, padding: '12 18', borderLeft: '4px solid #06B6D4' }}>
+          <Text style={{ fontSize: 18, color: '#ffffff', fontFamily: 'Microsoft YaHei', fontWeight: 'bold' }}>决策实时化率作北极星</Text>
+        </Box>
+      </Box>
+      <Text style={{ fontSize: 22, color: '#F1F5F9', fontFamily: 'Microsoft YaHei', lineHeight: 1.6 }}>某大型造船集团演示租户，已从「看报表」升级为「实时看板 + 预警 + 预案」——经营管控者第一次拥有可对话的决策分身。</Text>
+    </Box>
+  </Box>
+  <Box style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: 56, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 14, color: '#E2E8F0', fontFamily: 'Microsoft YaHei' }}>10 / 12</Text>
+  </Box>
+</Slide>

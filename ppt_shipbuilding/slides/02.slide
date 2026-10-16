@@ -1,0 +1,37 @@
+<Slide style={{ width: 1280, height: 720, position: 'relative', background: '#F1F5F9' }}>
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 120, background: '#0B2545', justifyContent: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#ffffff', fontFamily: 'Microsoft YaHei' }}>内容导览</Text>
+  </Box>
+  <Box style={{ height: 720, padding: '160 64 80 64', flexDirection: 'row', gap: 48 }}>
+    <Box style={{ width: '32%', height: '100%', background: 'linear-gradient(180deg, #0B2545 0%, #2563EB 100%)', borderRadius: 16, padding: 32, justifyContent: 'space-between' }}>
+      <Box>
+        <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#ffffff', fontFamily: 'Microsoft YaHei', lineHeight: 1.4 }}>如何理解<br />智衍造船版</Text>
+        <Box style={{ width: 64, height: 4, background: '#06B6D4', marginTop: 24 }} />
+      </Box>
+      <Text style={{ fontSize: 18, color: '#CBD5E1', fontFamily: 'Microsoft YaHei', lineHeight: 1.5 }}>从行业挑战出发<br />到产品价值落地</Text>
+    </Box>
+    <Box style={{ flex: 1, height: '100%', flexDirection: 'column', justifyContent: 'space-between' }}>
+      {[
+        { n: '01', t: '行业挑战', d: '造船行业四大决策瓶颈' },
+        { n: '02', t: '产品定位', d: '工业 AI 决策分身与四层框架' },
+        { n: '03', t: '解决方案', d: '面向造船的九类智能体矩阵' },
+        { n: '04', t: '核心能力', d: '设备 · 质量 · 研发三大抓手' },
+        { n: '05', t: '技术架构', d: '数字孪生五要素 + 行业 manifest' },
+        { n: '06', t: '体验方式', d: '双模开户 · 注册即入职' },
+      ].map((item, i) => (
+        <Box key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 16, padding: '14 20', background: '#ffffff', borderRadius: 12, boxShadow: '0 2px 12px rgba(11,37,69,0.06)' }}>
+          <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#06B6D4', fontFamily: 'Arial', width: 36 }}>{item.n}</Text>
+          <Box style={{ flex: 1 }}>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#0F172A', fontFamily: 'Microsoft YaHei' }}>{item.t}</Text>
+            <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei', marginTop: 2 }}>{item.d}</Text>
+          </Box>
+          <FAIcon name='chevron-right' style={{ fill: '#94A3B8', width: 18, height: 18 }} />
+        </Box>
+      ))}
+    </Box>
+  </Box>
+  <Box style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: 60, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei' }}>智衍 EvolvIQ · 造船行业版</Text>
+    <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei' }}>02 / 12</Text>
+  </Box>
+</Slide>

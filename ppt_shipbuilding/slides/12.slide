@@ -1,0 +1,41 @@
+<Slide style={{ width: 1280, height: 720, position: 'relative', background: '#F1F5F9' }}>
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 120, background: '#0B2545', justifyContent: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#ffffff', fontFamily: 'Microsoft YaHei' }}>合作进阶 · 迈向智能体深度合作</Text>
+  </Box>
+  <Box style={{ height: 720, padding: '150 64 110 64', flexDirection: 'column', gap: 22 }}>
+    <Text style={{ fontSize: 18, color: '#475569', fontFamily: 'Microsoft YaHei', lineHeight: 1.6 }}>G 模式三圈解锁：从免费体验到私有化，由浅入深、零风险起步，逐步迈向智能体深度合作。</Text>
+    <Box style={{ width: '100%', height: 300, background: '#ffffff', borderRadius: 16, padding: 20, justifyContent: 'center', alignItems: 'center', boxShadow: '0 2px 12px rgba(11,37,69,0.06)' }}>
+      <svg width='100%' height='100%' viewBox='0 0 1100 280'>
+        <circle cx='170' cy='140' r='105' fill='#0B2545' />
+        <text x='170' y='122' fill='#ffffff' fontSize='24' fontFamily='Microsoft YaHei' fontWeight='bold' textAnchor='middle'>外圈</text>
+        <text x='170' y='156' fill='#06B6D4' fontSize='22' fontFamily='Microsoft YaHei' fontWeight='bold' textAnchor='middle'>免费体验</text>
+        <text x='170' y='192' fill='#CBD5E1' fontSize='14' fontFamily='Microsoft YaHei' textAnchor='middle'>零集成 · 注册即入职</text>
+        <text x='360' y='150' fill='#94A3B8' fontSize='30' fontFamily='Microsoft YaHei' textAnchor='middle'>▶</text>
+        <circle cx='550' cy='140' r='105' fill='#2563EB' />
+        <text x='550' y='122' fill='#ffffff' fontSize='24' fontFamily='Microsoft YaHei' fontWeight='bold' textAnchor='middle'>中圈</text>
+        <text x='550' y='156' fill='#ffffff' fontSize='22' fontFamily='Microsoft YaHei' fontWeight='bold' textAnchor='middle'>接 1 源</text>
+        <text x='550' y='192' fill='#DBEAFE' fontSize='14' fontFamily='Microsoft YaHei' textAnchor='middle'>1 路数据 · 实时看板</text>
+        <text x='740' y='150' fill='#94A3B8' fontSize='30' fontFamily='Microsoft YaHei' textAnchor='middle'>▶</text>
+        <circle cx='930' cy='140' r='105' fill='#06B6D4' />
+        <text x='930' y='122' fill='#0B2545' fontSize='24' fontFamily='Microsoft YaHei' fontWeight='bold' textAnchor='middle'>内圈</text>
+        <text x='930' y='156' fill='#0B2545' fontSize='22' fontFamily='Microsoft YaHei' fontWeight='bold' textAnchor='middle'>私有化</text>
+        <text x='930' y='192' fill='#0B2545' fontSize='14' fontFamily='Microsoft YaHei' textAnchor='middle'>本地部署 · 全量智能体</text>
+      </svg>
+    </Box>
+    <Box style={{ flexDirection: 'row', gap: 28 }}>
+      <Box style={{ flex: 1, background: 'linear-gradient(135deg, #0B2545 0%, #2563EB 100%)', borderRadius: 12, padding: '18 22' }}>
+        <Text style={{ fontSize: 16, color: '#06B6D4', fontFamily: 'Microsoft YaHei', fontWeight: 'bold' }}>北极星指标 · 决策实时化率</Text>
+        <Text style={{ fontSize: 24, color: '#ffffff', fontFamily: 'Microsoft YaHei', fontWeight: 'bold', marginTop: 8 }}>MVP ≥ 40% → 稳态 ≥ 85%</Text>
+        <Text style={{ fontSize: 14, color: '#CBD5E1', fontFamily: 'Microsoft YaHei', lineHeight: 1.5, marginTop: 6 }}>以决策实时化率衡量价值落地，而非传统签单口径。</Text>
+      </Box>
+      <Box style={{ flex: 1, background: '#ffffff', borderRadius: 12, padding: '18 22', boxShadow: '0 2px 12px rgba(11,37,69,0.06)' }}>
+        <Text style={{ fontSize: 16, color: '#0B2545', fontFamily: 'Microsoft YaHei', fontWeight: 'bold' }}>建议试点切入点</Text>
+        <Text style={{ fontSize: 16, color: '#475569', fontFamily: 'Microsoft YaHei', lineHeight: 1.7, marginTop: 8 }}>从「设备健康 + 质量一次合格率」双场景切入，快速验证决策实时化率提升。</Text>
+      </Box>
+    </Box>
+  </Box>
+  <Box style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: 60, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei' }}>智衍 EvolvIQ · 造船行业版</Text>
+    <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei' }}>12 / 14</Text>
+  </Box>
+</Slide>

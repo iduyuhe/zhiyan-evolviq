@@ -1,0 +1,43 @@
+<Slide style={{ width: 1280, height: 720, position: 'relative', background: '#F1F5F9' }}>
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 120, background: '#0B2545', justifyContent: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#ffffff', fontFamily: 'Microsoft YaHei' }}>造船解决方案总览：九类智能体</Text>
+  </Box>
+  <Box style={{ height: 720, padding: '150 64 140 64', flexDirection: 'column', gap: 24 }}>
+    <Box style={{ width: '100%', height: 280, background: '#ffffff', borderRadius: 16, padding: 24, justifyContent: 'center', alignItems: 'center' }}>
+      <svg width='100%' height='100%' viewBox='0 0 900 320'>
+        <rect x='10' y='10' width='280' height='90' rx='12' fill='#0B2545' />
+        <text x='40' y='55' fill='#ffffff' fontSize='18' fontFamily='Microsoft YaHei' fontWeight='bold'>设备健康 Agent</text>
+        <rect x='310' y='10' width='280' height='90' rx='12' fill='#2563EB' />
+        <text x='340' y='55' fill='#ffffff' fontSize='18' fontFamily='Microsoft YaHei' fontWeight='bold'>分段装配 Agent</text>
+        <rect x='610' y='10' width='280' height='90' rx='12' fill='#2563EB' />
+        <text x='640' y='55' fill='#ffffff' fontSize='18' fontFamily='Microsoft YaHei' fontWeight='bold'>涂装缺陷判定 Agent</text>
+        <rect x='10' y='115' width='280' height='90' rx='12' fill='#0B2545' />
+        <text x='40' y='160' fill='#ffffff' fontSize='18' fontFamily='Microsoft YaHei' fontWeight='bold'>一次合格率 Agent</text>
+        <rect x='310' y='115' width='280' height='90' rx='12' fill='#475569' />
+        <text x='340' y='160' fill='#ffffff' fontSize='18' fontFamily='Microsoft YaHei' fontWeight='bold'>质量追溯 Agent</text>
+        <rect x='610' y='115' width='280' height='90' rx='12' fill='#2563EB' />
+        <text x='640' y='160' fill='#ffffff' fontSize='18' fontFamily='Microsoft YaHei' fontWeight='bold'>可建造性检查 Agent</text>
+        <rect x='10' y='220' width='280' height='90' rx='12' fill='#06B6D4' />
+        <text x='40' y='265' fill='#ffffff' fontSize='18' fontFamily='Microsoft YaHei' fontWeight='bold'>新船型导入 Agent</text>
+        <rect x='310' y='220' width='280' height='90' rx='12' fill='#06B6D4' />
+        <text x='340' y='265' fill='#ffffff' fontSize='18' fontFamily='Microsoft YaHei' fontWeight='bold'>船级社标准 Agent</text>
+        <rect x='610' y='220' width='280' height='90' rx='12' fill='#06B6D4' />
+        <text x='640' y='265' fill='#ffffff' fontSize='18' fontFamily='Microsoft YaHei' fontWeight='bold'>设计变更 Agent</text>
+      </svg>
+    </Box>
+    <Box style={{ height: 110, flexDirection: 'row', gap: 40, alignItems: 'center' }}>
+      <Box style={{ flex: 1, height: '100%', background: '#ffffff', borderRadius: 12, padding: '18 20', boxShadow: '0 2px 12px rgba(11,37,69,0.06)' }}>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#0B2545', fontFamily: 'Microsoft YaHei' }}>行业 = 数据，不是代码</Text>
+        <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei', lineHeight: 1.5, marginTop: 6 }}>设备表、触发词、智能体覆盖全部放进 manifest JSON，新增行业只丢一个文件，零代码改动。</Text>
+      </Box>
+      <Box style={{ flex: 1, height: '100%', background: '#0B2545', borderRadius: 12, padding: '18 20' }}>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#ffffff', fontFamily: 'Microsoft YaHei' }}>从半导体到造船：同一套内核</Text>
+        <Text style={{ fontSize: 14, color: '#CBD5E1', fontFamily: 'Microsoft YaHei', lineHeight: 1.5, marginTop: 6 }}>只需切换行业 manifest，智能体名称、场景、设备类型随行业自动切换。</Text>
+      </Box>
+    </Box>
+  </Box>
+  <Box style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: 60, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei' }}>智衍 EvolvIQ · 造船行业版</Text>
+    <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei' }}>05 / 12</Text>
+  </Box>
+</Slide>

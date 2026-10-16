@@ -1,0 +1,15 @@
+<Slide style={{ width: 1280, height: 720, position: 'relative', background: '#0B2545' }}>
+  <Image src="assets/hero_shipyard.png" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(135deg, rgba(11,37,69,0.85) 0%, rgba(11,37,69,0.55) 40%, rgba(11,37,69,0.2) 70%, transparent 100%)' }} />
+  <Box style={{ position: 'relative', zIndex: 2, padding: '64px 64px 40px 64px', height: '100%', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+    <Box style={{ flexDirection: 'column', gap: 8 }}>
+      <Text style={{ fontSize: 72, fontWeight: 'bold', color: '#ffffff', fontFamily: 'Microsoft YaHei', lineHeight: 1.1 }}>智衍 EvolvIQ</Text>
+      <Text style={{ fontSize: 38, fontWeight: 'bold', color: '#06B6D4', fontFamily: 'Microsoft YaHei', letterSpacing: '4px' }}>造船行业版</Text>
+      <Box style={{ width: 120, height: 6, background: '#06B6D4', marginTop: 28 }} />
+    </Box>
+    <Box style={{ flexDirection: 'column', gap: 12, maxWidth: 720 }}>
+      <Text style={{ fontSize: 26, color: '#F1F5F9', fontFamily: 'Microsoft YaHei', lineHeight: 1.5 }}>工业 AI 决策大脑<br />让每艘船从设计到交付全程可控</Text>
+      <Text style={{ fontSize: 16, color: '#94A3B8', fontFamily: 'Microsoft YaHei', marginTop: 20 }}>杜玉河 · 工业 5 点 0 产业生态联盟</Text>
+    </Box>
+  </Box>
+</Slide>

@@ -1,0 +1,30 @@
+<Slide style={{ width: 1280, height: 720, position: 'relative', background: '#F1F5F9' }}>
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 120, background: '#0B2545', justifyContent: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#ffffff', fontFamily: 'Microsoft YaHei' }}>核心能力 ②：质量与工艺</Text>
+  </Box>
+  <Box style={{ height: 720, padding: '150 64 120 64', flexDirection: 'row', gap: 40 }}>
+    <Box style={{ width: '32%', height: '100%', background: 'linear-gradient(135deg, #0B2545 0%, #2563EB 100%)', borderRadius: 16, padding: '32 28', flexDirection: 'column', justifyContent: 'center' }}>
+      <Text style={{ fontSize: 18, color: '#06B6D4', fontFamily: 'Microsoft YaHei', fontWeight: 'bold' }}>QUALITY · 质量生命线</Text>
+      <Text style={{ fontSize: 38, color: '#ffffff', fontFamily: 'Microsoft YaHei', fontWeight: 'bold', marginTop: 14, lineHeight: 1.3 }}>质量与工艺</Text>
+      <Text style={{ fontSize: 16, color: '#CBD5E1', fontFamily: 'Microsoft YaHei', lineHeight: 1.7, marginTop: 18 }}>把被动报验变成主动预防，让缺陷在发生时就被看见、被归因。</Text>
+    </Box>
+    <Box style={{ flex: 1, height: '100%', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <Box style={{ background: '#EFF6FF', borderRadius: 12, padding: '22 26', borderLeft: '6px solid #06B6D4' }}>
+        <Text style={{ fontSize: 40, color: '#06B6D4', fontFamily: 'Microsoft YaHei', fontWeight: 'bold' }}>一次合格率 Agent</Text>
+        <Text style={{ fontSize: 16, color: '#475569', fontFamily: 'Microsoft YaHei', lineHeight: 1.6, marginTop: 10 }}>船体报验合格率趋势、缺陷分类、设备—质量关联根因分析，从「事后补救」走向「事前预警」。</Text>
+      </Box>
+      <Box style={{ background: '#ffffff', borderRadius: 12, padding: '20 24', boxShadow: '0 2px 12px rgba(11,37,69,0.06)' }}>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#0B2545', fontFamily: 'Microsoft YaHei' }}>涂装 / 焊接缺陷判定 Agent</Text>
+        <Text style={{ fontSize: 16, color: '#475569', fontFamily: 'Microsoft YaHei', lineHeight: 1.6, marginTop: 8 }}>误报过滤、阈值动态优化，显著节省复判工时，让质检员聚焦真正的问题。</Text>
+      </Box>
+      <Box style={{ background: '#ffffff', borderRadius: 12, padding: '20 24', boxShadow: '0 2px 12px rgba(11,37,69,0.06)' }}>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#0B2545', fontFamily: 'Microsoft YaHei' }}>可建造性检查 Agent</Text>
+        <Text style={{ fontSize: 16, color: '#475569', fontFamily: 'Microsoft YaHei', lineHeight: 1.6, marginTop: 8 }}>焊接可达性、精度、安全规则自动审查，把工艺问题挡在设计阶段。</Text>
+      </Box>
+    </Box>
+  </Box>
+  <Box style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: 60, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei' }}>智衍 EvolvIQ · 造船行业版</Text>
+    <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei' }}>07 / 12</Text>
+  </Box>
+</Slide>

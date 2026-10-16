@@ -1,0 +1,25 @@
+<Slide style={{ width: 1280, height: 720, position: 'relative', background: '#F1F5F9' }}>
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 120, background: '#0B2545', justifyContent: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#ffffff', fontFamily: 'Microsoft YaHei' }}>造船行业的四大决策挑战</Text>
+  </Box>
+  <Box style={{ height: 720, padding: '160 64 100 64', flexDirection: 'row', gap: 40 }}>
+    <Image src="assets/challenge_shipyard.png" style={{ width: '52%', height: '100%', borderRadius: 16, objectFit: 'cover' }} />
+    <Box style={{ flex: 1, height: '100%', flexDirection: 'column', justifyContent: 'space-between' }}>
+      {[
+        { t: '多品种 · 小批量 · 长周期', d: '一艘船往往是定制项目，进度、资源、成本难以实时掌控。' },
+        { t: '大型专用设备多', d: '龙门吊、焊接机器人、船坞停机损失高，运维依赖老师傅经验。' },
+        { t: '一次合格率压力大', d: '船体报验环节多，缺陷归因链条长，返工代价巨大。' },
+        { t: '跨专业协同复杂', d: '设计、工艺、生产、质量数据割裂，变更影响难量化。' },
+      ].map((item, i) => (
+        <Box key={i} style={{ background: '#ffffff', borderRadius: 12, padding: '20 24', boxShadow: '0 2px 12px rgba(11,37,69,0.06)' }}>
+          <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#0B2545', fontFamily: 'Microsoft YaHei' }}>{item.t}</Text>
+          <Text style={{ fontSize: 16, color: '#475569', fontFamily: 'Microsoft YaHei', lineHeight: 1.6, marginTop: 8 }}>{item.d}</Text>
+        </Box>
+      ))}
+    </Box>
+  </Box>
+  <Box style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: 60, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: '0 64' }}>
+    <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei' }}>智衍 EvolvIQ · 造船行业版</Text>
+    <Text style={{ fontSize: 14, color: '#475569', fontFamily: 'Microsoft YaHei' }}>03 / 12</Text>
+  </Box>
+</Slide>

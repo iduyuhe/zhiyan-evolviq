@@ -1,0 +1,8 @@
+# slidep 引擎缓存（非源码，不进版本库）
+.cache/
+.slidep/
+
+# 备份与临时文件
+*.bak
+*_preview_*.png
+test_blank.pptx
