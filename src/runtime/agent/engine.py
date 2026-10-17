@@ -185,6 +185,23 @@ class AgentEngine:
 ### Similar historical cases
 {trace_result.get('historical_similar', 0)} cases
 """
+        elif agent_name == "quality_brain":
+            from src.agents.quality_brain.agent import quality_brain_agent
+            result = await quality_brain_agent.analyze(goal)
+            ivs = "\n".join(
+                [f"- [{i['label']}] {i['detail']}" for i in result.get("five_interventions", [])]
+            )
+            plan_text = f"""## 质量决策脑 QualityBrain 诊断报告
+
+### 目标理解
+> {goal}
+
+### 五类质量干预
+{ivs}
+
+### 人留终审
+所有干预均 requires_human_approval=true，质量决策脑不代签放行。
+"""
         elif agent_name in ("dfm_check", "bom_selector", "oee_optimizer", "eco_change", "smt_changeover", "aoi_judge", "ipc_standard", "aps_scheduler", "energy_carbon", "cost_analysis", "demand_order", "wms_logistics", "compliance_q", "executive_cockpit", "rd_npi", "procurement_manage"):
             plan_text = await self._plan_for_generic_agent(agent_name, goal, session_id)
         else:

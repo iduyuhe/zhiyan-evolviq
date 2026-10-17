@@ -43,6 +43,7 @@ AGENT_REGISTRY: dict[str, tuple[str, str]] = {
     "pm_maintenance": ("src.agents.pm_maintenance.agent", "pm_agent"),
     "yield_analysis": ("src.agents.yield_analysis.agent", "yield_agent"),
     "quality_trace": ("src.agents.quality_trace.agent", "quality_trace_agent"),
+    "quality_brain": ("src.agents.quality_brain.agent", "quality_brain_agent"),
     "dfm_check": ("src.agents.dfm_check.agent", "dfm_agent"),
     "bom_selector": ("src.agents.bom_selector.agent", "bom_selector_agent"),
     "oee_optimizer": ("src.agents.oee_optimizer.agent", "oee_agent"),

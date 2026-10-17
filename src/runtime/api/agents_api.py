@@ -167,6 +167,15 @@ AGENT_REGISTRY = [
         "icon": "🛡️",
     },
     {
+        "id": "quality_brain",
+        "name": "质量决策脑 Agent",
+        "description": "质量域统一编排层：统筹质量追溯/AOI判图/良率分析/质量合规四子Agent，输出五类质量干预（缺陷预警/误报抑制/良率保卫/追溯触发/CAPA闭环），人留终审不代签",
+        "status": "active",
+        "version": "0.1.0",
+        "scenarios": ["缺陷预警", "误报抑制", "良率保卫", "追溯触发", "CAPA闭环"],
+        "icon": "🧪",
+    },
+    {
         "id": "executive_cockpit",
         "name": "经营驾驶舱Agent",
         "description": "经营KPI看板、预算执行、产出追踪、现金流与利润分析——全厂决策支持",
